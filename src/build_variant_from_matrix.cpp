@@ -43,7 +43,7 @@ int main(int argc, char** argv){
         ("o,out-file", "Output filename prefix.", cxxopts::value<string>())
         ("i,matrixboss-file", "The .matrixboss file of an index.", cxxopts::value<string>())
         ("temp-dir", "Directory for temporary files.", cxxopts::value<string>())
-        ("variant", "MatrixBOSS variant to build.", cxxopts::value<string>())
+        ("variant", "MatrixBOSS variant to build. Possible values are: plain-matrix, rrr-matrix, mef-matrix, plain-split, rrr-split, mef-split, plain-concat, vari-concat, plain-subset and rrr-subset", cxxopts::value<string>())
         ("h,help", "Print usage")
         ;
 

@@ -68,10 +68,10 @@ int main(int argc, char** argv){
     cxxopts::Options options(argv[0], "This program prints a NodeBOSS representation of the index. Not production quality code.");
 
     options.add_options()
-        ("i,matrixboss-file", "The .matrixboss file of an index.", cxxopts::value<string>())
+        ("i,index-file", "The index file.", cxxopts::value<string>())
         ("q,query-file", "The query file to get kmers from.", cxxopts::value<string>())
         ("temp-dir", "Directory for temporary files.", cxxopts::value<string>())
-        ("variant", "MatrixBOSS variant to build.", cxxopts::value<string>())
+        ("variant", "MatrixBOSS variant in the index file. The value should be the same as the value that was used to build the variant.", cxxopts::value<string>())
         ("repeats", "Number of times to run the query set", cxxopts::value<LL>()->default_value("1"))
         ("h,help", "Print usage")
         ;
@@ -85,7 +85,7 @@ int main(int argc, char** argv){
         exit(1);
     }
 
-    string index_dbg_file = opts["matrixboss-file"].as<string>();
+    string index_dbg_file = opts["index-file"].as<string>();
     string temp_dir = opts["temp-dir"].as<string>();
     string variant_opt = opts["variant"].as<string>();
     string query_file = opts["query-file"].as<string>();
