@@ -1,0 +1,10 @@
+#ifndef SBWT_VERSION_H
+#define SBWT_VERSION_H
+// *DON'T MODIFY MANUALLY*, CMake automatically updates this file!
+// Defines variables containing the build version and timestamp
+
+#define SBWT_BUILD_VERSION "@SBWT_BUILD_VERSION@"
+#define SBWT_BUILD_TIMESTAMP "@SBWT_BUILD_TIMESTAMP@"
+
+#endif
+

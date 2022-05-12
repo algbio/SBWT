@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.1)
+project(SBWT)
 include(ExternalProject)
 
 ## Set maximum k-mer length
@@ -38,8 +39,26 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CXX_FILESYSTEM_LIBRARIES "stdc++fs")
 endif()
 
+## Get version number from git tags
+find_package(Git)
+if(GIT_FOUND)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} describe --tags
+    WORKING_DIRECTORY "${local_dir}"
+    OUTPUT_VARIABLE SBWT_BUILD_VERSION
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  message( STATUS "SBWT version: ${SBWT_BUILD_VERSION}")
+else()
+  message(STATUS "GIT not found, version numbering disabled")
+  set(SBWT_BUILD_VERSION "unknown")
+endif()
+string(TIMESTAMP SBWT_BUILD_TIMESTAMP)
+
 ## Generate a version.h file containing build version and timestamp
 configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/include/version.h @ONLY)
+
 
 ## Add local dependencies as targets
 add_subdirectory(${CMAKE_SOURCE_DIR}/sdsl-lite
