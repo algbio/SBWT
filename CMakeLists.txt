@@ -1,5 +1,4 @@
 cmake_minimum_required (VERSION 3.1)
-project(Themisto)
 include(ExternalProject)
 
 ## Set maximum k-mer length
