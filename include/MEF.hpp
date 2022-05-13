@@ -391,7 +391,7 @@ public:
 
     void swap(rank_support_mod_ef&) { }
 
-    void load(std::istream&, const bit_vector_type* v=nullptr)
+    void load(std::istream& in, const bit_vector_type* v=nullptr)
     {
         read_member(m_mask, in);
         set_vector(v);
