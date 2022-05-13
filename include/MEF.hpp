@@ -157,7 +157,7 @@ public:
         }
 
         m_upper[m_m / m_bucket_size] = 1; /* final bucket is always copied, even if it is
-			       all zeros */
+                   all zeros */
 
         m_lower = bit_vector((count + 1) * m_bucket_size);
 
@@ -228,7 +228,7 @@ public:
             m_mef_lower_rank_1.set_vector(&m_lower);
         }
         return *this;
-    }    
+    }
 
     //! Serializes the data structure into the given ostream
     size_type serialize(std::ostream& out, structure_tree_node* v=nullptr, std::string name="")const
@@ -258,7 +258,9 @@ public:
 
         // can be calculated from previous
         m_mef_upper_rank_1.load(in, &m_upper);
+        m_mef_upper_rank_1.set_vector(&m_upper);
         m_mef_lower_rank_1.load(in, &m_lower);
+        m_mef_lower_rank_1.set_vector(&m_lower);
     }
 
 private:
@@ -391,6 +393,7 @@ public:
 
     void load(std::istream&, const bit_vector_type* v=nullptr)
     {
+        read_member(m_mask, in);
         set_vector(v);
     }
 
@@ -407,5 +410,3 @@ public:
 
 
 #endif
-
-
