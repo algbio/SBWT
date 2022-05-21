@@ -303,11 +303,10 @@ private:
 
 public:
 
-    boss_t build(edgemer_stream& input, int64_t mem_bytes, int64_t n_threads){
+    boss_t build(edgemer_stream& input){
         if(input.done()) return boss_t(); 
 
         Kmer_sorter_in_memory<Edgeset> sorter1;
-        sorter1.set_mem_budget(mem_bytes);
         int64_t k = 0;
         int64_t n_records_written = 0;
         int64_t edge_count = 0;
@@ -335,7 +334,6 @@ public:
         // Dummies
         write_log("Adding dummy (k+1)-mers", LogLevel::MAJOR);
         Kmer_sorter_in_memory<Edgeset> sorter2;
-        sorter2.set_mem_budget(mem_bytes);
         int64_t n_dummies_disk = add_dummies(sorter1, sorter2);
         sorter2.sort();
         sorter1.reset_stream(); // Rewind back to start because add_dummies iterates over this
