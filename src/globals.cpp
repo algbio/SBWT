@@ -8,6 +8,11 @@
 
 using namespace std::chrono;
 
+Temp_File_Manager& get_temp_file_manager(){
+    static Temp_File_Manager temp_file_manager; // Singleton
+    return temp_file_manager;
+}
+
 long long cur_time_millis(){
 	return (std::chrono::duration_cast< milliseconds >(high_resolution_clock::now().time_since_epoch())).count();
 }

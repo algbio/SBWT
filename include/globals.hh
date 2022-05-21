@@ -1,7 +1,8 @@
 #pragma once
 
 #include <string>
-#include <cmath> 
+#include <cmath>
+#include "TempFileManager.hh"
 using namespace std;
 
 enum LogLevel {OFF = 0, MAJOR = 1, MINOR = 2, DEBUG = 3};
@@ -14,6 +15,7 @@ void set_log_level(LogLevel level);
 LogLevel get_log_level();
 void write_log(string message, LogLevel level);
 void check_true(bool condition, string error_message);
+Temp_File_Manager& get_temp_file_manager();
 
 class Progress_printer{
 
