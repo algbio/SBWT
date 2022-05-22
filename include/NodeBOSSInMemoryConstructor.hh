@@ -168,7 +168,10 @@ class NodeBOSSInMemoryConstructor{
         vector<kmer_t> kmers = get_distinct_kmers(input, k);
         std::sort(kmers.begin(), kmers.end());
 
+        write_log("Sorting nodes", LogLevel::MAJOR);
         vector<Node> nodes = get_nodes(kmers);
+
+        write_log("Building SBWT", LogLevel::MAJOR);
 
         sdsl::bit_vector A_bits(nodes.size(), 0);
         sdsl::bit_vector C_bits(nodes.size(), 0);
