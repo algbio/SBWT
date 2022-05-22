@@ -32,12 +32,13 @@ class NodeBOSS{
     void build_from_strings(const vector<string>& input, int64_t k); // This sorts all k-mers in memory and thus takes a lot of memory. Not optimized at all.
     void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss);
     void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k);
-    void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k); // The NodeBOSS must be already built before calling this
+    void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits); // The NodeBOSS must be already built before calling this
     int64_t search(const string& kmer) const; // Search for std::string
     int64_t search(const char* S, int64_t k) const; // Search for C-string
 
     // Query for all k-mers in the input
     vector<int64_t> streaming_search(const string& input) const;
+    vector<int64_t> streaming_search(const char* input, int64_t len) const;
 
     // Return the label on the incoming edges to the given node.
     // If the node is the root node, returns a dollar.
@@ -223,23 +224,23 @@ void NodeBOSS<subset_rank_t>::build_from_strings(const vector<string>& input, in
 }
 
 template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k){
+void NodeBOSS<subset_rank_t>::build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits){
     suffix_group_starts = mark_suffix_groups(A_bits, C_bits, G_bits, T_bits, C, k);
 }
 
 template <typename subset_rank_t>
-vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const string& input) const{
+vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const char* input, int64_t len) const{
     if(suffix_group_starts.size() == 0)
         throw std::runtime_error("Error: streaming search support not built");
     
     vector<int64_t> ans;
-    if(input.size() < k) return ans;
+    if(len < k) return ans;
 
-    ans.push_back(search(input.c_str(), k));
-    for(int64_t i = 1; i < (int64_t)input.size() - k + 1; i++){
+    ans.push_back(search(input, k));
+    for(int64_t i = 1; i < len - k + 1; i++){
         if(ans.back() == -1){
             // Need to search from scratch
-            ans.push_back(search(input.c_str() + i));
+            ans.push_back(search(input + i));
         } else{
             // Got to the start of the suffix group and do one search iteration
             int64_t colex = ans.back();
@@ -265,4 +266,9 @@ vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const string& input) c
         }
     }
     return ans;
+}
+
+template <typename subset_rank_t>
+vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const string& input) const{
+    return streaming_search(input.c_str(), input.size());
 }
