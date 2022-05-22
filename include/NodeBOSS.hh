@@ -4,6 +4,7 @@
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/rank_support_v.hpp>
 #include "NodeBOSSInMemoryConstructor.hh"
+#include "throwing_streams.hh"
 #include "libwheeler/BOSS.hh"
 #include "globals.hh"
 #include "Kmer.hh"
@@ -37,9 +38,11 @@ class NodeBOSS{
     // If the node is the root node, returns a dollar.
     char incoming_label(int64_t node) const; 
 
-    // Returns the number of bytes written
-    int64_t serialize(ostream& out) const;
+    
+    int64_t serialize(ostream& out) const; // Returns the number of bytes written
+    int64_t serialize(const string& filename) const; // Returns the number of bytes written
     void load(istream& in);
+    void load(const string& filename);
 
 };
 
@@ -176,13 +179,24 @@ int64_t NodeBOSS<subset_rank_t>::serialize(ostream& os) const{
 }
 
 template <typename subset_rank_t>
+int64_t NodeBOSS<subset_rank_t>::serialize(const string& filename) const{
+    throwing_ofstream out(filename, ios::binary);
+    return serialize(out.stream);
+}
+
+
+template <typename subset_rank_t>
 void NodeBOSS<subset_rank_t>::load(istream& is){
     subset_rank.load(is);
     C = load_std_vector<int64_t>(is);
     is.read((char*)&n_nodes, sizeof(n_nodes));
     is.read((char*)&k, sizeof(k));
+}
 
-    //cout << "loaded " << n_nodes << " " << k << endl;
+template <typename subset_rank_t>
+void NodeBOSS<subset_rank_t>::load(const string& filename){
+    throwing_ifstream in(filename, ios::binary);
+    load(in.stream);
 }
 
 template <typename subset_rank_t>

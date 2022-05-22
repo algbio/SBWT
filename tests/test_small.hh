@@ -3,6 +3,7 @@
 #include "setup_tests.hh"
 #include "globals.hh"
 #include "Kmer.hh"
+#include "variants.hh"
 #include "NodeBOSS.hh"
 #include "SubsetSplitRank.hh"
 #include "SubsetMatrixRank.hh"
@@ -15,77 +16,6 @@
 
 typedef long long LL;
 typedef Kmer<MAX_KMER_LENGTH> kmer_t;
-
-typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
-
-typedef NodeBOSS<SubsetSplitRank<sdsl::bit_vector, sdsl::rank_support_v5<>,
-                  sdsl::bit_vector, sdsl::rank_support_v5<>>> splitboss_t;
-
-typedef NodeBOSS<SubsetWT<sdsl::wt_blcd<sdsl::bit_vector,
-                                    sdsl::rank_support_v5<>,
-                                    sdsl::select_support_scan<1>,
-                                    sdsl::select_support_scan<0>>>
-             > subsetwtboss_t;
-
-typedef NodeBOSS<SubsetConcatRank<sdsl::bit_vector,
-                        sdsl::bit_vector::select_0_type,
-                        sdsl::wt_blcd<sdsl::bit_vector,
-                                    sdsl::rank_support_v5<>,
-                                    sdsl::select_support_scan<1>,
-                                    sdsl::select_support_scan<0>>>
-        > concatboss_t;
-
-
-class TEST_SMALL : public ::testing::Test {
-    protected:
-
-    vector<string> input;
-    set<string> kmers;
-    LL k = 3;
-    matrixboss_t matrixboss;
-    splitboss_t splitboss;
-    subsetwtboss_t subsetWTboss;
-    concatboss_t concatboss;
-    sdsl::bit_vector suffix_group_starts;
-    sdsl::bit_vector A_bits, C_bits, G_bits, T_bits;
-
-    void SetUp() override {
-        input = {"TAGCAAGCACAGCATACAGA"};
-        k = 3;
-        kmers = get_all_kmers(input, k);
-
-        BOSS_builder<BOSS<sdsl::bit_vector>, Kmer_stream_in_memory> bb;
-        Kmer_stream_in_memory stream(input, k+1);
-        BOSS<sdsl::bit_vector> wheelerBOSS = bb.build(stream);
-        matrixboss.build_from_WheelerBOSS(wheelerBOSS);
-        A_bits = matrixboss.subset_rank.A_bits;
-        C_bits = matrixboss.subset_rank.C_bits;
-        G_bits = matrixboss.subset_rank.G_bits;
-        T_bits = matrixboss.subset_rank.T_bits;
-
-        // Push bits to the left end of a suffix group
-        suffix_group_starts = mark_suffix_groups(A_bits, C_bits, G_bits, T_bits, matrixboss.C, matrixboss.k);
-        push_bits_left(A_bits, C_bits, G_bits, T_bits, suffix_group_starts);
-
-        matrixboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
-        splitboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
-        subsetWTboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
-        concatboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
-    }
-
-};
-
-TEST_F(TEST_SMALL, check_construction){
-    // Matrix rows from the example in the paper
-    sdsl::bit_vector true_A_bits = {0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1};
-    sdsl::bit_vector true_C_bits = {0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0};
-    sdsl::bit_vector true_G_bits = {0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    sdsl::bit_vector true_T_bits = {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    ASSERT_EQ(true_A_bits, A_bits);
-    ASSERT_EQ(true_C_bits, C_bits);
-    ASSERT_EQ(true_G_bits, G_bits);
-    ASSERT_EQ(true_T_bits, T_bits);
-}
 
 // Queries all 4^k k-mers and checks that the membership queries give the right answers
 template<typename nodeboss_t>
@@ -105,17 +35,91 @@ void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers
     }
 }
 
-TEST(TEST_IM_CONSTRUCTION, small_hand_crafted){
-    matrixboss_t X;
+TEST(TEST_IM_CONSTRUCTION, test_all_variants){
     vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
-    X.build_from_strings(strings, 4);
-    set<string> true_kmers = get_all_kmers(strings, 4);
-    logger << "Queries on in-memory constructed matrixboss" << endl;
-    check_all_queries(X, true_kmers);
+    LL k = 4;
+    set<string> true_kmers = get_all_kmers(strings, k);
+
+    vector<string> filenames;
+    for(LL i = 0; i < 10; i++){ // Create temp file for each of the 10 variants
+        filenames.push_back(get_temp_file_manager().create_filename());
+    }
+
+    // Build
+    {
+        plain_matrix_sbwt_t v1;
+        rrr_matrix_sbwt_t v2;
+        mef_matrix_sbwt_t v3;
+        plain_split_sbwt_t v4;
+        rrr_split_sbwt_t v5;
+        mef_split_sbwt_t v6;
+        plain_concat_sbwt_t v7;
+        mef_concat_sbwt_t v8;
+        plain_sswt_sbwt_t v9;
+        rrr_sswt_sbwt_t v10;
+
+        v1.build_from_strings(strings, k);
+        v2.build_from_strings(strings, k);
+        v3.build_from_strings(strings, k);
+        v4.build_from_strings(strings, k);
+        v5.build_from_strings(strings, k);
+        v6.build_from_strings(strings, k);
+        v7.build_from_strings(strings, k);
+        v8.build_from_strings(strings, k);
+        v9.build_from_strings(strings, k);
+        v10.build_from_strings(strings, k);
+
+        v1.serialize(filenames[0]);
+        v2.serialize(filenames[1]);
+        v3.serialize(filenames[2]);
+        v4.serialize(filenames[3]);
+        v5.serialize(filenames[4]);
+        v6.serialize(filenames[5]);
+        v7.serialize(filenames[6]);
+        v8.serialize(filenames[7]);
+        v9.serialize(filenames[8]);
+        v10.serialize(filenames[9]);
+    }
+
+    // Load and query
+    {
+        plain_matrix_sbwt_t v1;
+        rrr_matrix_sbwt_t v2;
+        mef_matrix_sbwt_t v3;
+        plain_split_sbwt_t v4;
+        rrr_split_sbwt_t v5;
+        mef_split_sbwt_t v6;
+        plain_concat_sbwt_t v7;
+        mef_concat_sbwt_t v8;
+        plain_sswt_sbwt_t v9;
+        rrr_sswt_sbwt_t v10;
+
+        v1.load(filenames[0]);
+        v2.load(filenames[1]);
+        v3.load(filenames[2]);
+        v4.load(filenames[3]);
+        v5.load(filenames[4]);
+        v6.load(filenames[5]);
+        v7.load(filenames[6]);
+        v8.load(filenames[7]);
+        v9.load(filenames[8]);
+        v10.load(filenames[9]);
+
+        check_all_queries(v1, true_kmers);
+        check_all_queries(v2, true_kmers);
+        check_all_queries(v3, true_kmers);
+        check_all_queries(v4, true_kmers);
+        check_all_queries(v5, true_kmers);
+        check_all_queries(v6, true_kmers);
+        check_all_queries(v7, true_kmers);
+        check_all_queries(v8, true_kmers);
+        check_all_queries(v9, true_kmers);
+        check_all_queries(v10, true_kmers);
+    }
 }
 
 TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
-    matrixboss_t X;
+    plain_matrix_sbwt_t X;
     vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG", "TTTT"};
     X.build_from_strings(strings, 4);
     set<string> true_kmers = get_all_kmers(strings, 4);
@@ -125,27 +129,10 @@ TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
 }
 
 TEST(TEST_IM_CONSTRUCTION, not_full_alphabet){
-    matrixboss_t X;
+    plain_matrix_sbwt_t X;
     vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG"}; // No 'T' exists
     X.build_from_strings(strings, 4);
     set<string> true_kmers = get_all_kmers(strings, 4);
     logger << "Queries on in-memory constructed matrixboss" << endl;
     check_all_queries(X, true_kmers);
 }
-
-TEST_F(TEST_SMALL, matrixboss){
-    check_all_queries(matrixboss, kmers);
-}
-
-TEST_F(TEST_SMALL, splitboss){
-    check_all_queries(splitboss, kmers);
-}
-
-TEST_F(TEST_SMALL, subsetwtboss){
-    check_all_queries(subsetWTboss, kmers);
-}
-
-TEST_F(TEST_SMALL, concatboss){
-    check_all_queries(concatboss, kmers);
-}
-
