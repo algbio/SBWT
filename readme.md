@@ -1,6 +1,12 @@
 # SBWT
 
-This repository is under construction.
+This is the code for the paper [Succinct k-mer Set Representations Using Subset Rank Queries on the Spectral Burrows-Wheeler Transform (SBWT)](https://www.biorxiv.org/content/10.1101/2022.05.19.492613v1). The repository includes implementations of the various SBWT variants described in the paper. Note that contrary to many other k-mer membership data structures, our code is not aware of DNA reverse complements. That is, it considers a k-mer and its reverse complement as separate k-mers.
+
+We are currently actively working on the code. Top items on the to-do list are the following:
+
+* Streaming queries, that is, queries with a rolling k-mer window. Currently, the code queries all k-mers separately without reusing computation from previous k-mers.
+* Reverse complement aware indexing.
+* Construction directly from a sorted KMC database.
 
 # Compiling
 
@@ -26,7 +32,7 @@ For small inputs, we have an in-memory construction algorithm that loads all k-m
 ./build/bin/sbwt_build --in-fasta example_data/coli3.fna -o index.sbwt -k 30 --variant plain-matrix
 ```
 
-For larger inputs, we provide contruction from a Themisto index. We are also working on direct construction from a KMC database. Themisto is included as a submodule in this repository. First, you need to install Themisto by going to its subdirectory `./Themisto` and following the compilation instruction in the readme of Themisto. After compiling Themisto, to build the Themisto index on our example data, run the following:
+For larger inputs, we provide contruction from a Themisto index. Themisto is included as a submodule in this repository. First, you need to install Themisto by going to its subdirectory `./Themisto` and following the compilation instruction in the readme of Themisto. After compiling Themisto, to build the Themisto index on our example data, run the following:
 
 ```
 ./Themisto/build/bin/themisto build -k 30 -i example_data/coli3.fna --temp-dir temp --no-colors -o example_data/coli3
