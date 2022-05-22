@@ -3,8 +3,10 @@
 #include <vector>
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/rank_support_v.hpp>
+#include "NodeBOSSInMemoryConstructor.hh"
 #include "libwheeler/BOSS.hh"
 #include "globals.hh"
+#include "Kmer.hh"
 #include <map>
 
 using namespace std;
@@ -25,6 +27,7 @@ class NodeBOSS{
     int64_t k;
 
     NodeBOSS() : n_nodes(0), k(0) {}
+    void build_from_strings(const vector<string>& input, int64_t k); // This sorts all k-mers in memory and thus takes a lot of memory. Not optimized at all.
     void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss);
     void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k);
     int64_t search(const string& kmer) const; // Search for std::string
@@ -188,4 +191,11 @@ char NodeBOSS<subset_rank_t>::incoming_label(int64_t node) const{
     else if(node < C[2]) return 'C';
     else if(node < C[3]) return 'G';
     else return 'T';
+}
+
+
+template <typename subset_rank_t>
+void NodeBOSS<subset_rank_t>::build_from_strings(const vector<string>& input, int64_t k){
+    NodeBOSSInMemoryConstructor<NodeBOSS<subset_rank_t>> builder;
+    builder.build(input, *this, k);
 }

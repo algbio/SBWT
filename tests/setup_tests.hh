@@ -24,6 +24,29 @@ TestLogger& operator<<(TestLogger& L, const T& t){
 
 TestLogger logger; // Pipe things you want to print into this object with the '<<' operator
 
+set<string> get_all_kmers(const vector<string>& input, int64_t k){
+    set<string> kmers;
+    for(string x : input)
+        for(int64_t i = 0; i < x.size() - k + 1; i++)
+            kmers.insert(x.substr(i,k));
+    return kmers;
+}
+
+const std::string generate_random_kmer(int64_t k) {
+    std::string s;
+    for (int64_t i = 0; i < k; i++) {
+        const int r = std::rand() % 4;
+        switch (r) {
+            case (0): s += 'A'; break;
+            case (1): s += 'C'; break;
+            case (2): s += 'G'; break;
+            case (3): s += 'T'; break;
+            default: break;
+        }
+    }
+    return s;
+}
+
 void enable_test_logging(){logger.verbose = true; }
 void disable_test_logging(){logger.verbose = false; }
 

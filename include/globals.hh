@@ -5,6 +5,8 @@
 #include "TempFileManager.hh"
 using namespace std;
 
+#define MAX_KMER_SIZE 32
+
 enum LogLevel {OFF = 0, MAJOR = 1, MINOR = 2, DEBUG = 3};
 
 long long cur_time_millis();

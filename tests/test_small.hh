@@ -14,7 +14,7 @@
 
 
 typedef long long LL;
-typedef Kmer<32> kmer_t;
+typedef Kmer<MAX_KMER_SIZE> kmer_t;
 
 typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
 
@@ -35,6 +35,7 @@ typedef NodeBOSS<SubsetConcatRank<sdsl::bit_vector,
                                     sdsl::select_support_scan<0>>>
         > concatboss_t;
 
+
 class TEST_SMALL : public ::testing::Test {
     protected:
 
@@ -51,11 +52,7 @@ class TEST_SMALL : public ::testing::Test {
     void SetUp() override {
         input = {"TAGCAAGCACAGCATACAGA"};
         k = 3;
-
-        // Get all k-mers
-        for(string x : input)
-            for(LL i = 0; i < x.size() - k + 1; i++)
-                kmers.insert(x.substr(i,k));
+        kmers = get_all_kmers(input, k);
 
         BOSS_builder<BOSS<sdsl::bit_vector>, Kmer_stream_in_memory> bb;
         Kmer_stream_in_memory stream(input, k+1);
@@ -90,36 +87,44 @@ TEST_F(TEST_SMALL, check_construction){
     ASSERT_EQ(true_T_bits, T_bits);
 }
 
-
-TEST_F(TEST_SMALL, check_all_queries){
-    for(uint64_t mask = 0; mask < (1 << (2*k)); mask++){
+template<typename nodeboss_t>
+void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers){
+    for(uint64_t mask = 0; mask < (1 << (2*nodeboss.k)); mask++){
         string kmer;
-        for(int64_t i = 0; i < k; i++){
+        for(int64_t i = 0; i < nodeboss.k; i++){
             if(((mask >> 2*i) & 0x3) == 0) kmer += 'A';
             if(((mask >> 2*i) & 0x3) == 1) kmer += 'C';
             if(((mask >> 2*i) & 0x3) == 2) kmer += 'G';
             if(((mask >> 2*i) & 0x3) == 3) kmer += 'T';
         }
-
-        bool is_found = kmers.find(kmer) != kmers.end(); // Truth
-
-        // Matrix
-        int64_t colex = matrixboss.search(kmer);
+        bool is_found = true_kmers.count(kmer); // Truth
+        int64_t colex = nodeboss.search(kmer);
         if(is_found) ASSERT_GE(colex, 0); else ASSERT_EQ(colex, -1);
-
-        // Split
-        colex = splitboss.search(kmer);
-        if(is_found) ASSERT_GE(colex, 0); else ASSERT_EQ(colex, -1);
-
-        // SubsetWT
-        colex = subsetWTboss.search(kmer);
-        if(is_found) ASSERT_GE(colex, 0); else ASSERT_EQ(colex, -1);
-
-        // Concat
-        colex = concatboss.search(kmer);
-        if(is_found) ASSERT_GE(colex, 0); else ASSERT_EQ(colex, -1);
-
-
         logger << kmer << " " << colex << endl;
     }
+}
+
+TEST_F(TEST_SMALL, in_memory_construction){
+    matrixboss_t X;
+    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
+    X.build_from_strings(strings, 4);
+    set<string> true_kmers = get_all_kmers(strings, 4);
+    logger << "Queries on in-memory constructed matrixboss" << endl;
+    check_all_queries(X, true_kmers);
+}
+
+TEST_F(TEST_SMALL, matrixboss){
+    check_all_queries(matrixboss, kmers);
+}
+
+TEST_F(TEST_SMALL, splitboss){
+    check_all_queries(splitboss, kmers);
+}
+
+TEST_F(TEST_SMALL, subsetwtboss){
+    check_all_queries(subsetWTboss, kmers);
+}
+
+TEST_F(TEST_SMALL, concatboss){
+    check_all_queries(concatboss, kmers);
 }

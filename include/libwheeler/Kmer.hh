@@ -134,6 +134,10 @@ public:
         else return false;
     }
 
+    bool operator>(const Kmer& other) const{
+        return !(*this < other) && !(*this == other);
+    }
+
     // Drops leftmost nucleotide, i.e. returns a (k-1)-mer (itself)
     Kmer dropleft(){
         assert(k > 0);
@@ -184,7 +188,7 @@ public:
         return *this;
     }
 
-    Kmer copy(){
+    Kmer copy() const{
         Kmer other;
         other.k = this->k;
         for(int64_t i = 0; i < DATA_ARRAY_SIZE; i++)
@@ -249,7 +253,9 @@ inline void hash_combine(std::size_t& seed, const T& v)
 template<int64_t max_len>
 struct std::hash<Kmer<max_len>>{
     std::size_t operator()(const Kmer<max_len>& X) const {
-        size_t h = std::hash<uint64_t>()(X.data);
+        size_t h = 0;
+        for(int64_t i = 0; i < Kmer<max_len>::DATA_ARRAY_SIZE; i++)
+            hash_combine<uint64_t>(h, X.data[i]);
         hash_combine<uint8_t>(h, X.k);
         return h;
     }

@@ -14,6 +14,7 @@
 #include "globals.hh"
 #include "setup_tests.hh"
 #include "test_small.hh"
+#include "test_large.hh"
 #include <cassert>
 
 
