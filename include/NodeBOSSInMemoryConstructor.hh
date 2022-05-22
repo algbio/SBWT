@@ -86,7 +86,7 @@ class NodeBOSSInMemoryConstructor{
         nodes.resize(j);
     }
 
-    // kmers must unique and be colex-sorted before calling.
+    // kmers must be unique and be colex-sorted before calling.
     // Returns node list in colex order.
     vector<Node> get_nodes(const vector<kmer_t>& kmers){
         string ACGT = "ACGT";
