@@ -9,7 +9,7 @@
 template <typename nodeboss_t>
 class NodeBOSSInMemoryConstructor{
 
-    typedef Kmer<MAX_KMER_SIZE> kmer_t;
+    typedef Kmer<MAX_KMER_LENGTH> kmer_t;
     typedef long long LL;
 
     public:

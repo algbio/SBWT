@@ -5,7 +5,9 @@
 #include "TempFileManager.hh"
 using namespace std;
 
-#define MAX_KMER_SIZE 32
+#ifndef MAX_KMER_LENGTH
+#define MAX_KMER_LENGTH 32
+#endif
 
 enum LogLevel {OFF = 0, MAJOR = 1, MINOR = 2, DEBUG = 3};
 

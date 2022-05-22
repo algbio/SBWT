@@ -8,9 +8,11 @@ This repository is under construction.
 git submodule init
 git submodule update
 cd build
-cmake ..
+cmake .. -DMAX_KMER_LENGTH=32
 make
 ```
+
+Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-mer length, up to 255.
 
 **Troubleshooting**: If you run into problems involving the &lt;filesystem&gt; header, you probably need to update your compiler. The compiler `g++-8` should be sufficient. Install a new compiler and direct CMake to use it with the `-DCMAKE_CXX_COMPILER` option. For example, to set the compiler to `g++-8`, run CMake with the option `-DCMAKE_CXX_COMPILER=g++-8`. 
 
