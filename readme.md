@@ -58,10 +58,21 @@ Usage:
 
 # Running queries
 
-Currently the query program only accepts the plain matrix variant. To change the variant, you need to edit the template parameter in the source code and recompile. This is pretty bad -- we are working on making the k-mer search function take the variant as a parameter. Anyway, the queries on the plain matrix variant can be run as follows:
+To query for existence of all k-mers in an index for all sequences in a fasta-file, run the following command:
 
 ```
-./build/bin/kmer-search -i example_data/coli3.matrix -q example_data/queries.fna -o out.txt -k 30 --temp-dir temp
+./build/bin/kmer-search -i temp/out -q example_data/queries.fna -o out.txt
 ```
 
-This prints for each query of length n in the input a line containing n-k+1 space-separated integers, which are the ranks of the columns representing the k-mer in the index. If the k-mer is not found, -1 is printed.
+This prints for each query of length n in the input a line containing n-k+1 space-separated integers, which are the ranks of the columns representing the k-mer in the index. If the k-mer is not found, -1 is printed. The full options are:
+
+```
+Query all k-mers of all input reads. Assumes all reads only contain characters A,C,G and T.
+Usage:
+  ./build/bin/sbwt_kmer_search [OPTION...]
+
+  -o, --out-file arg    Output filename.
+  -i, --index-file arg  Index input file.
+  -q, --query-file arg  The query in FASTA format.
+  -h, --help            Print usage
+```

@@ -20,29 +20,13 @@ void check_writable(string filename){
     throwing_ofstream F(filename, std::ofstream::out | std::ofstream::app); // Throws on failure
 }
 
-// Returns the number of bytes written
-LL serialize_string(const string& S, ostream& out){
-    int64_t size = S.size();
-    out.write((char*)&size, sizeof(size));
-    out.write(S.data(), size);
-    return sizeof(size) + size;
-}
-
-string load_string(ifstream& in){
-    int64_t size;
-    in.read((char*)&size, sizeof(size));
-    string S(size, '\0');
-    in.read((char*)&S[0], size); // The C++ standard guarantees that std::string is stored contiguously in memory
-    return S;
-}
-
 int main(int argc, char** argv){
 
     set_log_level(LogLevel::MAJOR);
 
     cxxopts::Options options(argv[0], "Construct an SBWT variant.");
 
-    vector<string> variants = {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"};
+    vector<string> variants = {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"}; // If you update this, make sure to update the corresponding vector in kmer_search.cpp
     string all_variants_string;
     for(string variant : variants) all_variants_string += " " + variant;
 
@@ -129,10 +113,11 @@ int main(int argc, char** argv){
     }
 
     throwing_ofstream out(out_file, ios::binary);
-    //serialize_string(variant, out.stream); // Write variant string to file
+    LL bytes_written = 0;
+    bytes_written += serialize_string(variant, out.stream); // Write variant string to file
     write_log("Building subset rank support", LogLevel::MAJOR);
 
-    LL bytes_written = 0;
+    
     sdsl::bit_vector& A_bits = matrixboss_plain.subset_rank.A_bits;
     sdsl::bit_vector& C_bits = matrixboss_plain.subset_rank.C_bits;
     sdsl::bit_vector& G_bits = matrixboss_plain.subset_rank.G_bits;

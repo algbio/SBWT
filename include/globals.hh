@@ -19,6 +19,9 @@ void write_log(string message, LogLevel level);
 void check_true(bool condition, string error_message);
 Temp_File_Manager& get_temp_file_manager();
 
+int64_t serialize_string(const string& S, ostream& out); // Returns the number of bytes written
+string load_string(istream& in); // Loads string serialized by serialize_string
+
 class Progress_printer{
 
     public:

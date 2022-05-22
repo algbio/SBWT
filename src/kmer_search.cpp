@@ -9,6 +9,7 @@
 #include "stdlib_printing.hh"
 #include "input_reading.hh"
 #include "SubsetMatrixRank.hh"
+#include "variants.hh"
 #include <filesystem>
 
 //#include "MEF.hpp"
@@ -25,51 +26,26 @@ void check_writable(string filename){
     throwing_ofstream F(filename, std::ofstream::out | std::ofstream::app); // Throws on failure
 }
 
-template<typename otherboss_t>
-void run_test(const BOSS<sdsl::bit_vector>& boss, const otherboss_t& otherboss){
-
-    LL otherboss_total_millis = 0;
-    LL wheleerboss_total_millis = 0;
-    LL n_queries = 0;
-    // Search for all nodes
-    for(LL v = 0; v < boss.number_of_nodes(); v++){
-        string kmer = boss.get_node_label(v);
-        if(kmer.size() < boss.get_k()) continue;
-        else n_queries++;
-
-        // Search nodeboss
-        LL t0_otherboss = cur_time_millis();
-        LL search_result = otherboss.search(kmer);
-        otherboss_total_millis += cur_time_millis() - t0_otherboss;
-        
-        LL t0_wheelerboss = cur_time_millis();
-        LL search_result2 = boss.find_kmer(kmer);
-        wheleerboss_total_millis += cur_time_millis() - t0_wheelerboss;
-
-        if(search_result != search_result2){
-            cout << "WRONG ANSWER " << v << " " << kmer << endl;
-            exit(0);
+template<typename sbwt_t>
+void run_queries(const string& queryfile, const string& outfile, const sbwt_t& sbwt){
+    write_log("Running queries", LogLevel::MAJOR);
+    throwing_ofstream out(outfile);
+    Sequence_Reader_Buffered sr(queryfile, FASTA_MODE);
+    LL k = sbwt.k;
+    while(true){ 
+        LL len = sr.get_next_read_to_buffer();
+        if(len == 0) break;
+        for(LL i = 0; i < len - k + 1; i++){
+            LL v = sbwt.search(sr.read_buf + i, k);
+            out.stream << v << " ";
         }
-
-        if(n_queries == 1000000) break;
+        out << "\n";
     }
-
-    cout << "WheleerBOSS ms/query: " << wheleerboss_total_millis / (double)n_queries << endl;
-    cout << "OtherBOSS ms/query: " << otherboss_total_millis / (double)n_queries << endl;
-    cout << "Speedup: " << (double)wheleerboss_total_millis / otherboss_total_millis << endl;
-
 }
-
 
 int main(int argc, char** argv){
 
     set_log_level(LogLevel::MINOR);
-
-    // Legacy support: transform old option format --outfile --out-file
-    string legacy_support_fix = "--out-file";
-    for(LL i = 1; i < argc; i++){
-        if(string(argv[i]) == "--outfile") argv[i] = &(legacy_support_fix[0]);
-    }
 
     cxxopts::Options options(argv[0], "Query all k-mers of all input reads. Assumes all reads only contain characters A,C,G and T.");
 
@@ -77,8 +53,6 @@ int main(int argc, char** argv){
         ("o,out-file", "Output filename.", cxxopts::value<string>())
         ("i,index-file", "Index input file.", cxxopts::value<string>())
         ("q,query-file", "The query in FASTA format.", cxxopts::value<string>())
-        ("k,node-length", "The k of the k-mers.", cxxopts::value<LL>())
-        ("temp-dir", "Directory for temporary files.", cxxopts::value<string>())
         ("h,help", "Print usage")
     ;
 
@@ -92,30 +66,73 @@ int main(int argc, char** argv){
 
     string outfile = opts["out-file"].as<string>();
     string indexfile = opts["index-file"].as<string>();
-    string temp_dir = opts["temp-dir"].as<string>();
     string queryfile = opts["query-file"].as<string>();
-    LL k = opts["k"].as<LL>();
 
     check_writable(outfile);
     check_readable(indexfile);
     check_readable(queryfile);
-    std::filesystem::create_directory(temp_dir);
 
-    write_log("Loading the DBG", LogLevel::MAJOR);
-    NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss;
+    vector<string> variants = {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"}; // If you update this, make sure to update the corresponding vector in sbwt_build.cpp
+
     throwing_ifstream in(indexfile, ios::binary);
-    matrixboss.load(in.stream);
-
-    throwing_ofstream out(outfile);
-    Sequence_Reader sr(queryfile, FASTA_MODE);
-    while(!sr.done()){
-        string read = sr.get_next_query_stream().get_all();
-        for(LL i = 0; i < (LL)read.size() - k + 1; i++){
-            LL v = matrixboss.search(read.c_str() + i, k);
-            out.stream << v << " ";
-        }
-        out << "\n";
+    string variant = load_string(in.stream);
+    if(std::find(variants.begin(), variants.end(), variant) == variants.end()){
+        cerr << "Error loading index from file: unrecognized variant specified in the file" << endl;
+        return 1;
     }
 
+    write_log("Loading the index variant " + variant, LogLevel::MAJOR);
+
+    if (variant == "plain-matrix"){
+        plain_matrix_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "rrr-matrix"){
+        rrr_matrix_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "mef-matrix"){
+        mef_matrix_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "plain-split"){
+        plain_split_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "rrr-split"){
+        rrr_split_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "mef-split"){
+        mef_split_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "plain-concat"){
+        plain_concat_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "mef-concat"){
+        mef_concat_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "plain-subsetwt"){
+        plain_sswt_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    if (variant == "rrr-subsetwt"){
+        rrr_sswt_sbwt_t sbwt;
+        sbwt.load(in.stream);
+        run_queries(queryfile, outfile, sbwt);
+    }
+    
 }
 

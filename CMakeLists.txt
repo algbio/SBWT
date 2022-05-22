@@ -68,19 +68,19 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/sdsl-lite
 include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include)
 
 ## Libraries & executables to build
-add_executable(kmer-search src/kmer_search.cpp ${NODEBOSS_SOURCES})
+
+add_executable(sbwt_build src/sbwt_build.cpp ${NODEBOSS_SOURCES})
+add_executable(sbwt_kmer_search src/kmer_search.cpp ${NODEBOSS_SOURCES})
 add_executable(arrange_bits research/arrange_bits.cpp ${NODEBOSS_SOURCES})
 add_executable(suffix_group_optimization research/suffix_group_optimization.cpp ${NODEBOSS_SOURCES})
 add_executable(dump_kmers src/dump_kmers.cpp ${NODEBOSS_SOURCES})
-add_executable(query_variant_from_file src/query_variant_from_file.cpp ${NODEBOSS_SOURCES})
-add_executable(sbwt_build src/sbwt_build.cpp ${NODEBOSS_SOURCES})
 
-target_link_libraries(kmer-search sdsl ${CXX_FILESYSTEM_LIBRARIES})
+target_link_libraries(sbwt_build sdsl ${CXX_FILESYSTEM_LIBRARIES})
+target_link_libraries(sbwt_kmer_search sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(arrange_bits sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(suffix_group_optimization sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(dump_kmers sdsl ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(query_variant_from_file sdsl ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(sbwt_build sdsl ${CXX_FILESYSTEM_LIBRARIES})
+
 
 ## Build tests if doing a Debug build
 if (CMAKE_BUILD_TYPE MATCHES Debug)
