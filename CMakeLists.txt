@@ -80,7 +80,6 @@ target_link_libraries(arrange_bits sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(suffix_group_optimization sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(dump_kmers sdsl ${CXX_FILESYSTEM_LIBRARIES})
 
-
 ## Build tests if doing a Debug build
 if (CMAKE_BUILD_TYPE MATCHES Debug)
   find_package(Threads REQUIRED)
