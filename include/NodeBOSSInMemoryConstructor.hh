@@ -148,18 +148,24 @@ class NodeBOSSInMemoryConstructor{
         return true;
     }
 
-    // Construct the given nodeboss from the given input strings
-    void build(const vector<string>& input, nodeboss_t& nodeboss, LL k){
-
-        vector<kmer_t> kmers;
+    vector<kmer_t> get_distinct_kmers(const vector<string>& input, LL k){
+        write_log("Hashing distinct k-mers", LogLevel::MAJOR);
+        unordered_set<kmer_t> kmer_ht; // k-mer hash table
         for(const string& S : input){
             for(int64_t i = 0; i < (int64_t)S.size()-k+1; i++){
                 if(is_valid_kmer(S.substr(i,k)))
-                    kmers.push_back(kmer_t(S.substr(i,k)));
+                    kmer_ht.insert(kmer_t(S.substr(i,k)));
             }
         }
+        vector<kmer_t> kmers(kmer_ht.begin(), kmer_ht.end());
+        return kmers;
+    }
+
+    // Construct the given nodeboss from the given input strings
+    void build(const vector<string>& input, nodeboss_t& nodeboss, LL k){
+
+        vector<kmer_t> kmers = get_distinct_kmers(input, k);
         std::sort(kmers.begin(), kmers.end());
-        kmers.erase(std::unique(kmers.begin(), kmers.end() ), kmers.end()); // Remove duplicates
 
         vector<Node> nodes = get_nodes(kmers);
 
