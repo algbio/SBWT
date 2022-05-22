@@ -61,7 +61,7 @@ Usage:
 To query for existence of all k-mers in an index for all sequences in a fasta-file, run the following command:
 
 ```
-./build/bin/kmer-search -i temp/out -q example_data/queries.fna -o out.txt
+./build/bin/kmer-search -i temp/index.sbwt -q example_data/queries.fna -o out.txt
 ```
 
 This prints for each query of length n in the input a line containing n-k+1 space-separated integers, which are the ranks of the columns representing the k-mer in the index. If the k-mer is not found, -1 is printed. The full options are:
