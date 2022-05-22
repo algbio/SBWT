@@ -19,6 +19,10 @@ void set_log_level(LogLevel level);
 LogLevel get_log_level();
 void write_log(string message, LogLevel level);
 void check_true(bool condition, string error_message);
+
+void check_readable(string filename);
+void check_writable(string filename);
+
 Temp_File_Manager& get_temp_file_manager();
 
 int64_t serialize_string(const string& S, ostream& out); // Returns the number of bytes written

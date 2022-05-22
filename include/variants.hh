@@ -14,7 +14,7 @@
 #include <filesystem>
 #include "MEF.hpp"
 
-vector<string> get_available_variants(){
+static vector<string> get_available_variants(){
     return {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"};
 }
 

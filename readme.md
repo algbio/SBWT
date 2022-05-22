@@ -24,12 +24,12 @@ Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-me
 
 # Index construction
 
-To build one of the SBWT variants, run the executable `sbwt_build`.
+To build one of the SBWT variants, run `./build/bin/sbwt build`.
 
 For small inputs, we have an in-memory construction algorithm that loads all k-mers in memory. This is run if the `--in-fasta` option is given, like in the example below.
 
 ```
-./build/bin/sbwt_build --in-fasta example_data/coli3.fna -o index.sbwt -k 30 --variant plain-matrix
+./build/bin/sbwt build --in-fasta example_data/coli3.fna -o index.sbwt -k 30 --variant plain-matrix
 ```
 
 For larger inputs, we provide contruction from a Themisto index. Themisto is included as a submodule in this repository. First, you need to install Themisto by going to its subdirectory `./Themisto` and following the compilation instruction in the readme of Themisto. After compiling Themisto, to build the Themisto index on our example data, run the following:
@@ -41,7 +41,7 @@ For larger inputs, we provide contruction from a Themisto index. Themisto is inc
 This will write the index into the file example_data/coli3.tdbg. You can then build the plain matrix SBWT with:
 
 ```
-./build/bin/sbwt_build --in-themisto example_data/coli3.tdbg -o index.sbwt -k 30 --variant plain-matrix
+./build/bin/sbwt build --in-themisto example_data/coli3.tdbg -o index.sbwt -k 30 --variant plain-matrix
 ```
 
 The list of all command line options and parameters is below:
@@ -49,7 +49,7 @@ The list of all command line options and parameters is below:
 ```
 Construct an SBWT variant.
 Usage:
-  ./build/bin/sbwt_build [OPTION...]
+  ./build/bin/sbwt build [OPTION...]
 
   -o, --out-file arg     Output filename.
       --variant arg      The SBWT variant to build. Available variants: 
@@ -69,7 +69,7 @@ Usage:
 To query for existence of all k-mers in an index for all sequences in a fasta-file, run the following command:
 
 ```
-./build/bin/sbwt_kmer_search -i temp/index.sbwt -q example_data/queries.fna -o out.txt
+./build/bin/sbwt search -i temp/index.sbwt -q example_data/queries.fna -o out.txt
 ```
 
 This prints for each query of length n in the input a line containing n-k+1 space-separated integers, which are the ranks of the columns representing the k-mer in the index. If the k-mer is not found, -1 is printed. The full options are:
@@ -77,7 +77,7 @@ This prints for each query of length n in the input a line containing n-k+1 spac
 ```
 Query all k-mers of all input reads.
 Usage:
-  ./build/bin/sbwt_kmer_search [OPTION...]
+  ./build/bin/sbwt search [OPTION...]
 
   -o, --out-file arg    Output filename.
   -i, --index-file arg  Index input file.

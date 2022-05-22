@@ -1,4 +1,5 @@
 #include "globals.hh"
+#include "throwing_streams.hh"
 #include <algorithm>
 #include <chrono>
 #include <string>
@@ -11,6 +12,15 @@ using namespace std::chrono;
 Temp_File_Manager& get_temp_file_manager(){
     static Temp_File_Manager temp_file_manager; // Singleton
     return temp_file_manager;
+}
+
+void check_readable(string filename){
+    throwing_ifstream F(filename); // Throws on failure
+}
+
+// Also clears the file
+void check_writable(string filename){
+    throwing_ofstream F(filename, std::ofstream::out | std::ofstream::app); // Throws on failure
 }
 
 // Returns the number of bytes written

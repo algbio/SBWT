@@ -17,15 +17,6 @@
 using namespace std;
 typedef long long LL;
 
-void check_readable(string filename){
-    throwing_ifstream F(filename); // Throws on failure
-}
-
-// Also clears the file
-void check_writable(string filename){
-    throwing_ofstream F(filename, std::ofstream::out | std::ofstream::app); // Throws on failure
-}
-
 template<typename sbwt_t>
 void run_queries(const string& queryfile, const string& outfile, const sbwt_t& sbwt){
     write_log("Running queries", LogLevel::MAJOR);
@@ -43,7 +34,7 @@ void run_queries(const string& queryfile, const string& outfile, const sbwt_t& s
     }
 }
 
-int main(int argc, char** argv){
+int search_main(int argc, char** argv){
 
     set_log_level(LogLevel::MINOR);
 
@@ -133,6 +124,8 @@ int main(int argc, char** argv){
         sbwt.load(in.stream);
         run_queries(queryfile, outfile, sbwt);
     }
-    
+
+    return 0;
+
 }
 

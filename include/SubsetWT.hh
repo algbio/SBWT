@@ -8,46 +8,6 @@
 #include <map>
 #include <cassert>
 
-// Handles the cases p = 0 and p = 1 also.
-double p_log_p(double p){
-    if(p == 0 || p == 1) return 0;
-    return p * log2(p);
-}
-
-template<typename bitvector_t>
-double get_entropy(const bitvector_t& v){
-    double ones = 0;
-    for(int64_t i = 0; i < v.size(); i++) ones += v[i];
-
-    double n = v.size();
-    return n * (- p_log_p(ones/n) - p_log_p((n-ones)/n));
-}
-
-template<typename bitvector_t>
-double get_pair_entropy(const bitvector_t& v1, const bitvector_t& v2){
-    assert(v1.size() == v2.size());
-    double c00 = 0;
-    double c01 = 0;
-    double c10 = 0;
-    double c11 = 0;
-
-    for(int64_t i = 0; i < v1.size(); i++){
-        if(v1[i] == 0 && v2[i] == 0) c00++;
-        if(v1[i] == 1 && v2[i] == 0) c10++;
-        if(v1[i] == 0 && v2[i] == 1) c01++;
-        if(v1[i] == 1 && v2[i] == 1) c11++;
-    }
-
-    double n = v1.size();
-
-    double p00 = c00/n;
-    double p01 = c01/n;
-    double p10 = c10/n;
-    double p11 = c11/n;
-    
-    return n * (- p_log_p(p00) - p_log_p(p01) - p_log_p(p10) - p_log_p(p11));
-}
-
 template<typename WT_type>
 class SubsetWT{
 
@@ -118,11 +78,6 @@ public:
             }
         }
 
-        //cout << "Subset WT bitvector entropy per k-mer: " << (get_entropy(AC_bv) + get_entropy(GT_bv) + get_entropy(A_bv) + get_entropy(C_bv) + get_entropy(G_bv) + get_entropy(T_bv)) / n << endl;
-        //cout << "Subset WT bitvector pair-entropy per k-mer: " << (get_pair_entropy(AC_bv, GT_bv) + get_pair_entropy(A_bv, C_bv) + get_pair_entropy(G_bv, T_bv)) / n << endl;
-
-        //cout << "Constructing subset WT rank supports" << endl;
-
         string ACGT_string = bitvector_pair_to_string(AC_bv, GT_bv);
         string AC_string = bitvector_pair_to_string(A_bv, C_bv);
         string GT_string = bitvector_pair_to_string(G_bv, T_bv);
@@ -130,8 +85,6 @@ public:
         sdsl::construct_im(ACGT_wt, ACGT_string.c_str(), 1); // 1: file format is a sequence, not a serialized sdsl object
         sdsl::construct_im(AC_wt, AC_string.c_str(), 1); // 1: file format is a sequence, not a serialized sdsl object
         sdsl::construct_im(GT_wt, GT_string.c_str(), 1); // 1: file format is a sequence, not a serialized sdsl object
-
-        //cout << "...Done" << endl;
 
     }
 

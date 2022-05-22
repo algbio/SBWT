@@ -27,7 +27,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Our sources, excluding the file with the main function
-set(NODEBOSS_SOURCES src/globals.cpp)
+set(NODEBOSS_SOURCES src/globals.cpp src/sbwt_build.cpp src/sbwt_search.cpp)
 
 ## Require c++17
 set(CMAKE_CXX_STANDARD 17)
@@ -68,17 +68,15 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libw
 
 ## Libraries & executables to build
 
-add_executable(sbwt_build src/sbwt_build.cpp ${NODEBOSS_SOURCES})
-add_executable(sbwt_kmer_search src/kmer_search.cpp ${NODEBOSS_SOURCES})
-add_executable(arrange_bits research/arrange_bits.cpp ${NODEBOSS_SOURCES})
-add_executable(suffix_group_optimization research/suffix_group_optimization.cpp ${NODEBOSS_SOURCES})
-add_executable(dump_kmers src/dump_kmers.cpp ${NODEBOSS_SOURCES})
+add_executable(sbwt src/sbwt.cpp ${NODEBOSS_SOURCES})
+#add_executable(arrange_bits research/arrange_bits.cpp ${NODEBOSS_SOURCES})
+#add_executable(suffix_group_optimization research/suffix_group_optimization.cpp ${NODEBOSS_SOURCES})
+#add_executable(dump_kmers src/dump_kmers.cpp ${NODEBOSS_SOURCES})
 
-target_link_libraries(sbwt_build sdsl ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(sbwt_kmer_search sdsl ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(arrange_bits sdsl ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(suffix_group_optimization sdsl ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(dump_kmers sdsl ${CXX_FILESYSTEM_LIBRARIES})
+target_link_libraries(sbwt sdsl ${CXX_FILESYSTEM_LIBRARIES})
+#target_link_libraries(arrange_bits sdsl ${CXX_FILESYSTEM_LIBRARIES})
+#target_link_libraries(suffix_group_optimization sdsl ${CXX_FILESYSTEM_LIBRARIES})
+#target_link_libraries(dump_kmers sdsl ${CXX_FILESYSTEM_LIBRARIES})
 
 ## Build tests if doing a Debug build
 if (CMAKE_BUILD_TYPE MATCHES Debug)
