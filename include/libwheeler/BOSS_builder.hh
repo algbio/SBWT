@@ -19,8 +19,8 @@ public:
         return it == end;
     }
 
-    Kmer<KMER_MAX_LENGTH> next(){
-        Kmer<KMER_MAX_LENGTH> x = *it;
+    Kmer<MAX_KMER_LENGTH> next(){
+        Kmer<MAX_KMER_LENGTH> x = *it;
         it++;
         return x;
     }
@@ -55,8 +55,8 @@ public:
         return cur_read_id == (int64_t)reads.size();
     }
 
-    Kmer<KMER_MAX_LENGTH> next(){
-        Kmer<KMER_MAX_LENGTH> x(reads[cur_read_id].substr(cur_read_pos++, k));
+    Kmer<MAX_KMER_LENGTH> next(){
+        Kmer<MAX_KMER_LENGTH> x(reads[cur_read_id].substr(cur_read_pos++, k));
 
         // Get ready for the next read
         while(cur_read_id < (int64_t)reads.size() && cur_read_pos + k - 1 >= (int64_t)reads[cur_read_id].size()){
@@ -73,18 +73,18 @@ class Kmer_sorter_in_memory{
 
 private:
 
-vector<pair<Kmer<KMER_MAX_LENGTH>, payload_t> > vec;
+vector<pair<Kmer<MAX_KMER_LENGTH>, payload_t> > vec;
 bool sorted = false;
 int64_t stream_idx = 0;
 
 public:
 
-    void add(Kmer<KMER_MAX_LENGTH> x, payload_t E){
+    void add(Kmer<MAX_KMER_LENGTH> x, payload_t E){
         vec.push_back({x,E});
     }
 
     void sort(){
-        std::sort(vec.begin(), vec.end(), [](const pair<Kmer<KMER_MAX_LENGTH>, payload_t>& A, const pair<Kmer<KMER_MAX_LENGTH>, payload_t>& B){
+        std::sort(vec.begin(), vec.end(), [](const pair<Kmer<MAX_KMER_LENGTH>, payload_t>& A, const pair<Kmer<MAX_KMER_LENGTH>, payload_t>& B){
             return A.first < B.first; // Colexicographic comparison
         });
         sorted = true;
@@ -104,12 +104,12 @@ public:
         return stream_idx == (int64_t)vec.size();
     }
 
-    pair<Kmer<KMER_MAX_LENGTH>, payload_t> stream_next(){
+    pair<Kmer<MAX_KMER_LENGTH>, payload_t> stream_next(){
         assert(sorted);
         return vec[stream_idx++];
     }
 
-    pair<Kmer<KMER_MAX_LENGTH>, payload_t> peek_next(){
+    pair<Kmer<MAX_KMER_LENGTH>, payload_t> peek_next(){
         assert(sorted);
         return vec[stream_idx];
     }
@@ -132,7 +132,7 @@ public:
         return A.stream_done() && B.stream_done();
     }
 
-    pair<Kmer<KMER_MAX_LENGTH>, payload_t> stream_next(){
+    pair<Kmer<MAX_KMER_LENGTH>, payload_t> stream_next(){
         if(A.stream_done()) return B.stream_next();
         if(B.stream_done()) return A.stream_next();
         if(A.peek_next().first < B.peek_next().first) return A.stream_next();
@@ -243,7 +243,7 @@ private:
     };
 
     // Returns number of prefixes added
-    int64_t process_prefixes(Kmer<KMER_MAX_LENGTH> x, Edgeset E, Kmer_sorter_in_memory<Edgeset>& new_sorter){
+    int64_t process_prefixes(Kmer<MAX_KMER_LENGTH> x, Edgeset E, Kmer_sorter_in_memory<Edgeset>& new_sorter){
         int64_t k = x.get_k();
         int64_t count = 0;
         if(!E.have_in('A') && !E.have_in('C') && !E.have_in('G') && !E.have_in('T')){
@@ -270,13 +270,13 @@ private:
     // Adds the new edges to the new sorter. Returns number of dummies added.
     int64_t add_dummies(Kmer_sorter_in_memory<Edgeset>& old_sorter, Kmer_sorter_in_memory<Edgeset>& new_sorter){
         string ACGT = "ACGT";
-        Kmer<KMER_MAX_LENGTH> prev_kmer;
+        Kmer<MAX_KMER_LENGTH> prev_kmer;
         Edgeset cur_edgeset;
         int64_t loopcount = 0;
         int64_t addcount = 0;
 
         while(!old_sorter.stream_done()){
-            Kmer<KMER_MAX_LENGTH> cur_kmer; Edgeset E;
+            Kmer<MAX_KMER_LENGTH> cur_kmer; Edgeset E;
             tie(cur_kmer,E) = old_sorter.stream_next();
 
             if(loopcount > 0 && cur_kmer != prev_kmer){
@@ -311,17 +311,17 @@ public:
         int64_t n_records_written = 0;
         int64_t edge_count = 0;
         while(!input.done()){
-            Kmer<KMER_MAX_LENGTH> edgemer = input.next();
+            Kmer<MAX_KMER_LENGTH> edgemer = input.next();
             k = edgemer.get_k() - 1; // Edgemers are (k+1)-mers
 
             char first = edgemer.get(0);
             char last = edgemer.get(edgemer.get_k() - 1);
 
-            Kmer<KMER_MAX_LENGTH> prefix = edgemer.copy().dropright();
+            Kmer<MAX_KMER_LENGTH> prefix = edgemer.copy().dropright();
             Edgeset prefixE; prefixE.set_have_out(last, true);
             sorter1.add(prefix, prefixE); n_records_written++;
 
-            Kmer<KMER_MAX_LENGTH> suffix = edgemer.copy().dropleft();
+            Kmer<MAX_KMER_LENGTH> suffix = edgemer.copy().dropleft();
             Edgeset suffixE; suffixE.set_have_in(first, true);
             sorter1.add(suffix, suffixE); n_records_written++;
 
@@ -344,7 +344,7 @@ public:
         vector<bool> I, O;
         string outlabels;
         string ACGT = "ACGT";
-        Kmer<KMER_MAX_LENGTH> prev_kmer;
+        Kmer<MAX_KMER_LENGTH> prev_kmer;
         Edgeset cur_edgeset;
         int64_t loopcount = 0;
 
@@ -369,7 +369,7 @@ public:
 
         write_log("Constructing Wheeler BOSS components.", LogLevel::MAJOR);
         while(!merger.stream_done()){
-            Kmer<KMER_MAX_LENGTH> cur_kmer; Edgeset E;
+            Kmer<MAX_KMER_LENGTH> cur_kmer; Edgeset E;
             tie(cur_kmer,E) = merger.stream_next();
 
             if(loopcount > 0 && cur_kmer != prev_kmer){

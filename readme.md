@@ -14,7 +14,7 @@ make
 
 Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-mer length, up to 255.
 
-**Troubleshooting**: If you run into problems involving the &lt;filesystem&gt; header, you probably need to update your compiler. The compiler `g++-8` should be sufficient. Install a new compiler and direct CMake to use it with the `-DCMAKE_CXX_COMPILER` option. For example, to set the compiler to `g++-8`, run CMake with the option `-DCMAKE_CXX_COMPILER=g++-8`. 
+**Troubleshooting**: If you run into problems involving the `<filesystem>` header, you probably need to update your compiler. The compiler `g++-8` should be sufficient. Install a new compiler and direct CMake to use it with the `-DCMAKE_CXX_COMPILER` option. For example, to set the compiler to `g++-8`, run CMake with the option `-DCMAKE_CXX_COMPILER=g++-8`. 
 
 # Index construction
 
@@ -78,3 +78,24 @@ Usage:
   -q, --query-file arg  The query in FASTA format.
   -h, --help            Print usage
 ```
+
+# For developers: building and running the tests 
+
+```
+git submodule init
+git submodule update
+
+# Build googletest
+cd googletest
+mkdir build
+cd build
+cmake ..
+make
+
+# Build SBWT
+cd ../../build
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DMAX_KMER_LENGTH=32
+make
+```
+
+This will build the executable `./build/bin/sbwt_tests`. Make sure to run the test executable from the root of the repository, or otherwise it will not find the example data in ./example_data.

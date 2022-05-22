@@ -14,7 +14,7 @@
 
 
 typedef long long LL;
-typedef Kmer<MAX_KMER_SIZE> kmer_t;
+typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 
 typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
 

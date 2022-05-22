@@ -1,5 +1,3 @@
-#define KMER_MAX_LENGTH 32
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -16,7 +14,6 @@
 #include "test_small.hh"
 #include "test_large.hh"
 #include <cassert>
-
 
 int main(int argc, char **argv) {
     try{

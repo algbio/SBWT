@@ -15,7 +15,7 @@
 #include <unordered_set>
 
 typedef long long LL;
-typedef Kmer<MAX_KMER_SIZE> kmer_t;
+typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 
 typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
 
@@ -31,6 +31,7 @@ TEST(TEST_LARGE, e_coli){
     
     logger << "Querying all k-mers in the input..." << endl;
     unordered_set<kmer_t> all_kmers; // Also collect a set of all k-mers in the input
+    LL search_count = 0;
     for(const string& S : seqs){
         for(LL i = 0; i < (LL)S.size() - k + 1; i++){
             string kmer = S.substr(i,k);
@@ -40,10 +41,11 @@ TEST(TEST_LARGE, e_coli){
                 LL colex = matrixboss.search(kmer);
                 ASSERT_GE(colex, 0); // Should be sound
                 all_kmers.insert(kmer);
+                search_count++;
 
                 // Print verbose output
-                if(all_kmers.count(kmer) == 0 && all_kmers.size() % 100000 == 0) 
-                    logger << kmer << " " << colex << endl;
+                if(search_count % 100000 == 0)  logger << kmer << " " << colex << endl;
+                
             }
         }
     }
