@@ -87,6 +87,7 @@ TEST_F(TEST_SMALL, check_construction){
     ASSERT_EQ(true_T_bits, T_bits);
 }
 
+// Queries all 4^k k-mers and checks that the membership queries give the right answers
 template<typename nodeboss_t>
 void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers){
     for(uint64_t mask = 0; mask < (1 << (2*nodeboss.k)); mask++){
@@ -104,13 +105,23 @@ void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers
     }
 }
 
-TEST_F(TEST_SMALL, in_memory_construction){
+TEST(TEST_IM_CONSTRUCTION, small_hand_crafted){
     matrixboss_t X;
     vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
     X.build_from_strings(strings, 4);
     set<string> true_kmers = get_all_kmers(strings, 4);
     logger << "Queries on in-memory constructed matrixboss" << endl;
     check_all_queries(X, true_kmers);
+}
+
+TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
+    matrixboss_t X;
+    vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG", "TTTT"};
+    X.build_from_strings(strings, 4);
+    set<string> true_kmers = get_all_kmers(strings, 4);
+    logger << "Queries on in-memory constructed matrixboss" << endl;
+    check_all_queries(X, true_kmers);
+    ASSERT_EQ(X.n_nodes, 9); // Dummies C, CC and CCC should not be there.
 }
 
 TEST_F(TEST_SMALL, matrixboss){
@@ -128,3 +139,4 @@ TEST_F(TEST_SMALL, subsetwtboss){
 TEST_F(TEST_SMALL, concatboss){
     check_all_queries(concatboss, kmers);
 }
+

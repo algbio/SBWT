@@ -108,22 +108,21 @@ class NodeBOSSInMemoryConstructor{
                     // Let y = x[1..k-1] c
                     kmer_t y = kmers[i].copy().dropleft().appendright(c);
 
-                    // Find the smallest k-mer that ends with c that has not yet been found
                     kmer_t z = kmers[char_ptrs[c]];
+                    while(y > z){
+                        // z has no incoming edge -> need dummy nodes
+                        add_prefixes(z, nodes);
+                        char_ptrs[c]++;
+                        if(char_ptrs[c] == kmers.size()) break;
+                        z = kmers[char_ptrs[c]];
+                    }
                     if(y == z){ // Found. Record the edge label to x_node
                         char_ptrs[c]++;
                         x_node.set(c);
                     } else if(y < z){
                         // This edge does not exist (no problem)
-                    } else{ // y > z
-                        while(y > z){
-                            // z has no incoming edge -> need dummy nodes
-                            add_prefixes(z, nodes);
-                            char_ptrs[c]++;
-                            if(char_ptrs[c] == kmers.size()) break;
-                            z = kmers[char_ptrs[c]];
-                        }
                     }
+                        
                 }
             }
             nodes.push_back(x_node);
