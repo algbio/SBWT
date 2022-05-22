@@ -118,10 +118,10 @@ public:
             }
         }
 
-        cout << "Subset WT bitvector entropy per k-mer: " << (get_entropy(AC_bv) + get_entropy(GT_bv) + get_entropy(A_bv) + get_entropy(C_bv) + get_entropy(G_bv) + get_entropy(T_bv)) / n << endl;
-        cout << "Subset WT bitvector pair-entropy per k-mer: " << (get_pair_entropy(AC_bv, GT_bv) + get_pair_entropy(A_bv, C_bv) + get_pair_entropy(G_bv, T_bv)) / n << endl;
+        //cout << "Subset WT bitvector entropy per k-mer: " << (get_entropy(AC_bv) + get_entropy(GT_bv) + get_entropy(A_bv) + get_entropy(C_bv) + get_entropy(G_bv) + get_entropy(T_bv)) / n << endl;
+        //cout << "Subset WT bitvector pair-entropy per k-mer: " << (get_pair_entropy(AC_bv, GT_bv) + get_pair_entropy(A_bv, C_bv) + get_pair_entropy(G_bv, T_bv)) / n << endl;
 
-        cout << "Constructing subset WT rank supports" << endl;
+        //cout << "Constructing subset WT rank supports" << endl;
 
         string ACGT_string = bitvector_pair_to_string(AC_bv, GT_bv);
         string AC_string = bitvector_pair_to_string(A_bv, C_bv);
@@ -131,7 +131,7 @@ public:
         sdsl::construct_im(AC_wt, AC_string.c_str(), 1); // 1: file format is a sequence, not a serialized sdsl object
         sdsl::construct_im(GT_wt, GT_string.c_str(), 1); // 1: file format is a sequence, not a serialized sdsl object
 
-        cout << "...Done" << endl;
+        //cout << "...Done" << endl;
 
     }
 

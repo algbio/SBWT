@@ -73,16 +73,14 @@ add_executable(arrange_bits research/arrange_bits.cpp ${NODEBOSS_SOURCES})
 add_executable(suffix_group_optimization research/suffix_group_optimization.cpp ${NODEBOSS_SOURCES})
 add_executable(dump_kmers src/dump_kmers.cpp ${NODEBOSS_SOURCES})
 add_executable(query_variant_from_file src/query_variant_from_file.cpp ${NODEBOSS_SOURCES})
-add_executable(build_plain_matrixboss src/build_plain_matrixboss.cpp ${NODEBOSS_SOURCES})
-add_executable(build_variant_from_matrix src/build_variant_from_matrix.cpp ${NODEBOSS_SOURCES})
+add_executable(sbwt_build src/sbwt_build.cpp ${NODEBOSS_SOURCES})
 
 target_link_libraries(kmer-search sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(arrange_bits sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(suffix_group_optimization sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(dump_kmers sdsl ${CXX_FILESYSTEM_LIBRARIES})
 target_link_libraries(query_variant_from_file sdsl ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(build_plain_matrixboss sdsl ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(build_variant_from_matrix sdsl ${CXX_FILESYSTEM_LIBRARIES})
+target_link_libraries(sbwt_build sdsl ${CXX_FILESYSTEM_LIBRARIES})
 
 ## Build tests if doing a Debug build
 if (CMAKE_BUILD_TYPE MATCHES Debug)

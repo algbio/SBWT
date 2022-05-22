@@ -16,13 +16,15 @@ make
 
 # Index construction
 
-For small inputs, we have an in-memory construction algorithm that loads all k-mers in memory. To build the plain matrix variant for the example data in example_data/coli3.fna, you can use the following command:
+To build one of the SBWT variants, run the executable `sbwt_build`.
+
+For small inputs, we have an in-memory construction algorithm that loads all k-mers in memory. This is run if the `--in-fasta` option is given, like in the example below.
 
 ```
-./build/bin/build_plain_matrixboss --in-fasta example_data/coli3.fna -o index.matrixboss -k 30
+./build/bin/sbwt_build --in-fasta example_data/coli3.fna -o index.sbwt -k 30 --variant plain-matrix
 ```
 
-For larger inputs, we provide contruction from a Themisto index. Themisto is included as a submodule in this repository. First, you need to install Themisto by going to its subdirectory `./Themisto` and following the compilation instruction in the readme of Themisto (sorry about not having automatic compilation of Themisto included in this repostory). After compiling Themisto, to build the Themisto index on our example data, run the following:
+For larger inputs, we provide contruction from a Themisto index. We are also working on direct construction from a KMC database. Themisto is included as a submodule in this repository. First, you need to install Themisto by going to its subdirectory `./Themisto` and following the compilation instruction in the readme of Themisto. After compiling Themisto, to build the Themisto index on our example data, run the following:
 
 ```
 ./Themisto/build/bin/themisto build -k 30 -i example_data/coli3.fna --temp-dir temp --no-colors -o example_data/coli3
@@ -31,16 +33,28 @@ For larger inputs, we provide contruction from a Themisto index. Themisto is inc
 This will write the index into the file example_data/coli3.tdbg. You can then build the plain matrix SBWT with:
 
 ```
-./build/bin/build_plain_matrixboss --in-themisto example_data/coli3.tdbg -o example_data/coli3.matrix
+./build/bin/sbwt_build --in-themisto example_data/coli3.tdbg -o index.sbwt -k 30 --variant plain-matrix
 ```
 
-You can use the plain matrix representation to build any of our variants. For example, to build the rrr-compressed matrix variant, run:
+The list of all command line options and parameters is below:
 
 ```
-./build/bin/build_variant_from_matrix -i example_data/coli3.matrix --variant rrr-matrix --temp-dir temp -o example_data/coli3.rrrmatrix
-```
+Construct an SBWT variant.
+Usage:
+  ./build/bin/sbwt_build [OPTION...]
 
-Running `./build/bin/build_variant_from_matrix` without parameters gives the list of all available variants.
+  -o, --out-file arg     Output filename.
+      --variant arg      The SBWT variant to build. Available variants: 
+                         plain-matrix rrr-matrix mef-matrix plain-split 
+                         rrr-split mef-split plain-concat mef-concat 
+                         plain-subsetwt rrr-subsetwt
+      --in-fasta arg     Build in internal memory from a FASTA file (takes 
+                         a lot of memory). (default: "")
+      --in-themisto arg  Build from a Themisto .tdbg file. (default: "")
+  -k arg                 Value of k (must not be given if --in-themisto is 
+                         given because themisto defines the k) (default: 0)
+  -h, --help             Print usage
+```
 
 # Running queries
 

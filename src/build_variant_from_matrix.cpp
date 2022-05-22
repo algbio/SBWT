@@ -37,7 +37,7 @@ int main(int argc, char** argv){
         if(string(argv[i]) == "--outfile") argv[i] = &(legacy_support_fix[0]);
     }
 
-    cxxopts::Options options(argv[0], "This program prints a NodeBOSS representation of the index. Not production quality code.");
+    cxxopts::Options options(argv[0], "This program prints a SBWT representation of the index.");
 
     options.add_options()
         ("o,out-file", "Output filename prefix.", cxxopts::value<string>())
