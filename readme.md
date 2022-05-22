@@ -67,7 +67,7 @@ To query for existence of all k-mers in an index for all sequences in a fasta-fi
 This prints for each query of length n in the input a line containing n-k+1 space-separated integers, which are the ranks of the columns representing the k-mer in the index. If the k-mer is not found, -1 is printed. The full options are:
 
 ```
-Query all k-mers of all input reads. Assumes all reads only contain characters A,C,G and T.
+Query all k-mers of all input reads.
 Usage:
   ./build/bin/sbwt_kmer_search [OPTION...]
 
