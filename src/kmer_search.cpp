@@ -72,7 +72,7 @@ int main(int argc, char** argv){
     check_readable(indexfile);
     check_readable(queryfile);
 
-    vector<string> variants = {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"}; // If you update this, make sure to update the corresponding vector in sbwt_build.cpp
+    vector<string> variants = get_available_variants();
 
     throwing_ifstream in(indexfile, ios::binary);
     string variant = load_string(in.stream);

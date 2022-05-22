@@ -14,6 +14,10 @@
 #include <filesystem>
 #include "MEF.hpp"
 
+vector<string> get_available_variants(){
+    return {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"};
+}
+
 // matrices
 typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> plain_matrix_sbwt_t;
 typedef NodeBOSS<SubsetMatrixRank<sdsl::rrr_vector<>, sdsl::rrr_vector<>::rank_1_type>> rrr_matrix_sbwt_t;

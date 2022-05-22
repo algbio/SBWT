@@ -26,7 +26,7 @@ int main(int argc, char** argv){
 
     cxxopts::Options options(argv[0], "Construct an SBWT variant.");
 
-    vector<string> variants = {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"}; // If you update this, make sure to update the corresponding vector in kmer_search.cpp
+    vector<string> variants = get_available_variants();
     string all_variants_string;
     for(string variant : variants) all_variants_string += " " + variant;
 
