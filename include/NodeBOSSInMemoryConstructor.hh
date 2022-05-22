@@ -56,7 +56,7 @@ class NodeBOSSInMemoryConstructor{
         for(LL i = 0; i < kmers.size(); i++){
             if(kmers[i].last() == c) return i;
         }
-        throw std::runtime_error("get_char_ptr");
+        return kmers.size(); // Not found -> return one-past-the-end
     }
 
     // Appends the prefixes of x to nodes

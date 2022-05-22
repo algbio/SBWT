@@ -124,6 +124,15 @@ TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
     ASSERT_EQ(X.n_nodes, 9); // Dummies C, CC and CCC should not be there.
 }
 
+TEST(TEST_IM_CONSTRUCTION, not_full_alphabet){
+    matrixboss_t X;
+    vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG"}; // No 'T' exists
+    X.build_from_strings(strings, 4);
+    set<string> true_kmers = get_all_kmers(strings, 4);
+    logger << "Queries on in-memory constructed matrixboss" << endl;
+    check_all_queries(X, true_kmers);
+}
+
 TEST_F(TEST_SMALL, matrixboss){
     check_all_queries(matrixboss, kmers);
 }
