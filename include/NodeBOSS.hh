@@ -117,10 +117,11 @@ int64_t NodeBOSS<subset_rank_t>::search(const char* kmer, int64_t k) const{
     for(int64_t i = 0; i < k; i++){
 
         char char_idx = 0;
-        if(kmer[i] == 'A') char_idx = 0;
-        if(kmer[i] == 'C') char_idx = 1;
-        if(kmer[i] == 'G') char_idx = 2;
-        if(kmer[i] == 'T') char_idx = 3;
+        if(toupper(kmer[i]) == 'A') char_idx = 0;
+        else if(toupper(kmer[i]) == 'C') char_idx = 1;
+        else if(toupper(kmer[i]) == 'G') char_idx = 2;
+        else if(toupper(kmer[i]) == 'T') char_idx = 3;
+        else return -1; // Invalid character
 
         node_left = C[char_idx] + subset_rank.rank(node_left, kmer[i]);
         node_right = C[char_idx] + subset_rank.rank(node_right+1, kmer[i]) - 1;

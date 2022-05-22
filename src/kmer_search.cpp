@@ -47,7 +47,7 @@ int main(int argc, char** argv){
 
     set_log_level(LogLevel::MINOR);
 
-    cxxopts::Options options(argv[0], "Query all k-mers of all input reads. Assumes all reads only contain characters A,C,G and T.");
+    cxxopts::Options options(argv[0], "Query all k-mers of all input reads.");
 
     options.add_options()
         ("o,out-file", "Output filename.", cxxopts::value<string>())
