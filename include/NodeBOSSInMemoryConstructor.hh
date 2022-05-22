@@ -2,6 +2,7 @@
 
 #include <string>
 #include <algorithm>
+#include <unordered_set>
 #include "Kmer.hh"
 #include "sdsl/bit_vectors.hpp"
 
