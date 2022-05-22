@@ -5,6 +5,7 @@
 #include <sdsl/rank_support_v.hpp>
 #include "NodeBOSSInMemoryConstructor.hh"
 #include "throwing_streams.hh"
+#include "suffix_group_optimization.hh"
 #include "libwheeler/BOSS.hh"
 #include "globals.hh"
 #include "Kmer.hh"
@@ -18,8 +19,8 @@ class NodeBOSS{
 
     public:
 
-    // Bit vectors
     subset_rank_t subset_rank;
+    sdsl::bit_vector suffix_group_starts; // Used for streaming queries
 
     // C-array
     vector<int64_t> C;
@@ -31,8 +32,12 @@ class NodeBOSS{
     void build_from_strings(const vector<string>& input, int64_t k); // This sorts all k-mers in memory and thus takes a lot of memory. Not optimized at all.
     void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss);
     void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k);
+    void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k); // The NodeBOSS must be already built before calling this
     int64_t search(const string& kmer) const; // Search for std::string
     int64_t search(const char* S, int64_t k) const; // Search for C-string
+
+    // Query for all k-mers in the input
+    vector<int64_t> streaming_search(const string& input) const;
 
     // Return the label on the incoming edges to the given node.
     // If the node is the root node, returns a dollar.
@@ -164,6 +169,7 @@ template <typename subset_rank_t>
 int64_t NodeBOSS<subset_rank_t>::serialize(ostream& os) const{
     int64_t written = 0;
     written += subset_rank.serialize(os);
+    written += suffix_group_starts.serialize(os);
 
     written += serialize_std_vector(C, os);
 
@@ -188,6 +194,7 @@ int64_t NodeBOSS<subset_rank_t>::serialize(const string& filename) const{
 template <typename subset_rank_t>
 void NodeBOSS<subset_rank_t>::load(istream& is){
     subset_rank.load(is);
+    suffix_group_starts.load(is);
     C = load_std_vector<int64_t>(is);
     is.read((char*)&n_nodes, sizeof(n_nodes));
     is.read((char*)&k, sizeof(k));
@@ -213,4 +220,49 @@ template <typename subset_rank_t>
 void NodeBOSS<subset_rank_t>::build_from_strings(const vector<string>& input, int64_t k){
     NodeBOSSInMemoryConstructor<NodeBOSS<subset_rank_t>> builder;
     builder.build(input, *this, k);
+}
+
+template <typename subset_rank_t>
+void NodeBOSS<subset_rank_t>::build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k){
+    suffix_group_starts = mark_suffix_groups(A_bits, C_bits, G_bits, T_bits, C, k);
+}
+
+template <typename subset_rank_t>
+vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const string& input) const{
+    if(suffix_group_starts.size() == 0)
+        throw std::runtime_error("Error: streaming search support not built");
+    
+    vector<int64_t> ans;
+    if(input.size() < k) return ans;
+
+    ans.push_back(search(input.c_str(), k));
+    for(int64_t i = 1; i < (int64_t)input.size() - k + 1; i++){
+        if(ans.back() == -1){
+            // Need to search from scratch
+            ans.push_back(search(input.c_str() + i));
+        } else{
+            // Got to the start of the suffix group and do one search iteration
+            int64_t colex = ans.back();
+            while(suffix_group_starts[colex] == 0) colex--; // can not go negative because the first column is always marked
+
+            char char_idx = -1;
+            char c = toupper(input[i+k-1]);
+            if(c == 'A') char_idx = 0;
+            else if(c == 'C') char_idx = 1;
+            else if(c == 'G') char_idx = 2;
+            else if(c == 'T') char_idx = 3;
+        
+            if(char_idx == -1) ans.push_back(-1); // Not found
+            else{
+                int64_t node_left = colex;
+                int64_t node_right = colex;
+                node_left = C[char_idx] + subset_rank.rank(node_left, c);
+                node_right = C[char_idx] + subset_rank.rank(node_right+1, c) - 1;
+                if(node_left == node_right) ans.push_back(node_left);
+                else ans.push_back(-1);
+                // Todo: could save one subset rank query if we have fast access to the SBWT columns
+            }
+        }
+    }
+    return ans;
 }

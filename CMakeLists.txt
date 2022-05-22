@@ -27,7 +27,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Our sources, excluding the file with the main function
-set(NODEBOSS_SOURCES src/globals.cpp src/sbwt_build.cpp src/sbwt_search.cpp)
+set(NODEBOSS_SOURCES src/globals.cpp src/sbwt_build.cpp src/sbwt_search.cpp src/suffix_group_optimization.cpp)
 
 ## Require c++17
 set(CMAKE_CXX_STANDARD 17)
