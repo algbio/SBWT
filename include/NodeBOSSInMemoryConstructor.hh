@@ -109,7 +109,6 @@ class NodeBOSSInMemoryConstructor{
 
                     // Find the smallest k-mer that ends with c that has not yet been found
                     kmer_t z = kmers[char_ptrs[c]];
-                    //cout << x.to_string() << " " << y.to_string() << " " << z.to_string() << endl;
                     if(y == z){ // Found. Record the edge label to x_node
                         char_ptrs[c]++;
                         x_node.set(c);
@@ -140,8 +139,6 @@ class NodeBOSSInMemoryConstructor{
 
         merge_equal_nodes(nodes);
 
-        //for(auto x : nodes) cout << x.kmer.to_string() << " " << x.has('A') << x.has('C') << x.has('G') << x.has('T') << endl;
-
         return nodes;
  
     }
@@ -163,7 +160,6 @@ class NodeBOSSInMemoryConstructor{
         }
         std::sort(kmers.begin(), kmers.end());
         kmers.erase(std::unique(kmers.begin(), kmers.end() ), kmers.end()); // Remove duplicates
-        //for(auto x : kmers) cout << x.to_string() << endl;
 
         vector<Node> nodes = get_nodes(kmers);
 
