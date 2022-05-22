@@ -16,7 +16,13 @@ make
 
 # Index construction
 
-The index is currently constructed from the index of the Themisto tool. Themisto is included as a submodule in this repository. First, you need to install Themisto by going to its subdirectory `./Themisto` and following the compilation instruction in the readme of Themisto (sorry about not having automatic compilation of Themisto included in this repostory). After compiling Themisto, to build the Themisto index on our example data, run the following:
+For small inputs, we have an in-memory construction algorithm that loads all k-mers in memory. To build the plain matrix variant for the example data in example_data/coli3.fna, you can use the following command:
+
+```
+./build/bin/build_plain_matrixboss --in-fasta example_data/coli3.fna -o index.matrixboss -k 30
+```
+
+For larger inputs, we provide contruction from a Themisto index. Themisto is included as a submodule in this repository. First, you need to install Themisto by going to its subdirectory `./Themisto` and following the compilation instruction in the readme of Themisto (sorry about not having automatic compilation of Themisto included in this repostory). After compiling Themisto, to build the Themisto index on our example data, run the following:
 
 ```
 ./Themisto/build/bin/themisto build -k 30 -i example_data/coli3.fna --temp-dir temp --no-colors -o example_data/coli3
@@ -25,7 +31,7 @@ The index is currently constructed from the index of the Themisto tool. Themisto
 This will write the index into the file example_data/coli3.tdbg. You can then build the plain matrix SBWT with:
 
 ```
-./build/bin/build_plain_matrixboss -i example_data/coli3.tdbg -o example_data/coli3.matrix
+./build/bin/build_plain_matrixboss --in-themisto example_data/coli3.tdbg -o example_data/coli3.matrix
 ```
 
 You can use the plain matrix representation to build any of our variants. For example, to build the rrr-compressed matrix variant, run:

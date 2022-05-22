@@ -34,9 +34,9 @@ class Sequence_Reader_Buffered {
 // The class is used like this:
 // Sequence_Reader_Buffered sr;
 // while(true) { 
-//   len = get_next_read_to_buffer(buf)
+//   len = get_next_read_to_buffer()
 //   if(len == 0) break;
-//   do something with sr.read_buffer
+//   do something with sr.read_buf
 //}
 //
 // or (slow):
