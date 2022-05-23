@@ -65,16 +65,24 @@ sdsl::bit_vector mark_suffix_groups(const sdsl::bit_vector& A_bits,
                                     const sdsl::bit_vector& C_bits, 
                                     const sdsl::bit_vector& G_bits, 
                                     const sdsl::bit_vector& T_bits,
-                                    const vector<int64_t>& C_array,
                                     int64_t k){
 
     int64_t n_nodes = A_bits.size();
+    vector<int64_t> C_array(4);
 
     vector<char> last; // last[i] = incoming character to node i
     last.push_back('$');
+
+    C_array[0] = last.size();
     for(int64_t i = 0; i < n_nodes; i++) if(A_bits[i]) last.push_back('A');
+
+    C_array[1] = last.size();
     for(int64_t i = 0; i < n_nodes; i++) if(C_bits[i]) last.push_back('C');
+
+    C_array[2] = last.size();
     for(int64_t i = 0; i < n_nodes; i++) if(G_bits[i]) last.push_back('G');
+    
+    C_array[3] = last.size();
     for(int64_t i = 0; i < n_nodes; i++) if(T_bits[i]) last.push_back('T');
 
     if(last.size() != n_nodes){

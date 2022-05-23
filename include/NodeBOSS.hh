@@ -29,9 +29,9 @@ class NodeBOSS{
     int64_t k;
 
     NodeBOSS() : n_nodes(0), k(0) {}
-    void build_from_strings(const vector<string>& input, int64_t k); // This sorts all k-mers in memory and thus takes a lot of memory. Not optimized at all.
-    void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss);
-    void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k);
+    void build_from_strings(const vector<string>& input, int64_t k, bool streaming_support); // This sorts all k-mers in memory and thus takes a lot of memory. Not optimized at all.
+    void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss, bool streaming_support);
+    void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k, bool streaming_support);
     void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits); // The NodeBOSS must be already built before calling this
     int64_t search(const string& kmer) const; // Search for std::string
     int64_t search(const char* S, int64_t k) const; // Search for C-string
@@ -39,11 +39,11 @@ class NodeBOSS{
     // Query for all k-mers in the input
     vector<int64_t> streaming_search(const string& input) const;
     vector<int64_t> streaming_search(const char* input, int64_t len) const;
+    bool has_streaming_query_support() const {return suffix_group_starts.size() > 0;}
 
     // Return the label on the incoming edges to the given node.
     // If the node is the root node, returns a dollar.
     char incoming_label(int64_t node) const; 
-
     
     int64_t serialize(ostream& out) const; // Returns the number of bytes written
     int64_t serialize(const string& filename) const; // Returns the number of bytes written
@@ -54,7 +54,7 @@ class NodeBOSS{
 
 
 template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k){
+void NodeBOSS<subset_rank_t>::build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k, bool streaming_support){
     subset_rank = subset_rank_t(A_bits, C_bits, G_bits, T_bits);
     n_nodes = A_bits.size();
 
@@ -66,10 +66,12 @@ void NodeBOSS<subset_rank_t>::build_from_bit_matrix(const sdsl::bit_vector& A_bi
     C[3] = C[2] + subset_rank.rank(n_nodes, 'G');
 
     this->k = k;
+
+    if(streaming_support) build_streaming_query_support(A_bits, C_bits, G_bits, T_bits);
 }
 
 template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss){
+void NodeBOSS<subset_rank_t>::build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss, bool streaming_support){
 
     n_nodes = boss.number_of_nodes();
 
@@ -110,7 +112,10 @@ void NodeBOSS<subset_rank_t>::build_from_WheelerBOSS(const BOSS<sdsl::bit_vector
         pp.job_done();
     }
 
-    build_from_bit_matrix(BWT_A_plain, BWT_C_plain, BWT_G_plain, BWT_T_plain, boss.get_k());
+    sdsl::bit_vector sg = mark_suffix_groups(BWT_A_plain, BWT_C_plain, BWT_G_plain, BWT_T_plain, boss.get_k());
+    push_bits_left(BWT_A_plain, BWT_C_plain, BWT_G_plain, BWT_T_plain, sg);
+
+    build_from_bit_matrix(BWT_A_plain, BWT_C_plain, BWT_G_plain, BWT_T_plain, boss.get_k(), streaming_support);
 
 }
 
@@ -218,14 +223,14 @@ char NodeBOSS<subset_rank_t>::incoming_label(int64_t node) const{
 
 
 template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_from_strings(const vector<string>& input, int64_t k){
+void NodeBOSS<subset_rank_t>::build_from_strings(const vector<string>& input, int64_t k, bool streaming_support){
     NodeBOSSInMemoryConstructor<NodeBOSS<subset_rank_t>> builder;
-    builder.build(input, *this, k);
+    builder.build(input, *this, k, streaming_support);
 }
 
 template <typename subset_rank_t>
 void NodeBOSS<subset_rank_t>::build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits){
-    suffix_group_starts = mark_suffix_groups(A_bits, C_bits, G_bits, T_bits, C, k);
+    suffix_group_starts = mark_suffix_groups(A_bits, C_bits, G_bits, T_bits, k);
 }
 
 template <typename subset_rank_t>

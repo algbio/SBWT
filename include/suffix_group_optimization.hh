@@ -26,7 +26,6 @@ sdsl::bit_vector mark_suffix_groups(const sdsl::bit_vector& A_bits,
                                     const sdsl::bit_vector& C_bits, 
                                     const sdsl::bit_vector& G_bits, 
                                     const sdsl::bit_vector& T_bits,
-                                    const vector<int64_t>& C_array,
                                     int64_t k);
 
 double compute_column_entropy(const sdsl::bit_vector& A_bits,

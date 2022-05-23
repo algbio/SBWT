@@ -58,16 +58,16 @@ TEST(TEST_IM_CONSTRUCTION, test_all_variants){
         plain_sswt_sbwt_t v9;
         rrr_sswt_sbwt_t v10;
 
-        v1.build_from_strings(strings, k);
-        v2.build_from_strings(strings, k);
-        v3.build_from_strings(strings, k);
-        v4.build_from_strings(strings, k);
-        v5.build_from_strings(strings, k);
-        v6.build_from_strings(strings, k);
-        v7.build_from_strings(strings, k);
-        v8.build_from_strings(strings, k);
-        v9.build_from_strings(strings, k);
-        v10.build_from_strings(strings, k);
+        v1.build_from_strings(strings, k, true);
+        v2.build_from_strings(strings, k, false);
+        v3.build_from_strings(strings, k, true);
+        v4.build_from_strings(strings, k, false);
+        v5.build_from_strings(strings, k, true);
+        v6.build_from_strings(strings, k, false);
+        v7.build_from_strings(strings, k, true);
+        v8.build_from_strings(strings, k, false);
+        v9.build_from_strings(strings, k, true);
+        v10.build_from_strings(strings, k, false);
 
         v1.serialize(filenames[0]);
         v2.serialize(filenames[1]);
@@ -121,7 +121,7 @@ TEST(TEST_IM_CONSTRUCTION, test_all_variants){
 TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
     plain_matrix_sbwt_t X;
     vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG", "TTTT"};
-    X.build_from_strings(strings, 4);
+    X.build_from_strings(strings, 4, false);
     set<string> true_kmers = get_all_kmers(strings, 4);
     logger << "Queries on in-memory constructed matrixboss" << endl;
     check_all_queries(X, true_kmers);
@@ -131,7 +131,7 @@ TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
 TEST(TEST_IM_CONSTRUCTION, not_full_alphabet){
     plain_matrix_sbwt_t X;
     vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG"}; // No 'T' exists
-    X.build_from_strings(strings, 4);
+    X.build_from_strings(strings, 4, false);
     set<string> true_kmers = get_all_kmers(strings, 4);
     logger << "Queries on in-memory constructed matrixboss" << endl;
     check_all_queries(X, true_kmers);

@@ -12,14 +12,12 @@
 #include "variants.hh"
 #include <filesystem>
 
-//#include "MEF.hpp"
-
 using namespace std;
 typedef long long LL;
 
 template<typename sbwt_t>
-void run_queries(const string& queryfile, const string& outfile, const sbwt_t& sbwt){
-    write_log("Running queries", LogLevel::MAJOR);
+void run_queries_streaming(const string& queryfile, const string& outfile, const sbwt_t& sbwt){
+    write_log("Running streaming queries", LogLevel::MAJOR);
     throwing_ofstream out(outfile);
     Sequence_Reader_Buffered sr(queryfile, FASTA_MODE);
     while(true){ 
@@ -29,6 +27,28 @@ void run_queries(const string& queryfile, const string& outfile, const sbwt_t& s
         out << "\n";
     }
 }
+
+template<typename sbwt_t>
+void run_queries(const string& queryfile, const string& outfile, const sbwt_t& sbwt){
+    if(sbwt.has_streaming_query_support()){
+        run_queries_streaming(queryfile, outfile, sbwt);
+    } else{
+        write_log("Running queries", LogLevel::MAJOR);
+        throwing_ofstream out(outfile);
+        Sequence_Reader_Buffered sr(queryfile, FASTA_MODE);
+        LL k = sbwt.k;
+        while(true){ 
+            LL len = sr.get_next_read_to_buffer();
+            if(len == 0) break;
+            for(LL i = 0; i < len - k + 1; i++){
+                LL v = sbwt.search(sr.read_buf + i, k);
+                out.stream << v << " ";
+            }
+            out << "\n";
+        }
+    }
+}
+
 
 int search_main(int argc, char** argv){
 
@@ -73,7 +93,6 @@ int search_main(int argc, char** argv){
     if (variant == "plain-matrix"){
         plain_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        sbwt.build_streaming_query_support(sbwt.subset_rank.A_bits, sbwt.subset_rank.C_bits, sbwt.subset_rank.G_bits, sbwt.subset_rank.T_bits);
         run_queries(queryfile, outfile, sbwt);
     }
     if (variant == "rrr-matrix"){

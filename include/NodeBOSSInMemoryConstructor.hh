@@ -162,7 +162,7 @@ class NodeBOSSInMemoryConstructor{
     }
 
     // Construct the given nodeboss from the given input strings
-    void build(const vector<string>& input, nodeboss_t& nodeboss, LL k){
+    void build(const vector<string>& input, nodeboss_t& nodeboss, LL k, bool streaming_support){
 
         vector<kmer_t> kmers = get_distinct_kmers(input, k);
         std::sort(kmers.begin(), kmers.end());
@@ -183,6 +183,6 @@ class NodeBOSSInMemoryConstructor{
             if(nodes[i].has('T')) T_bits[i] = 1;
         }
 
-        nodeboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        nodeboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
     }
 };

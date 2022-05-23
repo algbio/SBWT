@@ -27,7 +27,7 @@ TEST(TEST_LARGE, e_coli){
     matrixboss_t matrixboss;
     logger << "Building E. coli..." << endl;
     LL k = 30;
-    matrixboss.build_from_strings(seqs, k);
+    matrixboss.build_from_strings(seqs, k, false);
     
     logger << "Querying all k-mers in the input..." << endl;
     unordered_set<kmer_t> all_kmers; // Also collect a set of all k-mers in the input

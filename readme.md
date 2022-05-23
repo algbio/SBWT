@@ -56,6 +56,8 @@ Usage:
                          plain-matrix rrr-matrix mef-matrix plain-split 
                          rrr-split mef-split plain-concat mef-concat 
                          plain-subsetwt rrr-subsetwt
+      --streaming-support  Build the auxiliary bit vector for streaming 
+                           query support.
       --in-fasta arg     Build in internal memory from a FASTA file (takes 
                          a lot of memory). (default: "")
       --in-themisto arg  Build from a Themisto .tdbg file. (default: "")

@@ -24,6 +24,7 @@ int build_main(int argc, char** argv){
     options.add_options()
         ("o,out-file", "Output filename.", cxxopts::value<string>())
         ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>())
+        ("streaming-support", "Build the auxiliary bit vector for streaming query support.", cxxopts::value<bool>()->default_value("false"))
         ("in-fasta", "Build in internal memory from a FASTA file (takes a lot of memory).", cxxopts::value<string>()->default_value(""))
         ("in-themisto", "Build from a Themisto .tdbg file.", cxxopts::value<string>()->default_value(""))
         ("k", "Value of k (must not be given if --in-themisto is given because themisto defines the k)", cxxopts::value<LL>()->default_value("0"))
@@ -51,6 +52,7 @@ int build_main(int argc, char** argv){
 
     string in_fasta = opts["in-fasta"].as<string>();
     string in_themisto = opts["in-themisto"].as<string>();
+    bool streaming_support = opts["streaming-support"].as<bool>();
 
     if(in_fasta == "" && in_themisto == ""){
         cerr << "Error: No input file given" << endl;
@@ -81,7 +83,7 @@ int build_main(int argc, char** argv){
 
         write_log("Themisto WheelerBOSS has order k = " + to_string(k) + " (node label length)", LogLevel::MAJOR);   
         write_log("Building MatrixBOSS representation", LogLevel::MAJOR);
-        matrixboss_plain.build_from_WheelerBOSS(wheelerBOSS);
+        matrixboss_plain.build_from_WheelerBOSS(wheelerBOSS, streaming_support);
     } else{
         if(opts["k"].as<LL>() == 0){
             cerr << "Error: -k not specified" << endl;
@@ -100,7 +102,7 @@ int build_main(int argc, char** argv){
         }
 
         write_log("Building SBWT subset sequence in memory", LogLevel::MAJOR);
-        matrixboss_plain.build_from_strings(input, k);
+        matrixboss_plain.build_from_strings(input, k, streaming_support);
     }
 
     throwing_ofstream out(out_file, ios::binary);
@@ -118,47 +120,47 @@ int build_main(int argc, char** argv){
     }
     if (variant == "rrr-matrix"){
         rrr_matrix_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-matrix"){
         mef_matrix_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-split"){
         plain_split_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-split"){
         rrr_split_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-split"){
         mef_split_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-concat"){
         plain_concat_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-concat"){
         mef_concat_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-subsetwt"){
         plain_sswt_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-subsetwt"){
         rrr_sswt_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k);
+        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
         bytes_written = sbwt.serialize(out.stream);
     }
 
