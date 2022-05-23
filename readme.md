@@ -4,8 +4,8 @@ This is the code for the paper [Succinct k-mer Set Representations Using Subset 
 
 We are currently actively working on the code. Top items on the to-do list are the following:
 
-* Reverse complement aware indexing.
 * Construction directly from a sorted KMC database.
+* Reverse complement aware indexing.
 
 # Compiling
 
