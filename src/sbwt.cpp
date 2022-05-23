@@ -20,7 +20,7 @@ void print_help(int argc, char** argv){
 int main(int argc, char** argv){
 
     #ifndef __BMI2__
-    cerr << "WARNING: This program was compiled for a CPU without support for the BMI2 instruction set. The query performance of the Elias-Fano variants will be very bad" << endl;
+    cerr << "WARNING: This program was compiled for a CPU without support for the BMI2 instruction set. The query performance of the Elias-Fano variants will be very bad." << endl;
     #endif
 
     write_log("Maximum k-mer length is set to " + to_string(MAX_KMER_LENGTH), LogLevel::MAJOR);
