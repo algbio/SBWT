@@ -41,7 +41,7 @@ void run_queries(const string& queryfile, const string& outfile, const sbwt_t& s
             LL len = sr.get_next_read_to_buffer();
             if(len == 0) break;
             for(LL i = 0; i < len - k + 1; i++){
-                LL v = sbwt.search(sr.read_buf + i, k);
+                LL v = sbwt.search(sr.read_buf + i);
                 out.stream << v << " ";
             }
             out << "\n";

@@ -35,6 +35,20 @@ void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers
     }
 }
 
+// Queries all 4^k k-mers and checks that the membership queries give the right answers
+template<typename nodeboss_t>
+void check_streaming_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers, const string& input){
+    vector<int64_t> result = nodeboss.streaming_search(input.c_str(), input.size());
+
+    // Check
+    for(int64_t i = 0; i < (LL)result.size(); i++){
+        string kmer = input.substr(i, nodeboss.k);
+        bool is_found = true_kmers.count(kmer); // Truth
+        if(is_found) ASSERT_GE(result[i], 0); else ASSERT_EQ(result[i], -1);
+        logger << kmer << " " << result[i] << endl;
+    }
+}
+
 TEST(TEST_IM_CONSTRUCTION, test_all_variants){
     vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
     LL k = 4;
@@ -59,15 +73,15 @@ TEST(TEST_IM_CONSTRUCTION, test_all_variants){
         rrr_sswt_sbwt_t v10;
 
         v1.build_from_strings(strings, k, true);
-        v2.build_from_strings(strings, k, false);
+        v2.build_from_strings(strings, k, true);
         v3.build_from_strings(strings, k, true);
-        v4.build_from_strings(strings, k, false);
+        v4.build_from_strings(strings, k, true);
         v5.build_from_strings(strings, k, true);
-        v6.build_from_strings(strings, k, false);
+        v6.build_from_strings(strings, k, true);
         v7.build_from_strings(strings, k, true);
-        v8.build_from_strings(strings, k, false);
+        v8.build_from_strings(strings, k, true);
         v9.build_from_strings(strings, k, true);
-        v10.build_from_strings(strings, k, false);
+        v10.build_from_strings(strings, k, true);
 
         v1.serialize(filenames[0]);
         v2.serialize(filenames[1]);
@@ -115,6 +129,22 @@ TEST(TEST_IM_CONSTRUCTION, test_all_variants){
         check_all_queries(v8, true_kmers);
         check_all_queries(v9, true_kmers);
         check_all_queries(v10, true_kmers);
+
+        vector<string> streaming_query_inputs = strings; // input strings
+        streaming_query_inputs.push_back(generate_random_kmer(100));
+
+        for(const string& S : streaming_query_inputs){
+            check_streaming_queries(v1, true_kmers, S);
+            check_streaming_queries(v2, true_kmers, S);
+            check_streaming_queries(v3, true_kmers, S);
+            check_streaming_queries(v4, true_kmers, S);
+            check_streaming_queries(v5, true_kmers, S);
+            check_streaming_queries(v6, true_kmers, S);
+            check_streaming_queries(v7, true_kmers, S);
+            check_streaming_queries(v8, true_kmers, S);
+            check_streaming_queries(v9, true_kmers, S);
+            check_streaming_queries(v10, true_kmers, S);
+        }
     }
 }
 

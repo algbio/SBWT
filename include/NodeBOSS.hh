@@ -34,7 +34,7 @@ class NodeBOSS{
     void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k, bool streaming_support);
     void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits); // The NodeBOSS must be already built before calling this
     int64_t search(const string& kmer) const; // Search for std::string
-    int64_t search(const char* S, int64_t k) const; // Search for C-string
+    int64_t search(const char* S) const; // Search for C-string
 
     // Query for all k-mers in the input
     vector<int64_t> streaming_search(const string& input) const;
@@ -121,11 +121,12 @@ void NodeBOSS<subset_rank_t>::build_from_WheelerBOSS(const BOSS<sdsl::bit_vector
 
 template <typename subset_rank_t>
 int64_t NodeBOSS<subset_rank_t>::search(const string& kmer) const{
-    return search(kmer.c_str(), kmer.size());
+    assert(kmer.size() == k);
+    return search(kmer.c_str());
 }
 
 template <typename subset_rank_t>
-int64_t NodeBOSS<subset_rank_t>::search(const char* kmer, int64_t k) const{
+int64_t NodeBOSS<subset_rank_t>::search(const char* kmer) const{
     int64_t node_left = 0;
     int64_t node_right = n_nodes-1;
     for(int64_t i = 0; i < k; i++){
@@ -241,7 +242,7 @@ vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const char* input, int
     vector<int64_t> ans;
     if(len < k) return ans;
 
-    ans.push_back(search(input, k));
+    ans.push_back(search(input)); // Search the first k-mer
     for(int64_t i = 1; i < len - k + 1; i++){
         if(ans.back() == -1){
             // Need to search from scratch
