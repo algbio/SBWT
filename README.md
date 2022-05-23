@@ -21,6 +21,8 @@ Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-me
 
 **Troubleshooting**: If you run into problems involving the `<filesystem>` header, you probably need to update your compiler. The compiler `g++-8` should be sufficient. Install a new compiler and direct CMake to use it with the `-DCMAKE_CXX_COMPILER` option. For example, to set the compiler to `g++-8`, run CMake with the option `-DCMAKE_CXX_COMPILER=g++-8`. 
 
+Note: the Elias-Fano variants make use of the `_upext64` instruction in the BMI2 instruction set. Older CPUs might not support this instruction. In that case, we fall back to a simple software implementation, which will ruin the query performance of the Elias-Fano variants (those whose variant name starts with "mef").
+
 # Index construction
 
 To build one of the SBWT variants, run `./build/bin/sbwt build`.

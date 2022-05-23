@@ -310,8 +310,28 @@ private:
         return;
     }
 
+    // Software implementation for the _pext_u64 instruction in the bmi2 instruction set
+    uint64_t pext_u64_fallback(uint64_t x, uint64_t m) {
+        uint64_t r, s, b;    // Result, shift, mask bit. 
+
+        r = 0; 
+        s = 0; 
+        do {
+            b = m & 1; 
+            r = r | ((x & b) << s); 
+            s = s + b; 
+            x = x >> 1; 
+            m = m >> 1; 
+        } while (m != 0); 
+        return r; 
+    } 
+
     uint64_t shrink(unsigned long long x) {
+        #if defined(__BMI2__)
         return((uint64_t) _pext_u64( ((x & 0xAAAAAAAAAAAAAAAAULL) >> 1 | x), 0x5555555555555555ULL));
+        #else
+        return(pext_u64_fallback( ((x & 0xAAAAAAAAAAAAAAAAULL) >> 1 | x), 0x5555555555555555ULL));
+        #endif 
     }
 
     void shrink(bit_vector &b) {
