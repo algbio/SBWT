@@ -7,7 +7,7 @@ This construction algorithm is based on the lightning-fast [k-mer counter KMC](h
 We are currently actively working on the code. Top items on the to-do list are the following:
 
 * Support for other file formats than FASTA.
-* SUpport from multiple input files.
+* Support from multiple input files.
 * Saving space by indexing only canonical k-mers.
 
 # Compiling
