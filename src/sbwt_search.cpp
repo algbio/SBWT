@@ -105,7 +105,6 @@ int search_main(int argc, char** argv){
     throwing_ifstream in(indexfile, ios::binary);
     string variant = load_string(in.stream); // read variant type
     char colex; in.stream.read(&colex, 1); // Read colex flag
-    cout << "Colex flag " << (int) colex << endl;
     if(std::find(variants.begin(), variants.end(), variant) == variants.end()){
         cerr << "Error loading index from file: unrecognized variant specified in the file" << endl;
         return 1;
