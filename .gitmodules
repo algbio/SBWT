@@ -1,6 +1,3 @@
-[submodule "Themisto"]
-	path = Themisto
-	url = https://github.com/algbio/Themisto
 [submodule "sdsl-lite"]
 	path = sdsl-lite
 	url = https://github.com/vgteam/sdsl-lite
