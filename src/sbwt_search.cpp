@@ -17,6 +17,7 @@
 using namespace std;
 typedef long long LL;
 
+// Assumes values of v are -1 or larger
 inline void print_vector(const vector<int64_t>& v, Buffered_ofstream& out){
     // Fast manual integer-to-string conversion
     char buffer[32];
