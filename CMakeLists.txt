@@ -90,9 +90,6 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libw
 
 ## Libraries & executables to build
 
-add_executable(kmc_construct src/kmc_construct.cpp ${NODEBOSS_SOURCES})
-target_link_libraries(kmc_construct sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
-
 add_executable(sbwt src/sbwt.cpp ${NODEBOSS_SOURCES})
 target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
 
