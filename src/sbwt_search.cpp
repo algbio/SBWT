@@ -16,10 +16,9 @@ using namespace std;
 typedef long long LL;
 
 template<typename sbwt_t>
-void run_queries_streaming(const string& queryfile, const string& outfile, const sbwt_t& sbwt, bool colex){
+void run_queries_streaming(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt_t& sbwt, bool colex){
     write_log("Running streaming queries", LogLevel::MAJOR);
     throwing_ofstream out(outfile);
-    Sequence_Reader_Buffered sr(queryfile, FASTA_MODE);
     while(true){ 
         LL len = sr.get_next_read_to_buffer();
         if(len == 0) break;
@@ -34,14 +33,13 @@ void run_queries_streaming(const string& queryfile, const string& outfile, const
 }
 
 template<typename sbwt_t>
-void run_queries(const string& queryfile, const string& outfile, const sbwt_t& sbwt, bool colex){
+void run_queries(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt_t& sbwt, bool colex){
     vector<int64_t> out_buffer;
     if(sbwt.has_streaming_query_support()){
-        run_queries_streaming(queryfile, outfile, sbwt, colex);
+        run_queries_streaming(sr, outfile, sbwt, colex);
     } else{
         write_log("Running queries", LogLevel::MAJOR);
         throwing_ofstream out(outfile);
-        Sequence_Reader_Buffered sr(queryfile, FASTA_MODE);
         LL k = sbwt.k;
         while(true){ 
             LL len = sr.get_next_read_to_buffer();
@@ -70,7 +68,7 @@ int search_main(int argc, char** argv){
     options.add_options()
         ("o,out-file", "Output filename.", cxxopts::value<string>())
         ("i,index-file", "Index input file.", cxxopts::value<string>())
-        ("q,query-file", "The query in FASTA format.", cxxopts::value<string>())
+        ("q,query-file", "The query in FASTA or FASTQ format. Multi-line FASTQ not supported.", cxxopts::value<string>())
         ("h,help", "Print usage")
     ;
 
@@ -90,6 +88,17 @@ int search_main(int argc, char** argv){
     check_readable(indexfile);
     check_readable(queryfile);
 
+    string file_format = figure_out_file_format(queryfile);
+    int64_t reader_mode = 0;
+    if(file_format == "fasta") reader_mode = FASTA_MODE;
+    else if(file_format == "fastq") reader_mode = FASTQ_MODE;
+    else{
+        cerr << "File format not supported: " << file_format << endl;
+        return 1;
+    }
+    
+    Sequence_Reader_Buffered sr(queryfile, reader_mode);
+
     vector<string> variants = get_available_variants();
 
     throwing_ifstream in(indexfile, ios::binary);
@@ -106,52 +115,52 @@ int search_main(int argc, char** argv){
     if (variant == "plain-matrix"){
         plain_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "rrr-matrix"){
         rrr_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "mef-matrix"){
         mef_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "plain-split"){
         plain_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "rrr-split"){
         rrr_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "mef-split"){
         mef_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "plain-concat"){
         plain_concat_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "mef-concat"){
         mef_concat_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "plain-subsetwt"){
         plain_sswt_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "rrr-subsetwt"){
         rrr_sswt_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(queryfile, outfile, sbwt, colex);
+        run_queries(sr, outfile, sbwt, colex);
     }
 
     return 0;
