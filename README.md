@@ -15,11 +15,16 @@ We are currently actively working on the code. Top items on the to-do list are t
 ```
 git submodule init
 git submodule update
+
+# Build the KMC components
 cd KMC
 make -j4
-cd ../build
+cd ..
+
+# Build the SBWT code
+cd build
 cmake .. -DMAX_KMER_LENGTH=32
-make
+make -j4
 ```
 
 Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-mer length, up to 255.
