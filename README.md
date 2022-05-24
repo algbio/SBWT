@@ -49,7 +49,7 @@ Construct an SBWT variant.
 Usage:
   build [OPTION...]
 
-  -i, --in-file arg           The input sequences as a FASTA file.
+  -i, --in-file arg           The input sequences in FASTA or FASTQ format.
   -o, --out-file arg          Output file for the constructed index.
   -k, --kmer-length arg       The k-mer length.
       --variant arg           The SBWT variant to build. Available 
@@ -61,11 +61,14 @@ Usage:
                               query support bit vector. This leads to 
                               slower queries.
   -t, --n-threads arg         Number of parallel threads. (default: 1)
+  -a, --min-abundance arg     Discard all k-mers occurring fewer than this 
+                              many times. By default we keep all k-mers. 
+                              Note that we consider a k-mer distinct from 
+                              its reverse complement. (default: 1)
   -m, --ram-gigas arg         RAM budget in gigabytes (not strictly 
                               enforced). Must be at least 2. (default: 2)
       --temp-dir arg          Location for temporary files. (default: .)
   -h, --help                  Print usage
-
 ```
 
 # Running queries
