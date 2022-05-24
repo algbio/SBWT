@@ -49,7 +49,7 @@ TEST(TEST_LARGE, e_coli){
 
     logger << "Building E. coli with KMC..." << endl;
     matrixboss_t matrixboss_kmc;
-    matrixboss_kmc.build_using_KMC(rev_file, k, false, 2, 2);
+    matrixboss_kmc.build_using_KMC(rev_file, k, false, 2, 2, 1);
 
     logger << matrixboss_kmc.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
 

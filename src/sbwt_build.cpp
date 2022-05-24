@@ -28,6 +28,7 @@ int build_main(int argc, char** argv){
         ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>()->default_value("plain-matrix"))
         ("no-streaming-support", "Save space by not building the streaming query support bit vector. This leads to slower queries.", cxxopts::value<bool>()->default_value("false"))
         ("t,n-threads", "Number of parallel threads.", cxxopts::value<LL>()->default_value("1"))
+        ("a,min-abundance", "Discard all k-mers occurring fewer than this many times. By default we keep all k-mers. Note that we consider a k-mer distinct from its reverse complement.", cxxopts::value<LL>()->default_value("1"))
         ("m,ram-gigas", "RAM budget in gigabytes (not strictly enforced). Must be at least 2.", cxxopts::value<LL>()->default_value("2"))
         ("temp-dir", "Location for temporary files.", cxxopts::value<string>()->default_value("."))
         ("h,help", "Print usage")
@@ -60,11 +61,12 @@ int build_main(int argc, char** argv){
     LL n_threads = opts["n-threads"].as<LL>();
     LL ram_gigas = opts["ram-gigas"].as<LL>();
     LL k = opts["k"].as<LL>();
+    LL min_abundance = opts["min-abundance"].as<LL>();
 
     plain_matrix_sbwt_t matrixboss_plain;
 
     write_log("Building SBWT subset sequence using KMC", LogLevel::MAJOR);
-    matrixboss_plain.build_using_KMC(in_file, k, streaming_support, n_threads, ram_gigas);
+    matrixboss_plain.build_using_KMC(in_file, k, streaming_support, n_threads, ram_gigas, min_abundance);
     char colex = false; // Lexicographic or colexicographic index? KMC sorts in lexicographic order.
 
     throwing_ofstream out(out_file, ios::binary);

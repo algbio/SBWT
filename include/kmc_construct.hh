@@ -94,7 +94,7 @@ public:
     }
 
     // Returns the KMC database prefix
-    string run_kmc(const string& infile, LL k, LL n_threads, LL ram_gigas){
+    string run_kmc(const string& infile, LL k, LL n_threads, LL ram_gigas, int64_t min_abundance){
 
         write_log("Running KMC counter", LogLevel::MAJOR);
 
@@ -119,12 +119,11 @@ public:
 
         auto stage1Results = kmc.RunStage1(stage1Params);
 
-        uint32_t cutoffMin = 1;
         uint32_t ramForStage2 = ram_gigas;
         KMC::Stage2Params stage2Params;
         stage2Params.SetNThreads(n_threads)
             .SetMaxRamGB(ramForStage2)
-            .SetCutoffMin(cutoffMin)
+            .SetCutoffMin(min_abundance)
             .SetOutputFileName(KMC_db_file_prefix).
             SetStrictMemoryMode(true);
 
@@ -250,9 +249,9 @@ public:
     }
 
     // Construct the given nodeboss from the given input strings
-    void build(const string& infile, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support){
+    void build(const string& infile, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance){
 
-        string KMC_db_path = run_kmc(infile, k, n_threads, ram_gigas);
+        string KMC_db_path = run_kmc(infile, k, n_threads, ram_gigas, min_abundance);
 
         string nodes_outfile = get_temp_file_manager().create_filename();
         string dummies_outfile = get_temp_file_manager().create_filename();

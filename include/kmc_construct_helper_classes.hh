@@ -170,7 +170,7 @@ public:
             return Kmer<MAX_KMER_LENGTH>(str_revcomp);
         }
 
-        float counter_f;
+        //float counter_f;
         uint32 counter_i;
 		/*if(_mode){ //quake compatible mode
 			kmer_database.ReadNextKmer(kmer_object, counter_f);
