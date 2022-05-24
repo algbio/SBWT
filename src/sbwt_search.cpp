@@ -12,14 +12,33 @@
 #include "buffered_streams.hh"
 #include "variants.hh"
 #include <filesystem>
+#include <cstdio>
 
 using namespace std;
 typedef long long LL;
 
+inline void print_vector(const vector<int64_t>& v, Buffered_ofstream& out){
+    // Fast manual integer-to-string conversion
+    char buffer[32];
+    char newline = '\n';
+    for(int64_t x : v){
+        LL i = 0;
+        while(x > 0){
+            buffer[i++] = '0' + (x % 10);
+            x /= 10;
+        }
+        std::reverse(buffer, buffer + i);
+        buffer[i] = ' ';
+        out.write(buffer, i+1);
+    }
+    out.write(&newline, 1);
+}
+
 template<typename sbwt_t>
 void run_queries_streaming(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt_t& sbwt, bool colex){
     write_log("Running streaming queries", LogLevel::MAJOR);
-    throwing_ofstream out(outfile);
+    Buffered_ofstream out(outfile);
+    
     while(true){ 
         LL len = sr.get_next_read_to_buffer();
         if(len == 0) break;
@@ -28,8 +47,7 @@ void run_queries_streaming(Sequence_Reader_Buffered& sr, const string& outfile, 
         vector<int64_t> out_buffer = sbwt.streaming_search(sr.read_buf, len);
         if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
 
-        for(int64_t x : out_buffer) out.stream << x << " ";
-        out.stream << "\n";
+        print_vector(out_buffer, out);
     }
 }
 
@@ -40,7 +58,7 @@ void run_queries(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt
         run_queries_streaming(sr, outfile, sbwt, colex);
     } else{
         write_log("Running queries", LogLevel::MAJOR);
-        throwing_ofstream out(outfile);
+        Buffered_ofstream out(outfile);
         LL k = sbwt.k;
         while(true){ 
             LL len = sr.get_next_read_to_buffer();
@@ -52,8 +70,7 @@ void run_queries(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt
             }
             if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
 
-            for(int64_t x : out_buffer) out.stream << x << " ";
-            out.stream << "\n";
+            print_vector(out_buffer, out);
             out_buffer.clear();
         }
     }
