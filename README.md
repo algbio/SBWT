@@ -2,16 +2,22 @@
 
 This is the code for the paper [Succinct k-mer Set Representations Using Subset Rank Queries on the Spectral Burrows-Wheeler Transform (SBWT)](https://www.biorxiv.org/content/10.1101/2022.05.19.492613v1). The repository includes implementations of the various SBWT variants described in the paper. Note that contrary to many other k-mer membership data structures, our code is not aware of DNA reverse complements. That is, it considers a k-mer and its reverse complement as separate k-mers.
 
+This construction algorithm is based on the lightning-fast [KMC k-mer counter](https://github.com/refresh-bio/KMC). Our code links directly to the KMC binaries. We have made slight changes to the KMC codebase to make this possible. Our modified version of KMC is included in this repository.
+
 We are currently actively working on the code. Top items on the to-do list are the following:
 
-* Reverse complement aware indexing.
+* Support for other file formats than FASTA.
+* SUpport from multiple input files.
+* Saving space by indexing only canonical k-mers.
 
 # Compiling
 
 ```
 git submodule init
 git submodule update
-cd build
+cd KMC
+make -j4
+cd ../build
 cmake .. -DMAX_KMER_LENGTH=32
 make
 ```
