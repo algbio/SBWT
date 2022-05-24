@@ -27,7 +27,25 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Our sources, excluding the file with the main function
-set(NODEBOSS_SOURCES src/globals.cpp src/sbwt_build.cpp src/sbwt_search.cpp src/suffix_group_optimization.cpp)
+set(NODEBOSS_SOURCES src/globals.cpp src/sbwt_build.cpp src/sbwt_search.cpp src/suffix_group_optimization.cpp src/EM_sort/Block.cpp src/EM_sort/EM_sort.cpp)
+
+# KMC tools object files
+set(KMC_TOOLS 
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_filter.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_reader.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_writer.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/kff_info_reader.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/kmer_file_header.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/nc_utils.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/parameters_parser.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/parser.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/percent_progress.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/tokenizer.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_core/kff_writer.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_api/mmer.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_api/kmc_file.o
+  ${CMAKE_SOURCE_DIR}/KMC/kmc_api/kmer_api.o
+)
 
 ## Require c++17
 set(CMAKE_CXX_STANDARD 17)
@@ -37,6 +55,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CXX_FILESYSTEM_LIBRARIES "stdc++fs")
 endif()
+
+find_library(ZLIB z PATHS ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/libs REQUIRED)
+find_library(BZIP2 bz2 PATHS ${CMAKE_BINARY_DIR}/external/bzip2 REQUIRED)
+find_package(Threads REQUIRED)
 
 ## Get version number from git tags
 find_package(Git)
@@ -64,19 +86,15 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/sdsl-lite
                  ${CMAKE_BINARY_DIR}/external/sdsl-lite/build)
 
 ## Set includes
-include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR})
 
 ## Libraries & executables to build
 
-add_executable(sbwt src/sbwt.cpp ${NODEBOSS_SOURCES})
-#add_executable(arrange_bits research/arrange_bits.cpp ${NODEBOSS_SOURCES})
-#add_executable(suffix_group_optimization research/suffix_group_optimization.cpp ${NODEBOSS_SOURCES})
-#add_executable(dump_kmers src/dump_kmers.cpp ${NODEBOSS_SOURCES})
+add_executable(kmc_construct src/kmc_construct.cpp ${NODEBOSS_SOURCES})
+target_link_libraries(kmc_construct sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
 
-target_link_libraries(sbwt sdsl ${CXX_FILESYSTEM_LIBRARIES})
-#target_link_libraries(arrange_bits sdsl ${CXX_FILESYSTEM_LIBRARIES})
-#target_link_libraries(suffix_group_optimization sdsl ${CXX_FILESYSTEM_LIBRARIES})
-#target_link_libraries(dump_kmers sdsl ${CXX_FILESYSTEM_LIBRARIES})
+add_executable(sbwt src/sbwt.cpp ${NODEBOSS_SOURCES})
+target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
 
 ## Build tests if doing a Debug build
 if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -85,7 +103,7 @@ if (CMAKE_BUILD_TYPE MATCHES Debug)
   find_package(OpenMP REQUIRED)
   add_executable(sbwt_tests tests/test_main.cpp ${NODEBOSS_SOURCES})
   find_library(GTEST NAMES gtest PATHS googletest/build/lib/)
-  target_link_libraries(sbwt_tests ${GTEST} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
+  target_link_libraries(sbwt_tests ${GTEST} ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
 else()
 #  set_target_properties(gtest PROPERTIES EXCLUDE_FROM_ALL 1)
 #  set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL 1)

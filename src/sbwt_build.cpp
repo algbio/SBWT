@@ -22,12 +22,14 @@ int build_main(int argc, char** argv){
     for(string variant : variants) all_variants_string += " " + variant;
 
     options.add_options()
-        ("o,out-file", "Output filename.", cxxopts::value<string>())
-        ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>())
-        ("streaming-support", "Build the auxiliary bit vector for streaming query support.", cxxopts::value<bool>()->default_value("false"))
-        ("in-fasta", "Build in internal memory from a FASTA file (takes a lot of memory).", cxxopts::value<string>()->default_value(""))
-        ("in-themisto", "Build from a Themisto .tdbg file.", cxxopts::value<string>()->default_value(""))
-        ("k", "Value of k (must not be given if --in-themisto is given because themisto defines the k)", cxxopts::value<LL>()->default_value("0"))
+        ("i,in-file", "The input sequences as a FASTA file.", cxxopts::value<string>())
+        ("o,out-file", "Output file for the constructed index.", cxxopts::value<string>())
+        ("k,kmer-length", "The k-mer length.", cxxopts::value<LL>())
+        ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>()->default_value("plain-matrix"))
+        ("no-streaming-support", "Save space by not building the streaming query support bit vector. This leads to slower queries.", cxxopts::value<bool>()->default_value("false"))
+        ("t,n-threads", "Number of parallel threads.", cxxopts::value<LL>()->default_value("1"))
+        ("m,ram-gigas", "RAM budget in gigabytes (not strictly enforced). Must be at least 2.", cxxopts::value<LL>()->default_value("2"))
+        ("temp-dir", "Location for temporary files.", cxxopts::value<string>()->default_value("."))
         ("h,help", "Print usage")
     ;
 
@@ -36,7 +38,7 @@ int build_main(int argc, char** argv){
 
     if (old_argc == 1 || opts.count("help")){
         std::cerr << options.help() << std::endl;
-        cerr << "Usage example: " << argv[0] << " -o temp/out.sbwt --variant plain-matrix --in-fasta example_data/coli3.fna -k 30" << endl;
+        cerr << "Usage example: " << argv[0] << " -i example_data/coli3.fna -o index.sbwt -k 30" << endl;
         exit(1);
     }
 
@@ -50,66 +52,27 @@ int build_main(int argc, char** argv){
     string out_file = opts["out-file"].as<string>();
     check_writable(out_file);
 
-    string in_fasta = opts["in-fasta"].as<string>();
-    string in_themisto = opts["in-themisto"].as<string>();
-    bool streaming_support = opts["streaming-support"].as<bool>();
+    string in_file = opts["in-file"].as<string>();
+    check_readable(in_file);
 
-    if(in_fasta == "" && in_themisto == ""){
-        cerr << "Error: No input file given" << endl;
-        return 1;
-    }
-    
-    if(in_fasta != "" && in_themisto != ""){
-        cerr << "Error: Please give only one of the options --in-fasta and --in-themisto" << endl;
-        return 1;
-    }
+    get_temp_file_manager().set_dir(opts["temp-dir"].as<string>());
+    bool streaming_support = !(opts["no-streaming-support"].as<bool>());
+    LL n_threads = opts["n-threads"].as<LL>();
+    LL ram_gigas = opts["ram-gigas"].as<LL>();
+    LL k = opts["k"].as<LL>();
 
     plain_matrix_sbwt_t matrixboss_plain;
 
-    LL k = 0;
-
-    if(in_themisto != ""){
-        check_readable(in_themisto);
-        if(opts["k"].as<LL>() != 0){
-            cerr << "Error: -k must not be given if building from Themisto because Themisto defines the k" << endl;
-            return 1;
-        }
-
-        write_log("Loading the DBG", LogLevel::MAJOR);
-        BOSS<sdsl::bit_vector> wheelerBOSS;
-        throwing_ifstream in(in_themisto, ios::binary);
-        wheelerBOSS.load(in.stream);
-        k = wheelerBOSS.get_k();
-
-        write_log("Themisto WheelerBOSS has order k = " + to_string(k) + " (node label length)", LogLevel::MAJOR);   
-        write_log("Building MatrixBOSS representation", LogLevel::MAJOR);
-        matrixboss_plain.build_from_WheelerBOSS(wheelerBOSS, streaming_support);
-    } else{
-        if(opts["k"].as<LL>() == 0){
-            cerr << "Error: -k not specified" << endl;
-            return 1;
-        }
-        k = opts["k"].as<LL>();
-        check_readable(in_fasta);
-
-        write_log("Reading the input", LogLevel::MAJOR);
-        vector<string> input;
-        Sequence_Reader_Buffered sr(in_fasta, FASTA_MODE);
-        while(true) { 
-           LL len = sr.get_next_read_to_buffer();
-           if(len == 0) break;
-           input.push_back(string(sr.read_buf));
-        }
-
-        write_log("Building SBWT subset sequence in memory", LogLevel::MAJOR);
-        matrixboss_plain.build_from_strings(input, k, streaming_support);
-    }
+    write_log("Building SBWT subset sequence using KMC", LogLevel::MAJOR);
+    matrixboss_plain.build_using_KMC(in_file, k, streaming_support, n_threads, ram_gigas);
+    char colex = false; // Lexicographic or colexicographic index? KMC sorts in lexicographic order.
 
     throwing_ofstream out(out_file, ios::binary);
     LL bytes_written = 0;
     bytes_written += serialize_string(variant, out.stream); // Write variant string to file
-    write_log("Building subset rank support", LogLevel::MAJOR);
+    out.stream.write(&colex, 1); bytes_written++; // Write colex flag
 
+    write_log("Building subset rank support", LogLevel::MAJOR);
     
     sdsl::bit_vector& A_bits = matrixboss_plain.subset_rank.A_bits;
     sdsl::bit_vector& C_bits = matrixboss_plain.subset_rank.C_bits;

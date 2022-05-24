@@ -4,6 +4,9 @@
 [submodule "sdsl-lite"]
 	path = sdsl-lite
 	url = https://github.com/vgteam/sdsl-lite
+[submodule "KMC"]
+	path = KMC
+	url = https://github.com/refresh-bio/KMC
 [submodule "googletest"]
 	path = googletest
 	url = https://github.com/google/googletest

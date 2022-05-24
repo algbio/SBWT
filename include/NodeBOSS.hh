@@ -6,6 +6,7 @@
 #include "NodeBOSSInMemoryConstructor.hh"
 #include "throwing_streams.hh"
 #include "suffix_group_optimization.hh"
+#include "kmc_construct.hh"
 #include "libwheeler/BOSS.hh"
 #include "globals.hh"
 #include "Kmer.hh"
@@ -30,6 +31,7 @@ class NodeBOSS{
 
     NodeBOSS() : n_nodes(0), k(0) {}
     void build_from_strings(const vector<string>& input, int64_t k, bool streaming_support); // This sorts all k-mers in memory and thus takes a lot of memory. Not optimized at all.
+    void build_using_KMC(const string& fastafile, int64_t k, bool streaming_support, int64_t n_threads, int64_t mem_gigas); // Construction via KMC
     void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss, bool streaming_support);
     void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k, bool streaming_support);
     void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits); // The NodeBOSS must be already built before calling this
@@ -227,6 +229,12 @@ template <typename subset_rank_t>
 void NodeBOSS<subset_rank_t>::build_from_strings(const vector<string>& input, int64_t k, bool streaming_support){
     NodeBOSSInMemoryConstructor<NodeBOSS<subset_rank_t>> builder;
     builder.build(input, *this, k, streaming_support);
+}
+
+template <typename subset_rank_t>
+void NodeBOSS<subset_rank_t>::build_using_KMC(const string& fastafile, int64_t k, bool streaming_support, int64_t n_threads, int64_t mem_gigas){
+    NodeBOSSKMCConstructor<NodeBOSS<subset_rank_t>> builder;
+    builder.build(fastafile, *this, k, n_threads, mem_gigas, streaming_support);
 }
 
 template <typename subset_rank_t>

@@ -19,15 +19,44 @@ typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 
 typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
 
+void reverse_seqs_in_fasta(std::string infile, std::string outfile){
+    Sequence_Reader sr(infile, FASTA_MODE);
+    throwing_ofstream out(outfile);
+    while(!sr.done()){
+        Read_stream rs = sr.get_next_query_stream();
+        string seq = rs.get_all();
+        std::reverse(seq.begin(), seq.end());
+        out << ">" + rs.header << "\n" << seq << "\n";
+    }
+}
+
 TEST(TEST_LARGE, e_coli){
-    Sequence_Reader sr("example_data/coli3.fna", FASTA_MODE);
+
+    string filename = "example_data/coli3.fna";
+
+    string rev_file = get_temp_file_manager().create_filename("",".fna");
+    reverse_seqs_in_fasta(filename, rev_file);
+
+    Sequence_Reader sr(filename, FASTA_MODE);
     vector<string> seqs;
     while(!sr.done())
         seqs.push_back(sr.get_next_query_stream().get_all());
     matrixboss_t matrixboss;
-    logger << "Building E. coli..." << endl;
+
     LL k = 30;
+    logger << "Building E. coli in memory..." << endl;
     matrixboss.build_from_strings(seqs, k, false);
+
+    logger << "Building E. coli with KMC..." << endl;
+    matrixboss_t matrixboss_kmc;
+    matrixboss_kmc.build_using_KMC(rev_file, k, false, 2, 2);
+
+    logger << matrixboss_kmc.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
+
+    ASSERT_EQ(matrixboss_kmc.subset_rank.A_bits, matrixboss.subset_rank.A_bits);
+    ASSERT_EQ(matrixboss_kmc.subset_rank.C_bits, matrixboss.subset_rank.C_bits);
+    ASSERT_EQ(matrixboss_kmc.subset_rank.G_bits, matrixboss.subset_rank.G_bits);
+    ASSERT_EQ(matrixboss_kmc.subset_rank.T_bits, matrixboss.subset_rank.T_bits);
     
     logger << "Querying all k-mers in the input..." << endl;
     unordered_set<kmer_t> all_kmers; // Also collect a set of all k-mers in the input

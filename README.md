@@ -4,7 +4,6 @@ This is the code for the paper [Succinct k-mer Set Representations Using Subset 
 
 We are currently actively working on the code. Top items on the to-do list are the following:
 
-* Construction directly from a sorted KMC database.
 * Reverse complement aware indexing.
 
 # Compiling
@@ -25,46 +24,37 @@ Note: the Elias-Fano variants make use of the `_pext_u64` instruction in the BMI
 
 # Index construction
 
-To build one of the SBWT variants, run `./build/bin/sbwt build`.
-
-For small inputs, we have an in-memory construction algorithm that loads all k-mers in memory. This is run if the `--in-fasta` option is given, like in the example below.
+Below is the command to build the SBWT for input data `example_data/coli3.fna` provided in this repository, with k = 30. The index is written to the file `index.sbwt`.
 
 ```
-./build/bin/sbwt build --in-fasta example_data/coli3.fna -o index.sbwt -k 30 --variant plain-matrix
+./build/bin/sbwt build -i example_data/coli3.fna -o index.sbwt -k 30
 ```
 
-For larger inputs, we provide contruction from a Themisto index. Themisto is included as a submodule in this repository. First, you need to install Themisto by going to its subdirectory `./Themisto` and following the compilation instruction in the readme of Themisto. After compiling Themisto, to build the Themisto index on our example data, run the following:
-
-```
-./Themisto/build/bin/themisto build -k 30 -i example_data/coli3.fna --temp-dir temp --no-colors -o example_data/coli3
-```
-
-This will write the index into the file example_data/coli3.tdbg. You can then build the plain matrix SBWT with:
-
-```
-./build/bin/sbwt build --in-themisto example_data/coli3.tdbg -o index.sbwt -k 30 --variant plain-matrix
-```
-
+This builds the default variant, which is the plain matrix SBWT. Other variant can be specified with the `--variant` option.
 The list of all command line options and parameters is below:
 
 ```
 Construct an SBWT variant.
 Usage:
-  ./build/bin/sbwt build [OPTION...]
+  build [OPTION...]
 
-  -o, --out-file arg     Output filename.
-      --variant arg      The SBWT variant to build. Available variants: 
-                         plain-matrix rrr-matrix mef-matrix plain-split 
-                         rrr-split mef-split plain-concat mef-concat 
-                         plain-subsetwt rrr-subsetwt
-      --streaming-support  Build the auxiliary bit vector for streaming 
-                           query support.
-      --in-fasta arg     Build in internal memory from a FASTA file (takes 
-                         a lot of memory). (default: "")
-      --in-themisto arg  Build from a Themisto .tdbg file. (default: "")
-  -k arg                 Value of k (must not be given if --in-themisto is 
-                         given because themisto defines the k) (default: 0)
-  -h, --help             Print usage
+  -i, --in-file arg           The input sequences as a FASTA file.
+  -o, --out-file arg          Output file for the constructed index.
+  -k, --kmer-length arg       The k-mer length.
+      --variant arg           The SBWT variant to build. Available 
+                              variants: plain-matrix rrr-matrix mef-matrix 
+                              plain-split rrr-split mef-split plain-concat 
+                              mef-concat plain-subsetwt rrr-subsetwt 
+                              (default: plain-matrix)
+      --no-streaming-support  Save space by not building the streaming 
+                              query support bit vector. This leads to 
+                              slower queries.
+  -t, --n-threads arg         Number of parallel threads. (default: 1)
+  -m, --ram-gigas arg         RAM budget in gigabytes (not strictly 
+                              enforced). Must be at least 2. (default: 2)
+      --temp-dir arg          Location for temporary files. (default: .)
+  -h, --help                  Print usage
+
 ```
 
 # Running queries

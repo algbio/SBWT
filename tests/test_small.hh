@@ -1,6 +1,7 @@
 #pragma once
 
 #include "setup_tests.hh"
+#include "kmc_construct.hh"
 #include "globals.hh"
 #include "Kmer.hh"
 #include "variants.hh"
@@ -31,7 +32,7 @@ void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers
         bool is_found = true_kmers.count(kmer); // Truth
         int64_t colex = nodeboss.search(kmer);
         if(is_found) ASSERT_GE(colex, 0); else ASSERT_EQ(colex, -1);
-        logger << kmer << " " << colex << endl;
+        //logger << kmer << " " << colex << endl;
     }
 }
 
@@ -45,11 +46,89 @@ void check_streaming_queries(const nodeboss_t& nodeboss, const set<string>& true
         string kmer = input.substr(i, nodeboss.k);
         bool is_found = true_kmers.count(kmer); // Truth
         if(is_found) ASSERT_GE(result[i], 0); else ASSERT_EQ(result[i], -1);
-        logger << kmer << " " << result[i] << endl;
+        //logger << kmer << " " << result[i] << endl;
     }
 }
 
-TEST(TEST_IM_CONSTRUCTION, test_all_variants){
+void run_small_testcase(const vector<string>& strings, LL k){
+    vector<string> reverse_strings;
+    for(const string& S : strings){
+        string R(S.rbegin(), S.rend());
+        reverse_strings.push_back(R);
+    }
+
+    plain_matrix_sbwt_t index_im;
+    plain_matrix_sbwt_t index_kmc;
+
+    index_im.build_from_strings(strings, k, false);
+
+    string temp_filename = get_temp_file_manager().create_filename("", ".fna");
+    write_seqs_to_fasta_file(reverse_strings, temp_filename);
+
+    NodeBOSSKMCConstructor<plain_matrix_sbwt_t> X;
+    X.build(temp_filename, index_kmc, k, 1, 2, false);
+
+    logger << index_im.subset_rank.A_bits << endl;
+    logger << index_im.subset_rank.C_bits << endl;
+    logger << index_im.subset_rank.G_bits << endl;
+    logger << index_im.subset_rank.T_bits << endl;
+    logger << "--" << endl;
+    logger << index_kmc.subset_rank.A_bits << endl;
+    logger << index_kmc.subset_rank.C_bits << endl;
+    logger << index_kmc.subset_rank.G_bits << endl;
+    logger << index_kmc.subset_rank.T_bits << endl;
+
+    ASSERT_EQ(index_im.subset_rank.A_bits, index_kmc.subset_rank.A_bits);
+    ASSERT_EQ(index_im.subset_rank.C_bits, index_kmc.subset_rank.C_bits);
+    ASSERT_EQ(index_im.subset_rank.G_bits, index_kmc.subset_rank.G_bits);
+    ASSERT_EQ(index_im.subset_rank.T_bits, index_kmc.subset_rank.T_bits);
+
+    set<string> true_kmers = get_all_kmers(strings, k);
+    check_all_queries(index_im, true_kmers);
+    check_all_queries(index_kmc, true_kmers);
+}
+
+TEST(TEST_KMC_CONSTRUCT, not_all_dummies_needed){
+    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
+    LL k = 4;
+    run_small_testcase(strings, k);
+}
+
+
+TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
+    vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG", "TTTT"};
+
+    run_small_testcase(strings, 4);
+
+    logger << "Checking that there are no extra dummies" << endl;
+
+    plain_matrix_sbwt_t X;
+    X.build_from_strings(strings, 4, false);
+    ASSERT_EQ(X.n_nodes, 9); // Dummies C, CC and CCC should not be there.
+
+    plain_matrix_sbwt_t X2;
+    string filename = get_temp_file_manager().create_filename("", ".fna");
+    write_seqs_to_fasta_file(strings, filename);
+    X2.build_using_KMC(filename, 4, false, 1, 2);
+    ASSERT_EQ(X2.n_nodes, 9); // Dummies C, CC and CCC should not be there.
+}
+
+TEST(TEST_IM_CONSTRUCTION, not_full_alphabet){
+    vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG"}; // No 'T' exists
+    run_small_testcase(strings, 3);
+}
+
+TEST(TEST_IM_CONSTRUCTION, lots_of_dummies){
+    vector<string> strings;
+    for(int64_t i = 0; i < 20; i++){
+        strings.push_back(generate_random_kmer(6));
+    }
+    run_small_testcase(strings, 6);
+}
+
+
+
+TEST(TEST_IM_CONSTRUCTION, test_serialization){
     vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
     LL k = 4;
     set<string> true_kmers = get_all_kmers(strings, k);
@@ -146,23 +225,4 @@ TEST(TEST_IM_CONSTRUCTION, test_all_variants){
             check_streaming_queries(v10, true_kmers, S);
         }
     }
-}
-
-TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
-    plain_matrix_sbwt_t X;
-    vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG", "TTTT"};
-    X.build_from_strings(strings, 4, false);
-    set<string> true_kmers = get_all_kmers(strings, 4);
-    logger << "Queries on in-memory constructed matrixboss" << endl;
-    check_all_queries(X, true_kmers);
-    ASSERT_EQ(X.n_nodes, 9); // Dummies C, CC and CCC should not be there.
-}
-
-TEST(TEST_IM_CONSTRUCTION, not_full_alphabet){
-    plain_matrix_sbwt_t X;
-    vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG"}; // No 'T' exists
-    X.build_from_strings(strings, 4, false);
-    set<string> true_kmers = get_all_kmers(strings, 4);
-    logger << "Queries on in-memory constructed matrixboss" << endl;
-    check_all_queries(X, true_kmers);
 }

@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include "../globals.hh"
 #include "version.h"
+#include "throwing_streams.hh"
 
 class TestLogger{
     public:
@@ -46,6 +47,12 @@ const std::string generate_random_kmer(int64_t k) {
     }
     return s;
 }
+
+void write_seqs_to_fasta_file(const vector<string>& v, const string& filename){
+    throwing_ofstream out(filename);
+    for(string S : v) out.stream << ">\n" << S << "\n";
+}
+
 
 void enable_test_logging(){logger.verbose = true; }
 void disable_test_logging(){logger.verbose = false; }
