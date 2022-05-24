@@ -9,6 +9,7 @@
 #include "stdlib_printing.hh"
 #include "input_reading.hh"
 #include "SubsetMatrixRank.hh"
+#include "buffered_streams.hh"
 #include "variants.hh"
 #include <filesystem>
 
@@ -27,8 +28,8 @@ void run_queries_streaming(Sequence_Reader_Buffered& sr, const string& outfile, 
         vector<int64_t> out_buffer = sbwt.streaming_search(sr.read_buf, len);
         if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
 
-        for(int64_t x : out_buffer) out << x << " ";
-        out << "\n";
+        for(int64_t x : out_buffer) out.stream << x << " ";
+        out.stream << "\n";
     }
 }
 
@@ -51,8 +52,8 @@ void run_queries(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt
             }
             if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
 
-            for(int64_t x : out_buffer) out << x << " ";
-            out << "\n";
+            for(int64_t x : out_buffer) out.stream << x << " ";
+            out.stream << "\n";
             out_buffer.clear();
         }
     }
