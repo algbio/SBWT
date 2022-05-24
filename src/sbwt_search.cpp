@@ -23,9 +23,15 @@ inline void print_vector(const vector<int64_t>& v, Buffered_ofstream& out){
     char newline = '\n';
     for(int64_t x : v){
         LL i = 0;
-        while(x > 0){
-            buffer[i++] = '0' + (x % 10);
-            x /= 10;
+        if(x == -1){
+            buffer[0] = '1';
+            buffer[1] = '-';
+            i = 2;
+        } else{
+            while(x > 0){
+                buffer[i++] = '0' + (x % 10);
+                x /= 10;
+            }
         }
         std::reverse(buffer, buffer + i);
         buffer[i] = ' ';
@@ -35,28 +41,41 @@ inline void print_vector(const vector<int64_t>& v, Buffered_ofstream& out){
 }
 
 template<typename sbwt_t>
-void run_queries_streaming(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt_t& sbwt, bool colex){
+LL run_queries_streaming(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt_t& sbwt, bool colex){
     write_log("Running streaming queries", LogLevel::MAJOR);
     Buffered_ofstream out(outfile);
     
+    LL total_micros = 0;
+    LL number_of_queries = 0;
     while(true){ 
         LL len = sr.get_next_read_to_buffer();
         if(len == 0) break;
 
         if(!colex) std::reverse(sr.read_buf, sr.read_buf + len);
-        vector<int64_t> out_buffer = sbwt.streaming_search(sr.read_buf, len);
-        if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
 
+        LL t0 = cur_time_micros();
+        vector<int64_t> out_buffer = sbwt.streaming_search(sr.read_buf, len);
+        total_micros += cur_time_micros() - t0;
+
+        number_of_queries += out_buffer.size();
+
+        // Write out
+        if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
         print_vector(out_buffer, out);
     }
+    write_log("us/query: " + to_string((double)total_micros / number_of_queries) + " (excluding I/O etc)", LogLevel::MAJOR);
+    return number_of_queries;
 }
 
+// Returns number of queries executed
 template<typename sbwt_t>
-void run_queries(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt_t& sbwt, bool colex){
+LL run_queries(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt_t& sbwt, bool colex){
     vector<int64_t> out_buffer;
     if(sbwt.has_streaming_query_support()){
-        run_queries_streaming(sr, outfile, sbwt, colex);
+        return run_queries_streaming(sr, outfile, sbwt, colex);
     } else{
+        LL total_micros = 0;
+        LL number_of_queries = 0;
         write_log("Running queries", LogLevel::MAJOR);
         Buffered_ofstream out(outfile);
         LL k = sbwt.k;
@@ -66,18 +85,27 @@ void run_queries(Sequence_Reader_Buffered& sr, const string& outfile, const sbwt
 
             if(!colex) std::reverse(sr.read_buf, sr.read_buf + len);
             for(LL i = 0; i < len - k + 1; i++){
-                out_buffer.push_back(sbwt.search(sr.read_buf + i));
+                LL t0 = cur_time_micros();
+                LL ans = sbwt.search(sr.read_buf + i);
+                total_micros += cur_time_micros() - t0;
+                number_of_queries++;
+                out_buffer.push_back(ans);
             }
             if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
 
             print_vector(out_buffer, out);
             out_buffer.clear();
         }
+        write_log("us/query: " + to_string((double)total_micros / number_of_queries) + " (excluding I/O etc)", LogLevel::MAJOR);
+        return number_of_queries;
     }
+    
 }
 
 
 int search_main(int argc, char** argv){
+
+    LL micros_start = cur_time_micros();
 
     set_log_level(LogLevel::MINOR);
 
@@ -128,57 +156,61 @@ int search_main(int argc, char** argv){
     }
 
     write_log("Loading the index variant " + variant, LogLevel::MAJOR);
+    LL number_of_queries = 0;
 
     if (variant == "plain-matrix"){
         plain_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "rrr-matrix"){
         rrr_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "mef-matrix"){
         mef_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "plain-split"){
         plain_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "rrr-split"){
         rrr_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "mef-split"){
         mef_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "plain-concat"){
         plain_concat_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "mef-concat"){
         mef_concat_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "plain-subsetwt"){
         plain_sswt_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
     if (variant == "rrr-subsetwt"){
         rrr_sswt_sbwt_t sbwt;
         sbwt.load(in.stream);
-        run_queries(sr, outfile, sbwt, colex);
+        number_of_queries += run_queries(sr, outfile, sbwt, colex);
     }
+
+    LL total_micros = cur_time_micros() - micros_start;
+    write_log("us/query end-to-end: " + to_string((double)total_micros / number_of_queries), LogLevel::MAJOR);
 
     return 0;
 
