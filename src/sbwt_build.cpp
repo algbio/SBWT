@@ -22,7 +22,7 @@ int build_main(int argc, char** argv){
     for(string variant : variants) all_variants_string += " " + variant;
 
     options.add_options()
-        ("i,in-file", "The input sequences as a FASTA file.", cxxopts::value<string>())
+        ("i,in-file", "The input sequences in FASTA or FASTQ format.", cxxopts::value<string>())
         ("o,out-file", "Output file for the constructed index.", cxxopts::value<string>())
         ("k,kmer-length", "The k-mer length.", cxxopts::value<LL>())
         ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>()->default_value("plain-matrix"))

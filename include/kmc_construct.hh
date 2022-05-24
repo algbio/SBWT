@@ -103,11 +103,16 @@ public:
         std::vector<std::string> inputFiles {infile};
         KMC::Stage1Params stage1Params;
 
+        string file_format = figure_out_file_format(infile);
+        if(file_format != "fasta" && file_format != "fastq"){
+            throw std::runtime_error("File format not supported: " + file_format);
+        }
+
         stage1Params.SetInputFiles(inputFiles)
             .SetKmerLen(k)
             .SetNThreads(n_threads)
             .SetMaxRamGB(ram_gigas)
-            .SetInputFileType(KMC::InputFileType::MULTILINE_FASTA)
+            .SetInputFileType(file_format == "fasta" ? KMC::InputFileType::MULTILINE_FASTA : KMC::InputFileType::FASTQ)
             .SetCanonicalKmers(false);
 
         KMC::Runner kmc;

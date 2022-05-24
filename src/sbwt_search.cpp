@@ -68,7 +68,7 @@ int search_main(int argc, char** argv){
     options.add_options()
         ("o,out-file", "Output filename.", cxxopts::value<string>())
         ("i,index-file", "Index input file.", cxxopts::value<string>())
-        ("q,query-file", "The query in FASTA or FASTQ format. Multi-line FASTQ not supported.", cxxopts::value<string>())
+        ("q,query-file", "The query in FASTA or FASTQ format. Multi-line FASTQ is not supported.", cxxopts::value<string>())
         ("h,help", "Print usage")
     ;
 
