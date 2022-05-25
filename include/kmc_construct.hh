@@ -41,7 +41,7 @@ public:
 
     // The result is written to the given sdsl bit vectors. The bits vectors will be resized to fit all the bits.
     void build_bit_vectors_from_sorted_streams(const string& nodefile, const string& dummyfile,
-            sdsl::bit_vector& A_bits_sdsl, sdsl::bit_vector& C_bits_sdsl, sdsl::bit_vector& G_bits_sdsl, sdsl::bit_vector& T_bits_sdsl, sdsl::bit_vector& suffix_group_starts_sdsl){
+            sdsl::bit_vector& A_bits_sdsl, sdsl::bit_vector& C_bits_sdsl, sdsl::bit_vector& G_bits_sdsl, sdsl::bit_vector& T_bits_sdsl, sdsl::bit_vector& suffix_group_starts_sdsl, LL k){
         vector<bool> A_bits, C_bits, G_bits, T_bits, suffix_group_starts;
 
         Disk_Instream nodes_in(nodefile);
@@ -58,16 +58,24 @@ public:
                 C_bits.push_back(0);
                 G_bits.push_back(0);
                 T_bits.push_back(0);
-                if(first || x.kmer.copy().dropleft() != prev_node.kmer.copy().dropleft()){
-                    suffix_group_starts.push_back(1);
-                } else suffix_group_starts.push_back(0);
+
+                // Figure out if this is a suffix group start
+                bool is_start = false;
+                is_start |= first;
+                kmer_t a = prev_node.kmer.copy();
+                kmer_t b = x.kmer.copy();
+                if(a.get_k() == k) a.dropleft();
+                if(b.get_k() == k) b.dropleft();
+                is_start |= (a == b);
+                suffix_group_starts.push_back(is_start);
+                first = false;
             }
             if(x.has('A')) A_bits.back() = 1;
             if(x.has('C')) C_bits.back() = 1;
             if(x.has('G')) G_bits.back() = 1;
             if(x.has('T')) T_bits.back() = 1;
             prev_node = x;
-            first = false;
+            
         }
 
         // Copy to sdsl vectors
@@ -100,21 +108,26 @@ public:
     }
 
     // Returns the KMC database prefix
-    string run_kmc(const string& infile, LL k, LL n_threads, LL ram_gigas, int64_t min_abundance){
+    string run_kmc(const vector<string>& input_files, LL k, LL n_threads, LL ram_gigas, int64_t min_abundance){
 
         write_log("Running KMC counter", LogLevel::MAJOR);
 
         string KMC_db_file_prefix = get_temp_file_manager().create_filename("kmers");
 
-        std::vector<std::string> inputFiles {infile};
         KMC::Stage1Params stage1Params;
 
-        string file_format = figure_out_file_format(infile);
+        string file_format = figure_out_file_format(input_files[0]);
         if(file_format != "fasta" && file_format != "fastq"){
             throw std::runtime_error("File format not supported: " + file_format);
         }
+        for(string filename : input_files){
+            if(figure_out_file_format(input_files[0]) != file_format){
+                throw std::runtime_error("Error: all input files must have the same format (fasta or fastq)");
+            }
+        }
 
-        stage1Params.SetInputFiles(inputFiles)
+
+        stage1Params.SetInputFiles(input_files)
             .SetKmerLen(k)
             .SetNThreads(n_threads)
             .SetMaxRamGB(ram_gigas)
@@ -255,9 +268,9 @@ public:
     }
 
     // Construct the given nodeboss from the given input strings
-    void build(const string& infile, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance){
+    void build(const vector<string>& input_files, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance){
 
-        string KMC_db_path = run_kmc(infile, k, n_threads, ram_gigas, min_abundance);
+        string KMC_db_path = run_kmc(input_files, k, n_threads, ram_gigas, min_abundance);
 
         string nodes_outfile = get_temp_file_manager().create_filename();
         string dummies_outfile = get_temp_file_manager().create_filename();
@@ -281,7 +294,7 @@ public:
         
         write_log("Merging sorted streams", LogLevel::MAJOR);
         sdsl::bit_vector A_bits, C_bits, G_bits, T_bits, suffix_group_starts;
-        build_bit_vectors_from_sorted_streams(nodes_outfile, dummies_sortedfile, A_bits, C_bits, G_bits, T_bits, suffix_group_starts);
+        build_bit_vectors_from_sorted_streams(nodes_outfile, dummies_sortedfile, A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k);
         
         write_log("Building SBWT structure", LogLevel::MAJOR);
         nodeboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, false);

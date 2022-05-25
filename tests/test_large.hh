@@ -54,7 +54,7 @@ class TEST_LARGE : public ::testing::Test {
         matrixboss_reference.build_from_strings(seqs, k, true);
 
         logger << "Building E. coli with KMC..." << endl;
-        matrixboss.build_using_KMC(rev_file, k, true, 2, 2, 1);
+        matrixboss.build_using_KMC({rev_file}, k, true, 2, 2, 1);
     }
 
 };

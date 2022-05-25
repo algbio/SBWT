@@ -11,6 +11,16 @@
 typedef long long LL;
 using namespace std;
 
+vector<string> readlines(string filename){
+    vector<string> lines;
+	string line;
+	throwing_ifstream in(filename);
+	while(getline(in.stream,line)){
+		lines.push_back(line);
+	}
+    return lines;
+}
+
 int build_main(int argc, char** argv){
 
     set_log_level(LogLevel::MAJOR);
@@ -22,7 +32,7 @@ int build_main(int argc, char** argv){
     for(string variant : variants) all_variants_string += " " + variant;
 
     options.add_options()
-        ("i,in-file", "The input sequences in FASTA or FASTQ format.", cxxopts::value<string>())
+        ("i,in-file", "The input sequences as a FASTA or FASTQ file. If the file extension is .txt, the file is interpreted as a list of input files, one file on each line.", cxxopts::value<string>())
         ("o,out-file", "Output file for the constructed index.", cxxopts::value<string>())
         ("k,kmer-length", "The k-mer length.", cxxopts::value<LL>())
         ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>()->default_value("plain-matrix"))
@@ -54,7 +64,13 @@ int build_main(int argc, char** argv){
     check_writable(out_file);
 
     string in_file = opts["in-file"].as<string>();
-    check_readable(in_file);
+    vector<string> input_files;
+    if(in_file.size() >= 4 && in_file.substr(in_file.size() - 4) == ".txt"){
+        input_files = readlines(in_file);
+    } else{
+        input_files = {in_file};
+    }
+    for(string file : input_files) check_readable(file);
 
     get_temp_file_manager().set_dir(opts["temp-dir"].as<string>());
     bool streaming_support = !(opts["no-streaming-support"].as<bool>());
@@ -66,7 +82,7 @@ int build_main(int argc, char** argv){
     plain_matrix_sbwt_t matrixboss_plain;
 
     write_log("Building SBWT subset sequence using KMC", LogLevel::MAJOR);
-    matrixboss_plain.build_using_KMC(in_file, k, streaming_support, n_threads, ram_gigas, min_abundance);
+    matrixboss_plain.build_using_KMC(input_files, k, streaming_support, n_threads, ram_gigas, min_abundance);
     char colex = false; // Lexicographic or colexicographic index? KMC sorts in lexicographic order.
 
     throwing_ofstream out(out_file, ios::binary);

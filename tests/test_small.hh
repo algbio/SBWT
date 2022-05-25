@@ -66,7 +66,7 @@ void run_small_testcase(const vector<string>& strings, LL k){
     write_seqs_to_fasta_file(reverse_strings, temp_filename);
 
     NodeBOSSKMCConstructor<plain_matrix_sbwt_t> X;
-    X.build(temp_filename, index_kmc, k, 1, 2, false, 1);
+    X.build({temp_filename}, index_kmc, k, 1, 2, false, 1);
 
     logger << index_im.subset_rank.A_bits << endl;
     logger << index_im.subset_rank.C_bits << endl;
@@ -109,7 +109,7 @@ TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
     plain_matrix_sbwt_t X2;
     string filename = get_temp_file_manager().create_filename("", ".fna");
     write_seqs_to_fasta_file(strings, filename);
-    X2.build_using_KMC(filename, 4, false, 1, 2, 1);
+    X2.build_using_KMC({filename}, 4, false, 1, 2, 1);
     ASSERT_EQ(X2.n_nodes, 9); // Dummies C, CC and CCC should not be there.
 }
 
