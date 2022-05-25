@@ -14,6 +14,9 @@
 #include "test_small.hh"
 #include "test_large.hh"
 #include "test_misc.hh"
+#include "test_IO.hh"
+#include "test_input_reading.hh"
+#include "test_EM_sort.hh"
 #include <cassert>
 
 int main(int argc, char **argv) {
