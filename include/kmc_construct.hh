@@ -138,19 +138,19 @@ public:
             // Just copy the database
             std::filesystem::copy(KMC_db_file_prefix + ".kmc_pre", KMC_db_file_prefix + "-sorted.kmc_pre");
             std::filesystem::copy(KMC_db_file_prefix + ".kmc_suf", KMC_db_file_prefix + "-sorted.kmc_suf");
-
-            // Clean up the KMC global singleton config state because if an exception is thrown
-            // the state is left in a bad state
-            CConfig::GetInstance().input_desc.clear();
-            CConfig::GetInstance().headers.clear();
-            CConfig::GetInstance().simple_output_desc.clear();
-            CConfig::GetInstance().transform_output_desc.clear();
         }
 
         // Delete the unsorted KMC database files. The temp file manager can not do this because
         // KMC appends suffixes to the filename and the manager does not know about that.
         std::filesystem::remove(KMC_db_file_prefix + ".kmc_pre");
         std::filesystem::remove(KMC_db_file_prefix + ".kmc_suf");
+
+        // Clean up the KMC global singleton config state because it seems that it's left
+        // in a partial state sometimes, which messes up our code if we call KMC again later.
+        CConfig::GetInstance().input_desc.clear();
+        CConfig::GetInstance().headers.clear();
+        CConfig::GetInstance().simple_output_desc.clear();
+        CConfig::GetInstance().transform_output_desc.clear();
 
         return KMC_db_file_prefix + "-sorted";
     }
