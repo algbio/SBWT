@@ -109,7 +109,7 @@ public:
 
             LL buf_pos = 0;
             while(true){
-                if(!stream.get(&c)) break;
+                if(!stream.get(&c)) break; // Last read end
                 else {
                     if(c == '\n') continue;
                     else if(c == '>') break;
@@ -122,6 +122,7 @@ public:
                     }
                 }
             }
+            if(buf_pos == 0) throw std::runtime_error("Error: empty sequence in FASTA file.");
             read_buf[buf_pos] = '\0';
             return buf_pos;
         } else if(mode == FASTQ){
@@ -149,6 +150,7 @@ public:
             c = 0;
             while(c != '\n') stream.get(&c); // Skip quality line
 
+            if(buf_pos == 0) throw std::runtime_error("Error: empty sequence in FASTQ file.");
             return buf_pos;
         } else{
             throw std::runtime_error("Should not come to this else-branch");

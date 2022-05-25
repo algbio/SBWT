@@ -5,8 +5,8 @@
 #include "setup_tests.hh"
 #include "SeqIO.hh"
 
-string string_to_temp_file(const string& S){
-    string filename = get_temp_file_manager().create_filename();
+string string_to_temp_file(const string& S, const string& suffix = ""){
+    string filename = get_temp_file_manager().create_filename("", suffix);
     throwing_ofstream out(filename);
     out.write(S.data(), S.size());
     return filename;
@@ -185,6 +185,39 @@ TEST(INPUT_PARSING, fastq_things_after_plus){
     string filename = string_to_temp_file(fastq);
     check_buffered_sequence_reader_output(seqs, SeqIO::FASTQ, filename);
 }
+
+TEST(INPUT_PARSING, fasta_empty_sequence){
+    string filename = string_to_temp_file(">\nAAA\n>\n>\nAAA", ".fna");
+    SeqIO::Reader sr(filename);
+    try{
+        while(true) { 
+            string read = sr.get_next_read();
+            if(read.size() == 0) break;
+        }
+        ASSERT_TRUE(false); // Should not come here
+    } catch(std::runtime_error& e){
+        // This is what was supposed to happen
+        logger << "Error thrown as expected" << endl;
+        return;
+    }
+}
+
+TEST(INPUT_PARSING, fastq_empty_sequence){
+    string filename = string_to_temp_file("@\nAAA\n+\nIII\n@\n\n+\n\n@\nAAA\n+\nIII\n", ".fq");
+    SeqIO::Reader sr(filename);
+    try{
+        while(true) { 
+            string read = sr.get_next_read();
+            if(read.size() == 0) break;
+        }
+        ASSERT_TRUE(false); // Should not come here
+    } catch(std::runtime_error& e){
+        // This is what was supposed to happen
+        logger << "Error thrown as expected" << endl;
+        return;
+    }
+}
+
 
 
 /*
