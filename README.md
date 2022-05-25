@@ -6,7 +6,6 @@ This construction algorithm is based on the lightning-fast [k-mer counter KMC](h
 
 We are currently actively working on the code. Top items on the to-do list are the following:
 
-* Support for construction and queries from multiple input files.
 * Saving space by indexing only canonical k-mers.
 
 # Compiling

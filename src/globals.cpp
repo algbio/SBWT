@@ -9,6 +9,17 @@
 
 using namespace std::chrono;
 
+vector<string> readlines(string filename){
+    vector<string> lines;
+	string line;
+	throwing_ifstream in(filename);
+	while(getline(in.stream,line)){
+		lines.push_back(line);
+	}
+    return lines;
+}
+
+
 Temp_File_Manager& get_temp_file_manager(){
     static Temp_File_Manager temp_file_manager; // Singleton
     return temp_file_manager;

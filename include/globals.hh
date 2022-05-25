@@ -11,6 +11,7 @@ using namespace std;
 
 enum LogLevel {OFF = 0, MAJOR = 1, MINOR = 2, DEBUG = 3};
 
+vector<string> readlines(string filename);
 long long cur_time_millis();
 long long cur_time_micros();
 double seconds_since_program_start();

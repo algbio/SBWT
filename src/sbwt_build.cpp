@@ -11,16 +11,6 @@
 typedef long long LL;
 using namespace std;
 
-vector<string> readlines(string filename){
-    vector<string> lines;
-	string line;
-	throwing_ifstream in(filename);
-	while(getline(in.stream,line)){
-		lines.push_back(line);
-	}
-    return lines;
-}
-
 int build_main(int argc, char** argv){
 
     set_log_level(LogLevel::MAJOR);
