@@ -119,10 +119,6 @@ void check_true(bool condition, string error_message){
 
 vector<string> create_reverse_complement_files(const vector<string>& files){
     vector<string> newfiles;
-    string fasta_header = ">\n";
-    string fastq_header = "@\n";
-    string newline = "\n";
-    string plus = "+";
     for(string f : files){
         Sequence_Reader_Buffered sr(f);
         int64_t mode = sr.get_mode();
