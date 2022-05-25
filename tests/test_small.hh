@@ -94,6 +94,30 @@ TEST(TEST_KMC_CONSTRUCT, not_all_dummies_needed){
     run_small_testcase(strings, k);
 }
 
+TEST(TEST_KMC_CONSTRUCT, multiple_input_files){
+    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
+    LL k = 4;
+    string f1 = get_temp_file_manager().create_filename("",".fna");
+    string f2 = get_temp_file_manager().create_filename("",".fna");
+    string f3 = get_temp_file_manager().create_filename("",".fna");
+    string f123 = get_temp_file_manager().create_filename("",".fna");
+    write_seqs_to_fasta_file({strings[0]}, f1);
+    write_seqs_to_fasta_file({strings[1]}, f2);
+    write_seqs_to_fasta_file({strings[2]}, f3);
+    write_seqs_to_fasta_file(strings, f123);
+
+    NodeBOSSKMCConstructor<plain_matrix_sbwt_t> X;
+    plain_matrix_sbwt_t index1, index2;
+    X.build({f123}, index1, k, 1, 2, true, 1);
+    X.build({f1, f2, f3}, index2, k, 1, 2, true, 1);
+
+    ASSERT_EQ(index1.subset_rank.A_bits, index2.subset_rank.A_bits);
+    ASSERT_EQ(index1.subset_rank.C_bits, index2.subset_rank.C_bits);
+    ASSERT_EQ(index1.subset_rank.G_bits, index2.subset_rank.G_bits);
+    ASSERT_EQ(index1.subset_rank.T_bits, index2.subset_rank.T_bits);
+    ASSERT_EQ(index1.suffix_group_starts, index2.suffix_group_starts);
+}
+
 
 TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
     vector<string> strings = {"AAAA", "ACCC", "ACCG", "CCCG", "TTTT"};
