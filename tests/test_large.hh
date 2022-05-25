@@ -23,12 +23,12 @@ typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> ma
 class TEST_LARGE : public ::testing::Test {
     protected:
 
-    matrixboss_t matrixboss;
-    matrixboss_t matrixboss_reference;
-    LL k;
-    vector<string> seqs;
+    static matrixboss_t matrixboss;
+    static matrixboss_t matrixboss_reference;
+    static LL k;
+    static vector<string> seqs;
 
-    void reverse_seqs_in_fasta(std::string infile, std::string outfile){
+    static void reverse_seqs_in_fasta(std::string infile, std::string outfile){
         Sequence_Reader sr(infile, FASTA_MODE);
         throwing_ofstream out(outfile);
         while(!sr.done()){
@@ -39,7 +39,7 @@ class TEST_LARGE : public ::testing::Test {
         }
     }
 
-    void SetUp() override {
+    static void SetUpTestSuite(){
         string filename = "example_data/coli3.fna";
 
         string rev_file = get_temp_file_manager().create_filename("",".fna");
@@ -58,6 +58,11 @@ class TEST_LARGE : public ::testing::Test {
     }
 
 };
+
+matrixboss_t TEST_LARGE::matrixboss;
+matrixboss_t TEST_LARGE::matrixboss_reference;
+LL TEST_LARGE::k;
+vector<string> TEST_LARGE::seqs;
 
 TEST_F(TEST_LARGE, check_matrix_bits){
     logger << matrixboss_reference.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
