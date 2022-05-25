@@ -88,7 +88,7 @@ To query for existence of all k-mers in an index for all sequences in a fasta-fi
 ./build/bin/sbwt search -i index.sbwt -q example_data/queries.fastq -o out.txt
 ```
 
-This prints for each query of length n in the input a line containing n-k+1 space-separated integers, which are the ranks of the columns representing the k-mer in the index. If the k-mer is not found, -1 is printed. If the index was built with `--streaming-support`, the faster streaming query algorithm is automatically used. The full options are:
+This prints for each query of length n in the input a line containing n-k+1 space-separated integers, which are the ranks of the columns representing the k-mer in the index. If the k-mer is not found, -1 is printed. If the index was built streaming support (which is the default), the faster streaming query algorithm is automatically used. The full options are:
 
 ```
 Query all k-mers of all input reads.
