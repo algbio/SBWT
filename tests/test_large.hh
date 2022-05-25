@@ -64,13 +64,19 @@ matrixboss_t TEST_LARGE::matrixboss_reference;
 LL TEST_LARGE::k;
 vector<string> TEST_LARGE::seqs;
 
-TEST_F(TEST_LARGE, check_matrix_bits){
+TEST_F(TEST_LARGE, verify_suffix_group_starts){
+    sdsl::bit_vector reference = mark_suffix_groups(matrixboss.subset_rank.A_bits, matrixboss.subset_rank.C_bits, matrixboss.subset_rank.G_bits, matrixboss.subset_rank.T_bits, k);
+    ASSERT_EQ(reference, matrixboss.suffix_group_starts);
+}
+
+TEST_F(TEST_LARGE, check_bit_vectors){
     logger << matrixboss_reference.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
 
     ASSERT_EQ(matrixboss.subset_rank.A_bits, matrixboss_reference.subset_rank.A_bits);
     ASSERT_EQ(matrixboss.subset_rank.C_bits, matrixboss_reference.subset_rank.C_bits);
     ASSERT_EQ(matrixboss.subset_rank.G_bits, matrixboss_reference.subset_rank.G_bits);
     ASSERT_EQ(matrixboss.subset_rank.T_bits, matrixboss_reference.subset_rank.T_bits);
+    ASSERT_EQ(matrixboss.suffix_group_starts, matrixboss_reference.suffix_group_starts);
 }
 
 TEST_F(TEST_LARGE, streaming_queries){
