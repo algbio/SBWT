@@ -638,19 +638,5 @@ public:
 	}
 };
 
-//----------------------------------------------------------------------------------
-// Check if --help or --version was used
-static bool help_or_version(int argc, char** argv)
-{
-	const string version = "--version";
-	const string help = "--help";
-	for (int i = 1; i < argc; ++i)
-	{
-		if (argv[i] == version || argv[i] == help)
-			return true;
-	}
-	return false;
-}
-
 
 // ***** EOF

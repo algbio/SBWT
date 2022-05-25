@@ -607,16 +607,22 @@ inline void CKmer<1>::load(uchar *&buffer, int32 n)
 	{
 	case 7:
 		data = ((uint64) *buffer++) << 56;
+		 [[fallthrough]];
 	case 6:
 		tmp = ((uint64) *buffer++) << 48;
+		 [[fallthrough]];
 	case 5:
 		data += ((uint64) *buffer++) << 40;
+		 [[fallthrough]];
 	case 4:
 		tmp += ((uint64) *buffer++) << 32;
+		 [[fallthrough]];
 	case 3:
 		data += ((uint64) *buffer++) << 24;
+		 [[fallthrough]];
 	case 2:
 		tmp += ((uint64) *buffer++) << 16;
+		 [[fallthrough]];
 	case 1:
 		data += ((uint64) *buffer++) << 8;
 	}
