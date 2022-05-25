@@ -61,20 +61,34 @@ public:
 
     char* read_buf;
 
+    void read_first_char_and_sanity_check(){
+        
+        char c = 0; stream.get(&c);
+        if(mode == FASTA && c != '>')
+            throw runtime_error("ERROR: FASTA file does not start with '>'");
+        if(mode == FASTQ && c != '@')
+            throw runtime_error("ERROR: FASTQ file does not start with '@'");
+
+        // This leaves the input stream pointer after the first character, but
+        // get_next_read_to_buffer is written such that it's ok.
+    }
+
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
-    Reader(string filename, LL mode) : stream(filename), mode(mode) {
+    Reader(string filename, LL mode) : stream(filename, ios::binary), mode(mode) {
         // todo: check that fasta files start with > and fastq files start with @
         if(mode != FASTA && mode != FASTQ)
             throw std::invalid_argument("Unkown sequence format");
         
         read_buf_cap = 256;
         read_buf = (char*)malloc(read_buf_cap);
+
+        read_first_char_and_sanity_check();
     }
 
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
-    Reader(string filename) : stream(filename) {
+    Reader(string filename) : stream(filename, ios::binary) {
         string format = figure_out_file_format(filename);
         if(format == "fasta") mode = FASTA;
         else if(format == "fastq") mode = FASTQ;
@@ -83,6 +97,8 @@ public:
         // todo: check that fasta files start with > and fastq files start with @
         read_buf_cap = 256;
         read_buf = (char*)malloc(read_buf_cap);
+
+        read_first_char_and_sanity_check();
     }
 
 
@@ -126,7 +142,7 @@ public:
             read_buf[buf_pos] = '\0';
             return buf_pos;
         } else if(mode == FASTQ){
-            char c = stream.get(&c);
+            char c = 0; stream.get(&c);
             if(stream.eof()){
                 read_buf = nullptr;
                 return 0;

@@ -218,6 +218,30 @@ TEST(INPUT_PARSING, fastq_empty_sequence){
     }
 }
 
+TEST(INPUT_PARSING, first_char_sanity_check_fastq){
+    string filename = string_to_temp_file("ATGCTAGCTGACTGATCGTACA", ".fq");
+    try{
+        SeqIO::Reader sr(filename);
+        ASSERT_TRUE(false); // Should not come here
+    } catch(std::runtime_error& e){
+        // This is what was supposed to happen
+        logger << "Error thrown as expected" << endl;
+        return;
+    }
+}
+
+TEST(INPUT_PARSING, first_char_sanity_check_fasta){
+    string filename = string_to_temp_file("ATGCTAGCTGACTGATCGTACA", ".fna");
+    try{
+        SeqIO::Reader sr(filename);
+        ASSERT_TRUE(false); // Should not come here
+    } catch(std::runtime_error& e){
+        // This is what was supposed to happen
+        logger << "Error thrown as expected" << endl;
+        return;
+    }
+}
+
 
 
 /*
