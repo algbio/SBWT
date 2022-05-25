@@ -11,6 +11,7 @@
 #include "input_reading.hh"
 #include "libwheeler/BOSS_builder.hh"
 #include "suffix_group_optimization.hh"
+#include "variants.hh"
 #include <gtest/gtest.h>
 #include <unordered_set>
 
@@ -30,6 +31,18 @@ void reverse_seqs_in_fasta(std::string infile, std::string outfile){
     }
 }
 
+void test_streaming_queries(matrixboss_t& index, const string& query_filename){
+    Sequence_Reader sr(query_filename, FASTA_MODE);
+    while(!sr.done()){
+        string S = sr.get_next_query_stream().get_all();
+        vector<int64_t> result = index.streaming_search(S);
+        for(LL i = 0; i < (LL)S.size()-index.k+1; i++){
+            LL x = index.search(S.c_str() + i);
+            ASSERT_EQ(result[i], x);
+        }
+    }
+}
+
 TEST(TEST_LARGE, e_coli){
 
     string filename = "example_data/coli3.fna";
@@ -41,15 +54,15 @@ TEST(TEST_LARGE, e_coli){
     vector<string> seqs;
     while(!sr.done())
         seqs.push_back(sr.get_next_query_stream().get_all());
-    matrixboss_t matrixboss;
+    plain_matrix_sbwt_t matrixboss;
 
     LL k = 30;
     logger << "Building E. coli in memory..." << endl;
-    matrixboss.build_from_strings(seqs, k, false);
+    matrixboss.build_from_strings(seqs, k, true);
 
     logger << "Building E. coli with KMC..." << endl;
-    matrixboss_t matrixboss_kmc;
-    matrixboss_kmc.build_using_KMC(rev_file, k, false, 2, 2, 1);
+    plain_matrix_sbwt_t matrixboss_kmc;
+    matrixboss_kmc.build_using_KMC(rev_file, k, true, 2, 2, 1);
 
     logger << matrixboss_kmc.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
 
@@ -57,6 +70,10 @@ TEST(TEST_LARGE, e_coli){
     ASSERT_EQ(matrixboss_kmc.subset_rank.C_bits, matrixboss.subset_rank.C_bits);
     ASSERT_EQ(matrixboss_kmc.subset_rank.G_bits, matrixboss.subset_rank.G_bits);
     ASSERT_EQ(matrixboss_kmc.subset_rank.T_bits, matrixboss.subset_rank.T_bits);
+
+    logger << "Testing streaming queries..." << endl;
+    string query_file = "example_data/queries.fna";
+    test_streaming_queries(matrixboss_kmc, query_file);
     
     logger << "Querying all k-mers in the input..." << endl;
     unordered_set<kmer_t> all_kmers; // Also collect a set of all k-mers in the input

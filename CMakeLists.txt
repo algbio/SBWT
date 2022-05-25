@@ -94,7 +94,7 @@ add_executable(sbwt src/sbwt.cpp ${NODEBOSS_SOURCES})
 target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
 
 ## Build tests if doing a Debug build
-if (CMAKE_BUILD_TYPE MATCHES Debug)
+if (BUILD_TESTS)
   find_package(Threads REQUIRED)
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(OpenMP REQUIRED)

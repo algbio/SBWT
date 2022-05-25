@@ -106,7 +106,7 @@ make
 
 # Build SBWT
 cd ../../build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DMAX_KMER_LENGTH=32
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DMAX_KMER_LENGTH=32
 make
 ```
 
