@@ -41,8 +41,8 @@ public:
 
     // The result is written to the given sdsl bit vectors. The bits vectors will be resized to fit all the bits.
     void build_bit_vectors_from_sorted_streams(const string& nodefile, const string& dummyfile,
-            sdsl::bit_vector& A_bits_sdsl, sdsl::bit_vector& C_bits_sdsl, sdsl::bit_vector& G_bits_sdsl, sdsl::bit_vector& T_bits_sdsl){
-        vector<bool> A_bits, C_bits, G_bits, T_bits;
+            sdsl::bit_vector& A_bits_sdsl, sdsl::bit_vector& C_bits_sdsl, sdsl::bit_vector& G_bits_sdsl, sdsl::bit_vector& T_bits_sdsl, sdsl::bit_vector& suffix_group_starts_sdsl){
+        vector<bool> A_bits, C_bits, G_bits, T_bits, suffix_group_starts;
 
         Disk_Instream nodes_in(nodefile);
         Disk_Instream dummies_in(dummyfile);
@@ -58,6 +58,9 @@ public:
                 C_bits.push_back(0);
                 G_bits.push_back(0);
                 T_bits.push_back(0);
+                if(first || x.kmer.copy().dropleft() != prev_node.kmer.copy().dropleft()){
+                    suffix_group_starts.push_back(1);
+                } else suffix_group_starts.push_back(0);
             }
             if(x.has('A')) A_bits.back() = 1;
             if(x.has('C')) C_bits.back() = 1;
@@ -72,11 +75,13 @@ public:
         C_bits_sdsl.resize(C_bits.size());
         G_bits_sdsl.resize(G_bits.size());
         T_bits_sdsl.resize(T_bits.size());
+        suffix_group_starts_sdsl.resize(suffix_group_starts.size());
         for(LL i = 0; i < A_bits.size(); i++){
             A_bits_sdsl[i] = A_bits[i];
             C_bits_sdsl[i] = C_bits[i];
             G_bits_sdsl[i] = G_bits[i];
             T_bits_sdsl[i] = T_bits[i];
+            suffix_group_starts_sdsl[i] = suffix_group_starts[i];
         }        
     }
 
@@ -275,10 +280,11 @@ public:
             }, ram_gigas * ((LL)1 <<30), Node::size_in_bytes(), n_threads);
         
         write_log("Merging sorted streams", LogLevel::MAJOR);
-        sdsl::bit_vector A_bits, C_bits, G_bits, T_bits;
-        build_bit_vectors_from_sorted_streams(nodes_outfile, dummies_sortedfile, A_bits, C_bits, G_bits, T_bits);
+        sdsl::bit_vector A_bits, C_bits, G_bits, T_bits, suffix_group_starts;
+        build_bit_vectors_from_sorted_streams(nodes_outfile, dummies_sortedfile, A_bits, C_bits, G_bits, T_bits, suffix_group_starts);
         
         write_log("Building SBWT structure", LogLevel::MAJOR);
-        nodeboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        nodeboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, false);
+        if(streaming_support) nodeboss.suffix_group_starts = suffix_group_starts;
     }
 };

@@ -31,10 +31,10 @@ class NodeBOSS{
 
     NodeBOSS() : n_nodes(0), k(0) {}
     void build_from_strings(const vector<string>& input, int64_t k, bool streaming_support); // This sorts all k-mers in memory and thus takes a lot of memory. Not optimized at all.
-    void build_using_KMC(const string& fastafile, int64_t k, bool streaming_support, int64_t n_threads, int64_t mem_gigas, int64_t min_abundance); // Construction via KMC. All k-mers that occur fewer than min_abundance times are discarded. mem_gigas must be at least 2.
-    void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss, bool streaming_support);
-    void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k, bool streaming_support);
-    void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits); // The NodeBOSS must be already built before calling this
+    void build_using_KMC(const string& fastafile, int64_t k, bool streaming_support, int64_t n_threads, int64_t mem_gigas, int64_t min_abundance); // Construction via KMC. All k-mers that occur fewer than min_abundance times are discarded. mem_gigas must be at least 2. Also builds streaming support if streaming_support == true.
+    void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss, bool streaming_support); // Also builds streaming support if streaming_support == true.
+    void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k, bool streaming_support); // Also builds streaming support if streaming_support == true.
+    void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits); // Build the streaming support just from the bit vectors. The NodeBOSS must be already built before calling this.
     int64_t search(const string& kmer) const; // Search for std::string
     int64_t search(const char* S) const; // Search for C-string
 
