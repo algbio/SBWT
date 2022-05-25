@@ -132,7 +132,8 @@ public:
             .SetNThreads(n_threads)
             .SetMaxRamGB(ram_gigas)
             .SetInputFileType(file_format == "fasta" ? KMC::InputFileType::MULTILINE_FASTA : KMC::InputFileType::FASTQ)
-            .SetCanonicalKmers(false);
+            .SetCanonicalKmers(false)
+            .SetTmpPath(get_temp_file_manager().get_dir());
 
         KMC::Runner kmc;
 
@@ -143,8 +144,8 @@ public:
         stage2Params.SetNThreads(n_threads)
             .SetMaxRamGB(ramForStage2)
             .SetCutoffMin(min_abundance)
-            .SetOutputFileName(KMC_db_file_prefix).
-            SetStrictMemoryMode(true);
+            .SetOutputFileName(KMC_db_file_prefix)
+            .SetStrictMemoryMode(true);
 
         kmc.RunStage2(stage2Params);
 
