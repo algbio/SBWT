@@ -108,7 +108,7 @@ LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, co
     if(infiles.size() != outfiles.size()){
         string count1 = to_string(infiles.size());
         string count2 = to_string(outfiles.size());
-        throw std::runtime_error("Number of input and output files does not match (" + count1 + "," + count2 + ")");
+        throw std::runtime_error("Number of input and output files does not match (" + count1 + " vs " + count2 + ")");
     }
 
     LL n_queries_run = 0;
@@ -153,7 +153,8 @@ int search_main(int argc, char** argv){
     // Interpret input file    
     string queryfile = opts["query-file"].as<string>();
     vector<string> input_files;
-    if(queryfile.size() >= 4 && queryfile.substr(queryfile.size() - 4) == ".txt"){
+    bool multi_file = queryfile.size() >= 4 && queryfile.substr(queryfile.size() - 4) == ".txt";
+    if(multi_file){
         input_files = readlines(queryfile);
     } else{
         input_files = {queryfile};
@@ -163,7 +164,7 @@ int search_main(int argc, char** argv){
     // Interpret output file
     string outfile = opts["out-file"].as<string>();
     vector<string> output_files;
-    if(outfile.size() >= 4 && outfile.substr(outfile.size() - 4) == ".txt"){
+    if(multi_file){
         output_files = readlines(outfile);
     } else{
         output_files = {outfile};
