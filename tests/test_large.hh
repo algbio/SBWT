@@ -57,6 +57,12 @@ class TEST_LARGE : public ::testing::Test {
         matrixboss.build_using_KMC({rev_file}, k, true, 2, 2, 1);
     }
 
+    static void SetUpTestCase(){
+        // SetUpTestCase was renamed to SetUpTestSuite at some point.
+        // This funtion is for legacy support.
+        SetUpTestSuite();
+    }
+
 };
 
 matrixboss_t TEST_LARGE::matrixboss;
