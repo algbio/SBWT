@@ -47,7 +47,10 @@ Construct an SBWT variant.
 Usage:
   build [OPTION...]
 
-  -i, --in-file arg           The input sequences in FASTA or FASTQ format.
+  -i, --in-file arg           The input sequences as a FASTA or FASTQ file. 
+                              If the file extension is .txt, the file is 
+                              interpreted as a list of input files, one 
+                              file on each line.
   -o, --out-file arg          Output file for the constructed index.
   -k, --kmer-length arg       The k-mer length.
       --variant arg           The SBWT variant to build. Available 
@@ -67,6 +70,7 @@ Usage:
                               enforced). Must be at least 2. (default: 2)
       --temp-dir arg          Location for temporary files. (default: .)
   -h, --help                  Print usage
+
 ```
 
 # Running queries
@@ -82,11 +86,16 @@ This prints for each query of length n in the input a line containing n-k+1 spac
 ```
 Query all k-mers of all input reads.
 Usage:
-  ./build/bin/sbwt search [OPTION...]
+  search [OPTION...]
 
   -o, --out-file arg    Output filename.
   -i, --index-file arg  Index input file.
-  -q, --query-file arg  The query in FASTA format.
+  -q, --query-file arg  The query in FASTA or FASTQ format. Multi-line 
+                        FASTQ is not supported. If the file extension is 
+                        .txt, this is interpreted as a list of query files, 
+                        one per line. In this case, --out-file is also 
+                        interpreted as a list of output files in the same 
+                        manner, one line for each input file.
   -h, --help            Print usage
 ```
 
