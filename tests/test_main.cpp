@@ -13,6 +13,7 @@
 #include "setup_tests.hh"
 #include "test_small.hh"
 #include "test_large.hh"
+#include "test_misc.hh"
 #include <cassert>
 
 int main(int argc, char **argv) {

@@ -1,5 +1,8 @@
 #include "globals.hh"
 #include "throwing_streams.hh"
+#include "buffered_streams.hh"
+#include "input_reading.hh"
+#include "sequence_writers.hh"
 #include <algorithm>
 #include <chrono>
 #include <string>
@@ -8,6 +11,21 @@
 #include <iomanip>
 
 using namespace std::chrono;
+
+char get_rc(char c){
+    if(toupper(c) == 'A') return 'T';
+    else if(toupper(c) == 'C') return 'G';
+    else if(toupper(c) == 'G') return 'C';
+    else if(toupper(c) == 'T') return 'A';
+    else return c; // Don't touch characters like 'N'
+}
+
+string get_rc(const string& S){
+    string T = S;
+    std::reverse(T.begin(), T.end());
+    for(char& c : T) c = get_rc(c);
+    return T;
+}
 
 vector<string> readlines(string filename){
     vector<string> lines;
@@ -99,3 +117,30 @@ void check_true(bool condition, string error_message){
     }
 }
 
+vector<string> create_reverse_complement_files(const vector<string>& files){
+    vector<string> newfiles;
+    string fasta_header = ">\n";
+    string fastq_header = "@\n";
+    string newline = "\n";
+    string plus = "+";
+    for(string f : files){
+        Sequence_Reader_Buffered sr(f);
+        int64_t mode = sr.get_mode();
+
+        string f_rev = get_temp_file_manager().create_filename("", mode == FASTA_MODE ? ".fna" : ".fastq");
+        newfiles.push_back(f_rev);
+        Sequence_Writer_Buffered out(f_rev);
+        
+        while(true) { 
+            LL len = sr.get_next_read_to_buffer();
+            if(len == 0) break;
+
+            // Reverse complement
+            std::reverse(sr.read_buf, sr.read_buf + len);
+            for(LL i = 0; i < len; i++) sr.read_buf[i] = get_rc(sr.read_buf[i]);
+
+            out.write_sequence(sr.read_buf, len);
+        }
+    }
+    return newfiles;
+}

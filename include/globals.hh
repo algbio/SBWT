@@ -11,6 +11,9 @@ using namespace std;
 
 enum LogLevel {OFF = 0, MAJOR = 1, MINOR = 2, DEBUG = 3};
 
+// Creates a reverse-complement version of each file and return the filenames of the new files
+vector<string> create_reverse_complement_files(const vector<string>& files);
+
 vector<string> readlines(string filename);
 long long cur_time_millis();
 long long cur_time_micros();
@@ -20,6 +23,8 @@ void set_log_level(LogLevel level);
 LogLevel get_log_level();
 void write_log(string message, LogLevel level);
 void check_true(bool condition, string error_message);
+string get_rc(const string& s); // Reverse complement
+char get_rc(char c); // Reverse complement
 Temp_File_Manager& get_temp_file_manager();
 
 void check_readable(string filename);

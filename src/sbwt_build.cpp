@@ -26,6 +26,7 @@ int build_main(int argc, char** argv){
         ("o,out-file", "Output file for the constructed index.", cxxopts::value<string>())
         ("k,kmer-length", "The k-mer length.", cxxopts::value<LL>())
         ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>()->default_value("plain-matrix"))
+        ("add-reverse-complements", "Also add the reverse complement of every k-mer to the index (Warning: this creates a temporary reverse-complemented duplicate of each input file before construction. Make sure that the directory at --temp-dir can handle this amount of data).", cxxopts::value<bool>()->default_value("false"))
         ("no-streaming-support", "Save space by not building the streaming query support bit vector. This leads to slower queries.", cxxopts::value<bool>()->default_value("false"))
         ("t,n-threads", "Number of parallel threads.", cxxopts::value<LL>()->default_value("1"))
         ("a,min-abundance", "Discard all k-mers occurring fewer than this many times. By default we keep all k-mers. Note that we consider a k-mer distinct from its reverse complement.", cxxopts::value<LL>()->default_value("1"))
@@ -62,12 +63,20 @@ int build_main(int argc, char** argv){
     }
     for(string file : input_files) check_readable(file);
 
-    get_temp_file_manager().set_dir(opts["temp-dir"].as<string>());
     bool streaming_support = !(opts["no-streaming-support"].as<bool>());
+    bool revcomps = opts["add-reverse-complements"].as<bool>();
     LL n_threads = opts["n-threads"].as<LL>();
     LL ram_gigas = opts["ram-gigas"].as<LL>();
     LL k = opts["k"].as<LL>();
     LL min_abundance = opts["min-abundance"].as<LL>();
+    string temp_dir = opts["temp-dir"].as<string>();
+    get_temp_file_manager().set_dir(temp_dir);    
+
+    if(revcomps){
+        write_log("Creating a reverse-complemented version of each input file to " + temp_dir, LogLevel::MAJOR);
+        vector<string> new_files = create_reverse_complement_files(input_files);
+        for(string f : new_files) input_files.push_back(f);
+    }
 
     plain_matrix_sbwt_t matrixboss_plain;
 

@@ -36,7 +36,7 @@ class Sequence_Reader_Buffered {
 // The class is used like this:
 // Sequence_Reader_Buffered sr;
 // while(true) { 
-//   len = get_next_read_to_buffer()
+//   LL len = sr.get_next_read_to_buffer();
 //   if(len == 0) break;
 //   do something with sr.read_buf
 //}
@@ -88,6 +88,8 @@ public:
     ~Sequence_Reader_Buffered(){
         free(read_buf);
     }
+
+    LL get_mode() const {return mode;}
 
     // Returns length of read, or zero if no more reads.
     // The read is null-terminated.
