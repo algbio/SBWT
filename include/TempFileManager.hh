@@ -88,7 +88,7 @@ public:
             exit(1);
         }
         while(true){
-            string name = temp_dir + "/" + prefix + get_random_string(10) + suffix; // 62^25 >= 10^44 different possibilities
+            string name = temp_dir + "/" + prefix + get_random_string(10) + suffix;
             auto desc = open(name.c_str(), O_CREAT | O_EXCL, S_IRWXU); // Fails if file exists, otherwise creates it
             if(desc != -1){
                 used_names.insert(name);
@@ -101,7 +101,6 @@ public:
                 close(desc);
                 exit(1);
             }
-            
         }
     } // The lock guard goes out of scope and is destructed
 
