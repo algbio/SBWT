@@ -4,6 +4,18 @@
 #include "sequence_writers.hh"
 #include <gtest/gtest.h>
 
+TEST(MISC, test_rc){
+    ASSERT_EQ(get_rc('A'), 'T');
+    ASSERT_EQ(get_rc('C'), 'G');
+    ASSERT_EQ(get_rc('G'), 'C');
+    ASSERT_EQ(get_rc('T'), 'A');
+    ASSERT_EQ(get_rc('a'), 't');
+    ASSERT_EQ(get_rc('c'), 'g');
+    ASSERT_EQ(get_rc('g'), 'c');
+    ASSERT_EQ(get_rc('t'), 'a');
+    ASSERT_EQ(get_rc('N'), 'N');
+}
+
 void create_rc_file_test(const string& file_extension){
 
     vector<string> seqs1 = {"ACAGT", "CGAG", "CGGACG"};
