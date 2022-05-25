@@ -40,8 +40,6 @@ class TEST_LARGE : public ::testing::Test {
     }
 
     void SetUp() override {
-        k = 3;
-
         string filename = "example_data/coli3.fna";
 
         string rev_file = get_temp_file_manager().create_filename("",".fna");
@@ -51,7 +49,7 @@ class TEST_LARGE : public ::testing::Test {
         while(!sr.done())
             seqs.push_back(sr.get_next_query_stream().get_all());
 
-        LL k = 30;
+        k = 30;
         logger << "Building E. coli in memory..." << endl;
         matrixboss_reference.build_from_strings(seqs, k, true);
 
@@ -60,8 +58,6 @@ class TEST_LARGE : public ::testing::Test {
     }
 
 };
-
-
 
 TEST_F(TEST_LARGE, check_matrix_bits){
     logger << matrixboss_reference.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
