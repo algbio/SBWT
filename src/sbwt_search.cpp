@@ -134,17 +134,8 @@ int search_main(int argc, char** argv){
     check_writable(outfile);
     check_readable(indexfile);
     check_readable(queryfile);
-
-    string file_format = figure_out_file_format(queryfile);
-    int64_t reader_mode = 0;
-    if(file_format == "fasta") reader_mode = FASTA_MODE;
-    else if(file_format == "fastq") reader_mode = FASTQ_MODE;
-    else{
-        cerr << "File format not supported: " << file_format << endl;
-        return 1;
-    }
     
-    Sequence_Reader_Buffered sr(queryfile, reader_mode);
+    Sequence_Reader_Buffered sr(queryfile);
 
     vector<string> variants = get_available_variants();
 

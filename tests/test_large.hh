@@ -32,7 +32,7 @@ void reverse_seqs_in_fasta(std::string infile, std::string outfile){
 }
 
 void test_streaming_queries(matrixboss_t& index, const string& query_filename){
-    Sequence_Reader sr(query_filename, FASTA_MODE);
+    Sequence_Reader sr(query_filename);
     while(!sr.done()){
         string S = sr.get_next_query_stream().get_all();
         vector<int64_t> result = index.streaming_search(S);
@@ -72,7 +72,7 @@ TEST(TEST_LARGE, e_coli){
     ASSERT_EQ(matrixboss_kmc.subset_rank.T_bits, matrixboss.subset_rank.T_bits);
 
     logger << "Testing streaming queries..." << endl;
-    string query_file = "example_data/queries.fna";
+    string query_file = "example_data/queries.fastq";
     test_streaming_queries(matrixboss_kmc, query_file);
     
     logger << "Querying all k-mers in the input..." << endl;

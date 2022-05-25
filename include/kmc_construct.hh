@@ -5,6 +5,7 @@
 #include "KMC/kmc_api/kmc_file.h"
 #include "KMC/include/kmc_runner.h"
 #include "KMC_code.hh"
+#include "input_reading.hh"
 #include "buffered_streams.hh"
 #include "EM_sort/EM_sort.hh"
 #include "kmc_construct_helper_classes.hh"

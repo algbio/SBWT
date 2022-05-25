@@ -16,6 +16,8 @@
 
 using namespace std;
 
+string figure_out_file_format(string filename);
+
 const int64_t FASTA_MODE = 0;
 const int64_t FASTQ_MODE = 1;
 
@@ -68,6 +70,20 @@ public:
         read_buf_cap = 256;
         read_buf = (char*)malloc(read_buf_cap);
     }
+
+    // mode should be FASTA_MODE or FASTQ_MODE
+    // Note: FASTQ mode does not support multi-line FASTQ
+    Sequence_Reader_Buffered(string filename) : stream(filename) {
+        string format = figure_out_file_format(filename);
+        if(format == "fasta") mode = FASTA_MODE;
+        else if(format == "fastq") mode = FASTQ_MODE;
+        else throw(runtime_error("Unknown file format: " + filename));
+
+        // todo: check that fasta files start with > and fastq files start with @
+        read_buf_cap = 256;
+        read_buf = (char*)malloc(read_buf_cap);
+    }
+
 
     ~Sequence_Reader_Buffered(){
         free(read_buf);
@@ -225,8 +241,7 @@ public:
     int64_t mode;
     bool upper_case_enabled;
 
-    // mode is FASTA_MODE of FASTQ_MODE defined in this file
-    Sequence_Reader(string filename, int64_t mode) : file(filename, ios::in | ios::binary), mode(mode), upper_case_enabled(true) {
+    void sanity_check(){
         if(mode == FASTA_MODE) {
             if(file.stream.peek() != '>'){
                 throw runtime_error("Error: FASTA-file does not start with '>'");
@@ -237,6 +252,19 @@ public:
                 throw runtime_error("Error: FASTQ-file does not start with '@'");
             }
         }
+    }
+
+    // mode is FASTA_MODE of FASTQ_MODE defined in this file
+    Sequence_Reader(string filename, int64_t mode) : file(filename, ios::in | ios::binary), mode(mode), upper_case_enabled(true) {
+        sanity_check();
+    }
+
+    Sequence_Reader(string filename) : file(filename, ios::in | ios::binary), upper_case_enabled(true) {
+        string format = figure_out_file_format(filename);
+        if(format == "fasta") mode = FASTA_MODE;
+        else if(format == "fastq") mode = FASTQ_MODE;
+        else throw(runtime_error("Unknown file format: " + filename));
+        sanity_check();
     }
 
     Read_stream get_next_query_stream(){
