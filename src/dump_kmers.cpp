@@ -7,7 +7,7 @@
 #include "NodeBOSS.hh"
 #include "SubsetWT.hh"
 #include "stdlib_printing.hh"
-#include "input_reading.hh"
+#include "SeqIO.hh"
 #include "SubsetMatrixRank.hh"
 #include <filesystem>
 

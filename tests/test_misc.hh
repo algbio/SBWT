@@ -1,7 +1,6 @@
 #include "setup_tests.hh"
 #include "kmc_construct.hh"
 #include "globals.hh"
-#include "sequence_writers.hh"
 #include <gtest/gtest.h>
 
 TEST(MISC, test_rc){
@@ -25,8 +24,8 @@ void create_rc_file_test(const string& file_extension){
     vector<string> oldfiles = {f1,f2};
 
     // Write to files
-    Sequence_Writer_Buffered w1(f1);
-    Sequence_Writer_Buffered w2(f2);
+    SeqIO::Writer w1(f1);
+    SeqIO::Writer w2(f2);
     for(string seq : seqs1) w1.write_sequence(seq.c_str(), seq.size());
     for(string seq : seqs2) w2.write_sequence(seq.c_str(), seq.size());
     w1.flush();
@@ -44,8 +43,8 @@ void create_rc_file_test(const string& file_extension){
 
     // Check
     for(LL i = 0; i < newfiles.size(); i++){
-        Sequence_Reader sr1(oldfiles[i]);
-        Sequence_Reader sr2(newfiles[i]);
+        SeqIO::Unbuffered_Reader sr1(oldfiles[i]);
+        SeqIO::Unbuffered_Reader sr2(newfiles[i]);
         while(!sr1.done()){
             string s1 = sr1.get_next_query_stream().get_all();
             ASSERT_FALSE(sr2.done());

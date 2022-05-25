@@ -7,7 +7,7 @@
 #include "NodeBOSS.hh"
 #include "SubsetWT.hh"
 #include "stdlib_printing.hh"
-#include "input_reading.hh"
+#include "SeqIO.hh"
 #include "SubsetMatrixRank.hh"
 #include "buffered_streams.hh"
 #include "variants.hh"
@@ -45,7 +45,7 @@ template<typename sbwt_t>
 LL run_queries_streaming(const string& infile, const string& outfile, const sbwt_t& sbwt, bool colex){
     write_log("Running streaming queries from input file " + infile + " to output file " + outfile , LogLevel::MAJOR);
 
-    Sequence_Reader_Buffered sr(infile);
+    SeqIO::Reader sr(infile);
     Buffered_ofstream out(outfile);
     
     LL total_micros = 0;
@@ -73,7 +73,7 @@ LL run_queries_streaming(const string& infile, const string& outfile, const sbwt
 template<typename sbwt_t>
 LL run_queries_not_streaming(const string& infile, const string& outfile, const sbwt_t& sbwt, bool colex){
     write_log("Running non-streaming queries from input file " + infile + " to output file " + outfile , LogLevel::MAJOR);
-    Sequence_Reader_Buffered sr(infile);
+    SeqIO::Reader sr(infile);
     Buffered_ofstream out(outfile);
 
     LL total_micros = 0;

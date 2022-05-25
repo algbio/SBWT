@@ -8,7 +8,7 @@
 #include "SubsetMatrixRank.hh"
 #include "SubsetConcatRank.hh"
 #include "SubsetWT.hh"
-#include "input_reading.hh"
+#include "SeqIO.hh"
 #include "libwheeler/BOSS_builder.hh"
 #include "suffix_group_optimization.hh"
 #include "variants.hh"
@@ -29,10 +29,10 @@ class TEST_LARGE : public ::testing::Test {
     static vector<string> seqs;
 
     static void reverse_seqs_in_fasta(std::string infile, std::string outfile){
-        Sequence_Reader sr(infile, FASTA_MODE);
+        SeqIO::Unbuffered_Reader sr(infile, SeqIO::FASTA);
         throwing_ofstream out(outfile);
         while(!sr.done()){
-            Read_stream rs = sr.get_next_query_stream();
+            SeqIO::Unbuffered_Read_stream rs = sr.get_next_query_stream();
             string seq = rs.get_all();
             std::reverse(seq.begin(), seq.end());
             out << ">" + rs.header << "\n" << seq << "\n";
@@ -45,7 +45,7 @@ class TEST_LARGE : public ::testing::Test {
         string rev_file = get_temp_file_manager().create_filename("",".fna");
         reverse_seqs_in_fasta(filename, rev_file);
 
-        Sequence_Reader sr(filename);
+        SeqIO::Unbuffered_Reader sr(filename);
         while(!sr.done())
             seqs.push_back(sr.get_next_query_stream().get_all());
 
@@ -86,7 +86,7 @@ TEST_F(TEST_LARGE, check_bit_vectors){
 }
 
 TEST_F(TEST_LARGE, streaming_queries){
-    Sequence_Reader sr("example_data/queries.fastq");
+    SeqIO::Unbuffered_Reader sr("example_data/queries.fastq");
     while(!sr.done()){
         string S = sr.get_next_query_stream().get_all();
         vector<int64_t> result = matrixboss.streaming_search(S);

@@ -1,4 +1,6 @@
-#include "input_reading.hh"
+#include "SeqIO.hh"
+
+namespace SeqIO{
 
 string figure_out_file_format(string filename){
     for(int64_t i = (int64_t)filename.size()-1; i >= 0; i--){
@@ -23,3 +25,5 @@ string figure_out_file_format(string filename){
     throw(runtime_error("Unknown file format: " + filename));
     return "unknown";
 }
+
+} // namespace SeqIO

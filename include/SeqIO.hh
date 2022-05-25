@@ -16,10 +16,11 @@
 
 using namespace std;
 
+namespace SeqIO{
+
 string figure_out_file_format(string filename);
 
-const int64_t FASTA_MODE = 0;
-const int64_t FASTQ_MODE = 1;
+enum Format {FASTA, FASTQ};
 
 class NullStream : public std::ostream {
 public:
@@ -31,7 +32,7 @@ const NullStream &operator<<(NullStream &&os, const T &value) {
   return os;
 }
 
-class Sequence_Reader_Buffered {
+class Reader {
 
 // The class is used like this:
 // Sequence_Reader_Buffered sr;
@@ -49,8 +50,8 @@ class Sequence_Reader_Buffered {
 
 private:
 
-Sequence_Reader_Buffered(const Sequence_Reader_Buffered& temp_obj) = delete; // No copying
-Sequence_Reader_Buffered& operator=(const Sequence_Reader_Buffered& temp_obj) = delete;  // No copying
+Reader(const Reader& temp_obj) = delete; // No copying
+Reader& operator=(const Reader& temp_obj) = delete;  // No copying
 
 Buffered_ifstream stream;
 LL mode;
@@ -62,9 +63,9 @@ public:
 
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
-    Sequence_Reader_Buffered(string filename, LL mode) : stream(filename), mode(mode) {
+    Reader(string filename, LL mode) : stream(filename), mode(mode) {
         // todo: check that fasta files start with > and fastq files start with @
-        if(mode != FASTA_MODE && mode != FASTQ_MODE)
+        if(mode != FASTA && mode != FASTQ)
             throw std::invalid_argument("Unkown sequence format");
         
         read_buf_cap = 256;
@@ -73,10 +74,10 @@ public:
 
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
-    Sequence_Reader_Buffered(string filename) : stream(filename) {
+    Reader(string filename) : stream(filename) {
         string format = figure_out_file_format(filename);
-        if(format == "fasta") mode = FASTA_MODE;
-        else if(format == "fastq") mode = FASTQ_MODE;
+        if(format == "fasta") mode = FASTA;
+        else if(format == "fastq") mode = FASTQ;
         else throw(runtime_error("Unknown file format: " + filename));
 
         // todo: check that fasta files start with > and fastq files start with @
@@ -85,7 +86,7 @@ public:
     }
 
 
-    ~Sequence_Reader_Buffered(){
+    ~Reader(){
         free(read_buf);
     }
 
@@ -102,7 +103,7 @@ public:
             return 0;
         }
 
-        if(mode == FASTA_MODE){
+        if(mode == FASTA){
             char c = 0;
             while(c != '\n') stream.get(&c); // Skip fasta header line
 
@@ -123,7 +124,7 @@ public:
             }
             read_buf[buf_pos] = '\0';
             return buf_pos;
-        } else if(mode == FASTQ_MODE){
+        } else if(mode == FASTQ){
             char c = stream.get(&c);
             if(stream.eof()){
                 read_buf = nullptr;
@@ -163,13 +164,58 @@ public:
 
 };
 
+
+class Writer{
+
+    string fasta_header = ">\n";
+    string fastq_header = "@\n";
+    string newline = "\n";
+    string plus = "+";
+
+    public:
+
+    Buffered_ofstream out;
+    LL mode;
+
+    // Writes either fasta or fastq based on the file extension
+    Writer(string filename) : out(filename) {
+        string format = figure_out_file_format(filename);
+        if(format == "fasta") mode = FASTA;
+        else if(format == "fastq") mode = FASTQ;
+        else throw(runtime_error("Unknown file format: " + filename));
+    }
+
+    void write_sequence(const char* seq, LL len){
+        if(mode == FASTA){
+            // FASTA format
+            out.write(fasta_header.c_str(), 2);
+            out.write(seq, len);
+            out.write(newline.c_str(), 1);
+        } else{
+            // FASTQ
+            out.write(fastq_header.c_str(), 2);
+            out.write(seq, len);
+            out.write(newline.c_str(), 1);
+            out.write(plus.c_str(), 1);
+            out.write(newline.c_str(), 1);
+            out.write(seq, len); // Use the read again for the quality values
+            out.write(newline.c_str(), 1);
+        }
+    }
+
+    // Flush the stream. The stream is also automatically flushed when the object is destroyed.
+    void flush(){
+        out.flush();
+    }
+};
+
 /*
 
 LEGACY UNBUFFERED INPUT READING BELOW.
 
 */
 
-class Read_stream{
+class Unbuffered_Read_stream{
     
 private:
     
@@ -183,7 +229,7 @@ public:
     bool upper_case_enabled;
     
     // mode is FASTA_MODE of FASTQ_MODE defined in this file
-    Read_stream(throwing_ifstream* file, string header, int64_t mode, bool upper_case_enabled) : file(file), header(header), mode(mode), upper_case_enabled(upper_case_enabled) {
+    Unbuffered_Read_stream(throwing_ifstream* file, string header, int64_t mode, bool upper_case_enabled) : file(file), header(header), mode(mode), upper_case_enabled(upper_case_enabled) {
     
     }
 
@@ -193,7 +239,7 @@ public:
     // next character is the first character of the header of the next read (or the EOF
     // character if it was the last read).
     bool getchar(char& c){
-        if(mode == FASTA_MODE){
+        if(mode == FASTA){
             start:
             int next_char = file->stream.peek();
             if(next_char == EOF || next_char == '>') return false;
@@ -204,7 +250,7 @@ public:
             file->read(&c,1);
             if(upper_case_enabled) c = toupper(c);
             return true;
-        } else if(mode == FASTQ_MODE){
+        } else if(mode == FASTQ){
             int next_char = file->stream.peek();
             if(next_char == '\n' || next_char == '\r') {
                 // End of read. Rewind two lines forward to get to the header of the next read
@@ -234,8 +280,8 @@ public:
 
 };
 
-// Unbuffered!! If you don't need headers, use Squence_Reader_Buffered
-class Sequence_Reader{
+// Unbuffered!! If you don't need headers, use SeqIO::Reader
+class Unbuffered_Reader{
 
 public:
 
@@ -244,12 +290,12 @@ public:
     bool upper_case_enabled;
 
     void sanity_check(){
-        if(mode == FASTA_MODE) {
+        if(mode == FASTA) {
             if(file.stream.peek() != '>'){
                 throw runtime_error("Error: FASTA-file does not start with '>'");
             }
         }
-        if(mode == FASTQ_MODE) {
+        if(mode == FASTQ) {
             if(file.stream.peek() != '@'){
                 throw runtime_error("Error: FASTQ-file does not start with '@'");
             }
@@ -257,24 +303,24 @@ public:
     }
 
     // mode is FASTA_MODE of FASTQ_MODE defined in this file
-    Sequence_Reader(string filename, int64_t mode) : file(filename, ios::in | ios::binary), mode(mode), upper_case_enabled(true) {
+    Unbuffered_Reader(string filename, int64_t mode) : file(filename, ios::in | ios::binary), mode(mode), upper_case_enabled(true) {
         sanity_check();
     }
 
-    Sequence_Reader(string filename) : file(filename, ios::in | ios::binary), upper_case_enabled(true) {
+    Unbuffered_Reader(string filename) : file(filename, ios::in | ios::binary), upper_case_enabled(true) {
         string format = figure_out_file_format(filename);
-        if(format == "fasta") mode = FASTA_MODE;
-        else if(format == "fastq") mode = FASTQ_MODE;
+        if(format == "fasta") mode = FASTA;
+        else if(format == "fastq") mode = FASTQ;
         else throw(runtime_error("Unknown file format: " + filename));
         sanity_check();
     }
 
-    Read_stream get_next_query_stream(){
+    Unbuffered_Read_stream get_next_query_stream(){
         string header;
         file.getline(header);
         if(header.size() < 1) throw runtime_error("Error: FASTA or FASTQ parsing: header does not start with '>' or '@'");
         header = header.substr(1); // Drop the '>' in FASTA or '@' in FASTQ
-        Read_stream rs(&file, header, mode, upper_case_enabled);
+        Unbuffered_Read_stream rs(&file, header, mode, upper_case_enabled);
         return rs;
     }
 
@@ -288,3 +334,5 @@ public:
     }
 
 };
+
+} // Namespace SeqIO

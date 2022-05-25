@@ -5,7 +5,7 @@
 #include "KMC/kmc_api/kmc_file.h"
 #include "KMC/include/kmc_runner.h"
 #include "KMC_code.hh"
-#include "input_reading.hh"
+#include "SeqIO.hh"
 #include "buffered_streams.hh"
 #include "EM_sort/EM_sort.hh"
 #include "kmc_construct_helper_classes.hh"
@@ -116,12 +116,12 @@ public:
 
         KMC::Stage1Params stage1Params;
 
-        string file_format = figure_out_file_format(input_files[0]);
+        string file_format = SeqIO::figure_out_file_format(input_files[0]);
         if(file_format != "fasta" && file_format != "fastq"){
             throw std::runtime_error("File format not supported: " + file_format);
         }
         for(string filename : input_files){
-            if(figure_out_file_format(input_files[0]) != file_format){
+            if(SeqIO::figure_out_file_format(input_files[0]) != file_format){
                 throw std::runtime_error("Error: all input files must have the same format (fasta or fastq)");
             }
         }

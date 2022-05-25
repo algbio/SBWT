@@ -5,7 +5,7 @@
 #include "BOSS.hh"
 #include "NodeBOSS.hh"
 #include "SubsetMatrixRank.hh"
-#include "input_reading.hh"
+#include "SeqIO.hh"
 #include "variants.hh"
 
 typedef long long LL;

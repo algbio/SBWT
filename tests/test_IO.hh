@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include "globals.hh"
 #include "setup_tests.hh"
-#include "input_reading.hh"
+#include "SeqIO.hh"
 
 TEST(TEST_BUFFERED_IO, getline){
     string filename = get_temp_file_manager().create_filename();
