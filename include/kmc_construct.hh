@@ -66,7 +66,7 @@ public:
                 kmer_t b = x.kmer.copy();
                 if(a.get_k() == k) a.dropleft();
                 if(b.get_k() == k) b.dropleft();
-                is_start |= (a == b);
+                is_start |= (a != b);
                 suffix_group_starts.push_back(is_start);
                 first = false;
             }
