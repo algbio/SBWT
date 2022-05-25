@@ -20,64 +20,75 @@ typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 
 typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
 
-void reverse_seqs_in_fasta(std::string infile, std::string outfile){
-    Sequence_Reader sr(infile, FASTA_MODE);
-    throwing_ofstream out(outfile);
-    while(!sr.done()){
-        Read_stream rs = sr.get_next_query_stream();
-        string seq = rs.get_all();
-        std::reverse(seq.begin(), seq.end());
-        out << ">" + rs.header << "\n" << seq << "\n";
+class TEST_LARGE : public ::testing::Test {
+    protected:
+
+    matrixboss_t matrixboss;
+    matrixboss_t matrixboss_reference;
+    LL k;
+    vector<string> seqs;
+
+    void reverse_seqs_in_fasta(std::string infile, std::string outfile){
+        Sequence_Reader sr(infile, FASTA_MODE);
+        throwing_ofstream out(outfile);
+        while(!sr.done()){
+            Read_stream rs = sr.get_next_query_stream();
+            string seq = rs.get_all();
+            std::reverse(seq.begin(), seq.end());
+            out << ">" + rs.header << "\n" << seq << "\n";
+        }
     }
+
+    void SetUp() override {
+        k = 3;
+
+        string filename = "example_data/coli3.fna";
+
+        string rev_file = get_temp_file_manager().create_filename("",".fna");
+        reverse_seqs_in_fasta(filename, rev_file);
+
+        Sequence_Reader sr(filename);
+        while(!sr.done())
+            seqs.push_back(sr.get_next_query_stream().get_all());
+
+        LL k = 30;
+        logger << "Building E. coli in memory..." << endl;
+        matrixboss_reference.build_from_strings(seqs, k, true);
+
+        logger << "Building E. coli with KMC..." << endl;
+        matrixboss.build_using_KMC(rev_file, k, true, 2, 2, 1);
+    }
+
+};
+
+
+
+TEST_F(TEST_LARGE, check_matrix_bits){
+    logger << matrixboss_reference.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
+
+    ASSERT_EQ(matrixboss.subset_rank.A_bits, matrixboss_reference.subset_rank.A_bits);
+    ASSERT_EQ(matrixboss.subset_rank.C_bits, matrixboss_reference.subset_rank.C_bits);
+    ASSERT_EQ(matrixboss.subset_rank.G_bits, matrixboss_reference.subset_rank.G_bits);
+    ASSERT_EQ(matrixboss.subset_rank.T_bits, matrixboss_reference.subset_rank.T_bits);
 }
 
-void test_streaming_queries(matrixboss_t& index, const string& query_filename){
-    Sequence_Reader sr(query_filename);
+TEST_F(TEST_LARGE, streaming_queries){
+    Sequence_Reader sr("example_data/queries.fastq");
     while(!sr.done()){
         string S = sr.get_next_query_stream().get_all();
-        vector<int64_t> result = index.streaming_search(S);
-        for(LL i = 0; i < (LL)S.size()-index.k+1; i++){
-            LL x = index.search(S.c_str() + i);
+        vector<int64_t> result = matrixboss.streaming_search(S);
+        for(LL i = 0; i < (LL)S.size()-k+1; i++){
+            LL x = matrixboss.search(S.c_str() + i);
             ASSERT_EQ(result[i], x);
         }
     }
 }
 
-TEST(TEST_LARGE, e_coli){
-
-    string filename = "example_data/coli3.fna";
-
-    string rev_file = get_temp_file_manager().create_filename("",".fna");
-    reverse_seqs_in_fasta(filename, rev_file);
-
-    Sequence_Reader sr(filename, FASTA_MODE);
-    vector<string> seqs;
-    while(!sr.done())
-        seqs.push_back(sr.get_next_query_stream().get_all());
-    plain_matrix_sbwt_t matrixboss;
-
-    LL k = 30;
-    logger << "Building E. coli in memory..." << endl;
-    matrixboss.build_from_strings(seqs, k, true);
-
-    logger << "Building E. coli with KMC..." << endl;
-    plain_matrix_sbwt_t matrixboss_kmc;
-    matrixboss_kmc.build_using_KMC(rev_file, k, true, 2, 2, 1);
-
-    logger << matrixboss_kmc.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
-
-    ASSERT_EQ(matrixboss_kmc.subset_rank.A_bits, matrixboss.subset_rank.A_bits);
-    ASSERT_EQ(matrixboss_kmc.subset_rank.C_bits, matrixboss.subset_rank.C_bits);
-    ASSERT_EQ(matrixboss_kmc.subset_rank.G_bits, matrixboss.subset_rank.G_bits);
-    ASSERT_EQ(matrixboss_kmc.subset_rank.T_bits, matrixboss.subset_rank.T_bits);
-
-    logger << "Testing streaming queries..." << endl;
-    string query_file = "example_data/queries.fastq";
-    test_streaming_queries(matrixboss_kmc, query_file);
-    
-    logger << "Querying all k-mers in the input..." << endl;
-    unordered_set<kmer_t> all_kmers; // Also collect a set of all k-mers in the input
+TEST_F(TEST_LARGE, query_lots_of_kmers){
+    unordered_set<kmer_t> all_kmers; // Also collect a set of all k-mers in the input for later
     LL search_count = 0;
+
+    logger << "Querying all input k-mers..." << endl;
     for(const string& S : seqs){
         for(LL i = 0; i < (LL)S.size() - k + 1; i++){
             string kmer = S.substr(i,k);
@@ -95,7 +106,6 @@ TEST(TEST_LARGE, e_coli){
             }
         }
     }
-
     logger << "Querying random k-mers that are not in the input..." << endl;
     srand(12514);
     for(LL rep = 0; rep < 1e6; rep++){
@@ -109,6 +119,4 @@ TEST(TEST_LARGE, e_coli){
                 logger << S << " " << colex << endl;
         }
     }
-    
-
 }
