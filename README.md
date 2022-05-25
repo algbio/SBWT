@@ -7,7 +7,6 @@ This construction algorithm is based on the lightning-fast [k-mer counter KMC](h
 We are currently actively working on the code. Top items on the to-do list are the following:
 
 * Gzipped input and output streams
-* Saving space by indexing only canonical k-mers.
 
 # Compiling
 
@@ -48,30 +47,37 @@ Construct an SBWT variant.
 Usage:
   build [OPTION...]
 
-  -i, --in-file arg           The input sequences as a FASTA or FASTQ file. 
-                              If the file extension is .txt, the file is 
-                              interpreted as a list of input files, one 
-                              file on each line.
-  -o, --out-file arg          Output file for the constructed index.
-  -k, --kmer-length arg       The k-mer length.
-      --variant arg           The SBWT variant to build. Available 
-                              variants: plain-matrix rrr-matrix mef-matrix 
-                              plain-split rrr-split mef-split plain-concat 
-                              mef-concat plain-subsetwt rrr-subsetwt 
-                              (default: plain-matrix)
-      --no-streaming-support  Save space by not building the streaming 
-                              query support bit vector. This leads to 
-                              slower queries.
-  -t, --n-threads arg         Number of parallel threads. (default: 1)
-  -a, --min-abundance arg     Discard all k-mers occurring fewer than this 
-                              many times. By default we keep all k-mers. 
-                              Note that we consider a k-mer distinct from 
-                              its reverse complement. (default: 1)
-  -m, --ram-gigas arg         RAM budget in gigabytes (not strictly 
-                              enforced). Must be at least 2. (default: 2)
-      --temp-dir arg          Location for temporary files. (default: .)
-  -h, --help                  Print usage
-
+  -i, --in-file arg             The input sequences as a FASTA or FASTQ 
+                                file. If the file extension is .txt, the 
+                                file is interpreted as a list of input 
+                                files, one file on each line.
+  -o, --out-file arg            Output file for the constructed index.
+  -k, --kmer-length arg         The k-mer length.
+      --variant arg             The SBWT variant to build. Available 
+                                variants: plain-matrix rrr-matrix 
+                                mef-matrix plain-split rrr-split mef-split 
+                                plain-concat mef-concat plain-subsetwt 
+                                rrr-subsetwt (default: plain-matrix)
+      --add-reverse-complements
+                                Also add the reverse complement of every 
+                                k-mer to the index (Warning: this creates a 
+                                temporary reverse-complemented duplicate of 
+                                each input file before construction. Make 
+                                sure that the directory at --temp-dir can 
+                                handle this amount of data).
+      --no-streaming-support    Save space by not building the streaming 
+                                query support bit vector. This leads to 
+                                slower queries.
+  -t, --n-threads arg           Number of parallel threads. (default: 1)
+  -a, --min-abundance arg       Discard all k-mers occurring fewer than 
+                                this many times. By default we keep all 
+                                k-mers. Note that we consider a k-mer 
+                                distinct from its reverse complement. 
+                                (default: 1)
+  -m, --ram-gigas arg           RAM budget in gigabytes (not strictly 
+                                enforced). Must be at least 2. (default: 2)
+      --temp-dir arg            Location for temporary files. (default: .)
+  -h, --help       
 ```
 
 # Running queries
