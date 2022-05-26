@@ -3,7 +3,7 @@
 	url = https://github.com/vgteam/sdsl-lite
 [submodule "KMC"]
 	path = KMC
-	url = https://github.com/refresh-bio/KMC
+	url = https://github.com/algbio/KMC
 [submodule "googletest"]
 	path = googletest
 	url = https://github.com/google/googletest
