@@ -57,11 +57,11 @@ class TEST_LARGE : public ::testing::Test {
         matrixboss.build_using_KMC({rev_file}, k, true, 2, 2, 1);
     }
 
-    static void SetUpTestCase(){
-        // SetUpTestCase was renamed to SetUpTestSuite at some point.
-        // This funtion is for legacy support.
-        SetUpTestSuite();
-    }
+    // static void SetUpTestCase(){
+    //     // SetUpTestCase was renamed to SetUpTestSuite at some point.
+    //     // This funtion is for legacy support.
+    //     SetUpTestSuite();
+    // }
 
 };
 
@@ -115,7 +115,7 @@ TEST_F(TEST_LARGE, query_lots_of_kmers){
 
                 // Print verbose output
                 if(search_count % 100000 == 0)  logger << kmer << " " << colex << endl;
-                
+
             }
         }
     }
@@ -128,7 +128,7 @@ TEST_F(TEST_LARGE, query_lots_of_kmers){
             ASSERT_EQ(colex, -1); // Should not be found
 
             // Print verbose output
-            if(rep % 100000 == 0) 
+            if(rep % 100000 == 0)
                 logger << S << " " << colex << endl;
         }
     }

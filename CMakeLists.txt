@@ -30,7 +30,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(NODEBOSS_SOURCES src/globals.cpp src/sbwt_build.cpp src/sbwt_search.cpp src/suffix_group_optimization.cpp src/EM_sort/Block.cpp src/EM_sort/EM_sort.cpp src/input_reading.cpp)
 
 # KMC tools object files
-set(KMC_TOOLS 
+set(KMC_TOOLS
   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_filter.o
   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_reader.o
   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_writer.o
@@ -83,7 +83,7 @@ configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/include/vers
 
 ## Add local dependencies as targets
 add_subdirectory(${CMAKE_SOURCE_DIR}/sdsl-lite
-                 ${CMAKE_BINARY_DIR}/external/sdsl-lite/build)
+		 ${CMAKE_BINARY_DIR}/external/sdsl-lite/build)
 
 ## Set includes
 include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR})
@@ -99,6 +99,7 @@ if (BUILD_TESTS)
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(OpenMP REQUIRED)
   add_executable(sbwt_tests tests/test_main.cpp ${NODEBOSS_SOURCES})
+  include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/googletest/googletest/include)
   find_library(GTEST NAMES gtest PATHS ${CMAKE_SOURCE_DIR}/googletest/build/lib/)
   target_link_libraries(sbwt_tests ${GTEST} ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
 else()
