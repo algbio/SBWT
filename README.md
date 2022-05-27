@@ -125,4 +125,4 @@ This will build the executable `./build/bin/sbwt_tests`. Make sure to run the te
 
 # Acknowledgements
 
-The command-line parsing and the gzip support are implemented using the header-only libraries [cxxopts](https://github.com/jarro2783/cxxopts) and [zstr](https://github.com/mateidavid/zstr) respectively.
+The command-line parsing and the gzip support are implemented using [cxxopts](https://github.com/jarro2783/cxxopts) and [zstr](https://github.com/mateidavid/zstr) respectively.
