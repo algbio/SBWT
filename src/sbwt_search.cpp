@@ -114,9 +114,9 @@ LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, co
     LL n_queries_run = 0;
     for(int64_t i = 0; i < infiles.size(); i++){
         if(sbwt.has_streaming_query_support()){
-            n_queries_run += run_queries_not_streaming(infiles[i], outfiles[i], sbwt, colex);
-        } else{
             n_queries_run += run_queries_streaming(infiles[i], outfiles[i], sbwt, colex);
+        } else{
+            n_queries_run += run_queries_not_streaming(infiles[i], outfiles[i], sbwt, colex);
         }
     }
     return n_queries_run;
