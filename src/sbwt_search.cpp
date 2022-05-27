@@ -157,7 +157,7 @@ int search_main(int argc, char** argv){
         ("o,out-file", "Output filename.", cxxopts::value<string>())
         ("i,index-file", "Index input file.", cxxopts::value<string>())
         ("q,query-file", "The query in FASTA or FASTQ format, possibly gzipped. Multi-line FASTQ is not supported. If the file extension is .txt, this is interpreted as a list of query files, one per line. In this case, --out-file is also interpreted as a list of output files in the same manner, one line for each input file.", cxxopts::value<string>())
-        ("z,gzip-output", "Writes output in gzipped form.", cxxopts::value<bool>()->default_value("false"))
+        ("z,gzip-output", "Writes output in gzipped form. This can shrink the output files by an order of magnitude.", cxxopts::value<bool>()->default_value("false"))
         ("h,help", "Print usage")
     ;
 

@@ -1,8 +1,8 @@
 # SBWT
 
-This is the code for the paper [Succinct k-mer Set Representations Using Subset Rank Queries on the Spectral Burrows-Wheeler Transform (SBWT)](https://www.biorxiv.org/content/10.1101/2022.05.19.492613v1). The repository includes implementations of the various SBWT variants described in the paper. Note that contrary to many other k-mer membership data structures, our code is not aware of DNA reverse complements. That is, it considers a k-mer and its reverse complement as separate k-mers.
+This is the code for the paper [Succinct k-mer Set Representations Using Subset Rank Queries on the Spectral Burrows-Wheeler Transform (SBWT)](https://www.biorxiv.org/content/10.1101/2022.05.19.492613v1). The repository includes implementations of the various SBWT variants described in the paper. The data structures answer k-mer membership queries on the input data. Note that contrary to many other k-mer membership data structures, our code is not aware of DNA reverse complements. That is, it considers a k-mer and its reverse complement as separate k-mers.
 
-This construction algorithm is based on the lightning-fast [k-mer counter KMC](https://github.com/refresh-bio/KMC). Our code links directly to the KMC binaries. We have made slight changes to the KMC codebase to make this possible. Our fork of KMC is included as a submodule.
+This construction algorithm is based on the lightning-fast [k-mer counter KMC](https://github.com/refresh-bio/KMC). We call the KMC binaries directly from our code. The construction is very disk-heavy, so it is recommended to run construction code off a fast SSD drive.
 
 # Compiling
 
@@ -21,7 +21,7 @@ cmake .. -DMAX_KMER_LENGTH=32
 make -j4
 ```
 
-Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-mer length, up to 255.
+Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-mer length, up to 255. Larger values lead to slower construction and higher disk usage during construction.
 
 **Troubleshooting**: If you run into problems involving the `<filesystem>` header, you probably need to update your compiler. The compiler `g++-8` should be sufficient. Install a new compiler and direct CMake to use it with the `-DCMAKE_CXX_COMPILER` option. For example, to set the compiler to `g++-8`, run CMake with the option `-DCMAKE_CXX_COMPILER=g++-8`. 
 
@@ -104,7 +104,8 @@ Usage:
                         --out-file is also interpreted as a list of output 
                         files in the same manner, one line for each input 
                         file.
-  -z, --gzip-output     Writes output in gzipped form.
+  -z, --gzip-output     Writes output in gzipped form. This can shrink the 
+                        output files by an order of magnitude.
   -h, --help            Print usage
 ```
 
