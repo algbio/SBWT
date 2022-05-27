@@ -44,9 +44,11 @@ Usage:
   build [OPTION...]
 
   -i, --in-file arg             The input sequences as a FASTA or FASTQ 
-                                file. If the file extension is .txt, the 
-                                file is interpreted as a list of input 
-                                files, one file on each line.
+                                file, possibly gzipped. If the file 
+                                extension is .txt, the file is interpreted 
+                                as a list of input files, one file on each 
+                                line. All input files must be in the same 
+                                format.
   -o, --out-file arg            Output file for the constructed index.
   -k, --kmer-length arg         The k-mer length.
       --variant arg             The SBWT variant to build. Available 
@@ -56,11 +58,13 @@ Usage:
                                 rrr-subsetwt (default: plain-matrix)
       --add-reverse-complements
                                 Also add the reverse complement of every 
-                                k-mer to the index (Warning: this creates a 
+                                k-mer to the index. Warning: this creates a 
                                 temporary reverse-complemented duplicate of 
                                 each input file before construction. Make 
                                 sure that the directory at --temp-dir can 
-                                handle this amount of data).
+                                handle this amount of data. If the input is 
+                                gzipped, the duplicate will also be 
+                                compressed, which might take a while.
       --no-streaming-support    Save space by not building the streaming 
                                 query support bit vector. This leads to 
                                 slower queries.
@@ -73,7 +77,7 @@ Usage:
   -m, --ram-gigas arg           RAM budget in gigabytes (not strictly 
                                 enforced). Must be at least 2. (default: 2)
       --temp-dir arg            Location for temporary files. (default: .)
-  -h, --help       
+  -h, --help                    Print usage
 ```
 
 # Running queries
@@ -93,12 +97,14 @@ Usage:
 
   -o, --out-file arg    Output filename.
   -i, --index-file arg  Index input file.
-  -q, --query-file arg  The query in FASTA or FASTQ format. Multi-line 
-                        FASTQ is not supported. If the file extension is 
-                        .txt, this is interpreted as a list of query files, 
-                        one per line. In this case, --out-file is also 
-                        interpreted as a list of output files in the same 
-                        manner, one line for each input file.
+  -q, --query-file arg  The query in FASTA or FASTQ format, possibly 
+                        gzipped. Multi-line FASTQ is not supported. If the 
+                        file extension is .txt, this is interpreted as a 
+                        list of query files, one per line. In this case, 
+                        --out-file is also interpreted as a list of output 
+                        files in the same manner, one line for each input 
+                        file.
+  -z, --gzip-output     Writes output in gzipped form.
   -h, --help            Print usage
 ```
 
