@@ -4,10 +4,6 @@ This is the code for the paper [Succinct k-mer Set Representations Using Subset 
 
 This construction algorithm is based on the lightning-fast [k-mer counter KMC](https://github.com/refresh-bio/KMC). Our code links directly to the KMC binaries. We have made slight changes to the KMC codebase to make this possible. Our fork of KMC is included as a submodule.
 
-We are currently actively working on the code. Top items on the to-do list are the following:
-
-* Gzipped input and output streams
-
 # Compiling
 
 ```
@@ -126,3 +122,7 @@ make
 ```
 
 This will build the executable `./build/bin/sbwt_tests`. Make sure to run the test executable from the root of the repository, or otherwise it will not find the example data in ./example_data.
+
+# Acknowledgements
+
+The command-line parsing and the gzip support are implemented using the header-only libraries [cxxopts](https://github.com/jarro2783/cxxopts) and [zstr](https://github.com/mateidavid/zstr) respectively.
