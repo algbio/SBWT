@@ -16,23 +16,6 @@
 #include "EM_sort/EM_sort.hh"
 #include "setup_tests.hh"
 
-bool files_are_equal(const std::string& p1, const std::string& p2) {
-  //https://stackoverflow.com/questions/6163611/compare-two-files/6163627
-    throwing_ifstream f1(p1, std::ifstream::binary|std::ifstream::ate);
-    throwing_ifstream f2(p2, std::ifstream::binary|std::ifstream::ate);
-
-    if (f1.stream.tellg() != f2.stream.tellg()) {
-      return false; //size mismatch
-    }
-
-    //seek back to beginning and use std::equal to compare contents
-    f1.stream.seekg(0, std::ifstream::beg);
-    f2.stream.seekg(0, std::ifstream::beg);
-    return std::equal(std::istreambuf_iterator<char>(f1.stream.rdbuf()),
-                    std::istreambuf_iterator<char>(),
-                    std::istreambuf_iterator<char>(f2.stream.rdbuf()));
-}
-
 string generate_variable_binary_testcase(LL max_record_len_bytes, LL n_records){
     string outfile = get_temp_file_manager().create_filename();
     Buffered_ofstream out(outfile, ios::binary);

@@ -11,6 +11,19 @@
 typedef long long LL;
 using namespace std;
 
+// Return the format, or throws if not all files have the same format
+SeqIO::FileFormat check_that_all_files_have_the_same_format(const vector<string>& filenames){
+    if(filenames.size() == 0) runtime_error("Error: empty input file list");
+    SeqIO::FileFormat f1 = SeqIO::figure_out_file_format(filenames[0]);
+    for(LL i = 1; i < filenames.size(); i++){
+        SeqIO::FileFormat f2 = SeqIO::figure_out_file_format(filenames[i]);
+        if(f1.format != f2.format || f1.gzipped != f2.gzipped){
+            throw runtime_error("Error: not all input files have the same format (" + filenames[0] + " vs " + filenames[i] + ")");
+        }
+    }
+    return f1;
+}
+
 int build_main(int argc, char** argv){
 
     set_log_level(LogLevel::MAJOR);
@@ -22,11 +35,11 @@ int build_main(int argc, char** argv){
     for(string variant : variants) all_variants_string += " " + variant;
 
     options.add_options()
-        ("i,in-file", "The input sequences as a FASTA or FASTQ file. If the file extension is .txt, the file is interpreted as a list of input files, one file on each line.", cxxopts::value<string>())
+        ("i,in-file", "The input sequences as a FASTA or FASTQ file, possibly gzipped. If the file extension is .txt, the file is interpreted as a list of input files, one file on each line. All input files must be in the same format.", cxxopts::value<string>())
         ("o,out-file", "Output file for the constructed index.", cxxopts::value<string>())
         ("k,kmer-length", "The k-mer length.", cxxopts::value<LL>())
         ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>()->default_value("plain-matrix"))
-        ("add-reverse-complements", "Also add the reverse complement of every k-mer to the index (Warning: this creates a temporary reverse-complemented duplicate of each input file before construction. Make sure that the directory at --temp-dir can handle this amount of data).", cxxopts::value<bool>()->default_value("false"))
+        ("add-reverse-complements", "Also add the reverse complement of every k-mer to the index. Warning: this creates a temporary reverse-complemented duplicate of each input file before construction. Make sure that the directory at --temp-dir can handle this amount of data. If the input is gzipped, the duplicate will also be compressed, which might take a while.", cxxopts::value<bool>()->default_value("false"))
         ("no-streaming-support", "Save space by not building the streaming query support bit vector. This leads to slower queries.", cxxopts::value<bool>()->default_value("false"))
         ("t,n-threads", "Number of parallel threads.", cxxopts::value<LL>()->default_value("1"))
         ("a,min-abundance", "Discard all k-mers occurring fewer than this many times. By default we keep all k-mers. Note that we consider a k-mer distinct from its reverse complement.", cxxopts::value<LL>()->default_value("1"))
@@ -72,9 +85,19 @@ int build_main(int argc, char** argv){
     string temp_dir = opts["temp-dir"].as<string>();
     get_temp_file_manager().set_dir(temp_dir);    
 
+    SeqIO::FileFormat fileformat = check_that_all_files_have_the_same_format(input_files);
     if(revcomps){
         write_log("Creating a reverse-complemented version of each input file to " + temp_dir, LogLevel::MAJOR);
-        vector<string> new_files = create_reverse_complement_files(input_files);
+        vector<string> new_files;
+        if(fileformat.gzipped){
+            new_files = SeqIO::create_reverse_complement_files<
+                SeqIO::Reader<Buffered_ifstream<zstr::ifstream>>,
+                SeqIO::Writer<Buffered_ofstream<zstr::ofstream>>>(input_files);
+        } else{
+            new_files = SeqIO::create_reverse_complement_files<
+                SeqIO::Reader<Buffered_ifstream<std::ifstream>>,
+                SeqIO::Writer<Buffered_ofstream<std::ofstream>>>(input_files);
+        }
         for(string f : new_files) input_files.push_back(f);
     }
 

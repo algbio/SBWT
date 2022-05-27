@@ -25,6 +25,13 @@ TestLogger& operator<<(TestLogger& L, const T& t){
 
 TestLogger logger; // Pipe things you want to print into this object with the '<<' operator
 
+string string_to_temp_file(const string& S, const string& suffix = ""){
+    string filename = get_temp_file_manager().create_filename("", suffix);
+    throwing_ofstream out(filename);
+    out.write(S.data(), S.size());
+    return filename;
+}
+
 set<string> get_all_kmers(const vector<string>& input, int64_t k){
     set<string> kmers;
     for(string x : input)
@@ -52,6 +59,30 @@ void write_seqs_to_fasta_file(const vector<string>& v, const string& filename){
     throwing_ofstream out(filename);
     for(string S : v) out.stream << ">\n" << S << "\n";
 }
+
+// Null-terminator not written
+void write_to_file(const string& S, const string& filename){
+    throwing_ofstream out(filename);
+    out.stream.write(S.c_str(), S.size());
+}
+
+bool files_are_equal(const std::string& p1, const std::string& p2) {
+  //https://stackoverflow.com/questions/6163611/compare-two-files/6163627
+    throwing_ifstream f1(p1, std::ifstream::binary|std::ifstream::ate);
+    throwing_ifstream f2(p2, std::ifstream::binary|std::ifstream::ate);
+
+    if (f1.stream.tellg() != f2.stream.tellg()) {
+      return false; //size mismatch
+    }
+
+    //seek back to beginning and use std::equal to compare contents
+    f1.stream.seekg(0, std::ifstream::beg);
+    f2.stream.seekg(0, std::ifstream::beg);
+    return std::equal(std::istreambuf_iterator<char>(f1.stream.rdbuf()),
+                    std::istreambuf_iterator<char>(),
+                    std::istreambuf_iterator<char>(f2.stream.rdbuf()));
+}
+
 
 
 void enable_test_logging(){logger.verbose = true; }

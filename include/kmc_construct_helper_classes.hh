@@ -203,7 +203,7 @@ private:
     Disk_Instream& operator=(Disk_Instream const&) = delete;
 
     bool all_read = false;
-    Buffered_ifstream in;
+    Buffered_ifstream<> in;
     char* in_buffer;
 
     Node top;

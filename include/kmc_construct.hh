@@ -27,7 +27,7 @@ typedef KMC_construction_helper_classes::Node_stream_merger Node_stream_merger;
 public:
 
     // Appends the prefixes of x to nodes
-    void add_prefixes(kmer_t z, Buffered_ofstream& out, char* buf){
+    void add_prefixes(kmer_t z, Buffered_ofstream<>& out, char* buf){
         kmer_t prefix = z.copy();
         while(prefix.get_k() > 0){
             char edge_char = prefix.last();
@@ -116,22 +116,21 @@ public:
 
         KMC::Stage1Params stage1Params;
 
-        string file_format = SeqIO::figure_out_file_format(input_files[0]);
-        if(file_format != "fasta" && file_format != "fastq"){
-            throw std::runtime_error("File format not supported: " + file_format);
-        }
-        for(string filename : input_files){
-            if(SeqIO::figure_out_file_format(input_files[0]) != file_format){
-                throw std::runtime_error("Error: all input files must have the same format (fasta or fastq)");
+        string f = input_files[0]; // First input file
+        SeqIO::FileFormat format = SeqIO::figure_out_file_format(f);
+
+        for(string f2 : input_files){
+            SeqIO::FileFormat format2 = SeqIO::figure_out_file_format(f2);
+            if(format.format != format2.format || format.gzipped != format2.gzipped){
+                throw std::runtime_error("Error: all input files must have the same format");
             }
         }
-
 
         stage1Params.SetInputFiles(input_files)
             .SetKmerLen(k)
             .SetNThreads(n_threads)
             .SetMaxRamGB(ram_gigas)
-            .SetInputFileType(file_format == "fasta" ? KMC::InputFileType::MULTILINE_FASTA : KMC::InputFileType::FASTQ)
+            .SetInputFileType(format.format == SeqIO::FASTA ? KMC::InputFileType::MULTILINE_FASTA : KMC::InputFileType::FASTQ)
             .SetCanonicalKmers(false)
             .SetTmpPath(get_temp_file_manager().get_dir());
 

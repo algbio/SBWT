@@ -40,7 +40,7 @@ TEST(TEST_BUFFERED_IO, write_and_read){
     for(LL i = 0; i < n; i++) data[i] = rand() % 256;
 
     {
-        Buffered_ofstream out(filename, ios::binary);
+        Buffered_ofstream<> out(filename, ios::binary);
         
         out.set_buffer_capacity(123);
         
@@ -50,7 +50,7 @@ TEST(TEST_BUFFERED_IO, write_and_read){
 
     vector<char> data2(n);
     
-    Buffered_ifstream in(filename, ios::binary);
+    Buffered_ifstream<> in(filename, ios::binary);
     in.set_buffer_capacity(114);
 
     for(LL i = 0; i < n; i += 10)

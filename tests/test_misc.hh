@@ -38,7 +38,9 @@ void create_rc_file_test(const string& file_extension){
     filelist_out.close();
 
     // Reverse complement
-    vector<string> newfiles = create_reverse_complement_files(oldfiles);
+    vector<string> newfiles = SeqIO::create_reverse_complement_files<
+                SeqIO::Reader<Buffered_ifstream<std::ifstream>>,
+                SeqIO::Writer<Buffered_ofstream<std::ofstream>>>(oldfiles);
     ASSERT_EQ(newfiles.size(), oldfiles.size());
 
     // Check

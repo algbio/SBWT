@@ -5,13 +5,6 @@
 #include "setup_tests.hh"
 #include "SeqIO.hh"
 
-string string_to_temp_file(const string& S, const string& suffix = ""){
-    string filename = get_temp_file_manager().create_filename("", suffix);
-    throwing_ofstream out(filename);
-    out.write(S.data(), S.size());
-    return filename;
-}
-
 void check_sequence_reader_output(const vector<string>& seqs, LL mode, string fastafile){
     SeqIO::Reader sr(fastafile, mode);
     LL n_seqs_read = 0;
@@ -39,7 +32,6 @@ TEST(INPUT_PARSING, fasta_basic){
     string filename = string_to_temp_file(fasta);
     check_sequence_reader_output(seqs, SeqIO::FASTA, filename);
     check_buffered_sequence_reader_output(seqs, SeqIO::FASTA, filename);
-
 }
 
 TEST(INPUT_PARSING, fasta_multiple_lines){

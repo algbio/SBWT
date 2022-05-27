@@ -8,6 +8,7 @@
 #include <mutex>
 #include <iostream>
 #include <iomanip>
+#include "zstr/zstr.hpp"
 
 using namespace std::chrono;
 
@@ -132,28 +133,4 @@ void check_true(bool condition, string error_message){
     if(!condition){
         throw std::runtime_error(error_message);
     }
-}
-
-vector<string> create_reverse_complement_files(const vector<string>& files){
-    vector<string> newfiles;
-    for(string f : files){
-        SeqIO::Reader sr(f);
-        int64_t mode = sr.get_mode();
-
-        string f_rev = get_temp_file_manager().create_filename("", mode == SeqIO::FASTA ? ".fna" : ".fastq");
-        newfiles.push_back(f_rev);
-        SeqIO::Writer out(f_rev);
-
-        while(true) {
-            LL len = sr.get_next_read_to_buffer();
-            if(len == 0) break;
-
-            // Reverse complement
-            std::reverse(sr.read_buf, sr.read_buf + len);
-            for(LL i = 0; i < len; i++) sr.read_buf[i] = get_rc(sr.read_buf[i]);
-
-            out.write_sequence(sr.read_buf, len);
-        }
-    }
-    return newfiles;
 }

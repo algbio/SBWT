@@ -27,7 +27,7 @@ class Generic_Block{
 // Takes a pointer to a buffer. Read to the buffer the whole record including the 8-byte size value.
 // The buffer might be realloc'd. Returns a bool whether read was successful.
 // buffer_len must be greater than 0 (otherwise buffer doubling does not work)
-bool read_variable_binary_record(Buffered_ifstream& input, char** buffer, int64_t* buffer_len);
+bool read_variable_binary_record(Buffered_ifstream<>& input, char** buffer, int64_t* buffer_len);
 
 // Block of records of variable length. The first 8 bytes of a record are a big-endian integer L 
 // that tells size of the record. Then follow L-8 bytes which is the "payload" of the record.
@@ -75,7 +75,7 @@ class Variable_binary_block : public Generic_Block{
     }
 
     virtual void write_to_file(string filename){
-        Buffered_ofstream out(filename, ios::binary);
+        Buffered_ofstream<> out(filename, ios::binary);
         for(int64_t i = 0; i < starts.size(); i++){
             int64_t length = parse_big_endian_LL(data + starts[i]);
             out.write(data + starts[i], length);
@@ -88,7 +88,7 @@ class Variable_binary_block : public Generic_Block{
 };
 
 // RETURN VALUE MUST BE FREED BY CALLER
-Variable_binary_block* get_next_variable_binary_block(Buffered_ifstream& input, int64_t B);
+Variable_binary_block* get_next_variable_binary_block(Buffered_ifstream<>& input, int64_t B);
 
 // Records of exactly n bytes each
 class Constant_binary_block : public Generic_Block{
@@ -136,7 +136,7 @@ public:
     }
 
     virtual void write_to_file(string filename){
-        Buffered_ofstream out(filename, ios::binary);
+        Buffered_ofstream<> out(filename, ios::binary);
         for(int64_t i = 0; i < starts.size(); i++){
             out.write(data + starts[i], record_size);
         }
@@ -150,4 +150,4 @@ public:
 
 // Reads up to B bytes into a new block
 // THE RETURN VALUE MUST BE FREED BY THE CALLER
-Constant_binary_block* get_next_constant_binary_block(Buffered_ifstream& input, int64_t B, int64_t record_size);
+Constant_binary_block* get_next_constant_binary_block(Buffered_ifstream<>& input, int64_t B, int64_t record_size);

@@ -10,6 +10,7 @@
 #include <vector>
 #include <fstream>
 #include <cassert>
+#include <algorithm>
 #include "globals.hh"
 #include "throwing_streams.hh"
 #include "buffered_streams.hh"
@@ -18,9 +19,15 @@ using namespace std;
 
 namespace SeqIO{
 
-string figure_out_file_format(string filename);
-
 enum Format {FASTA, FASTQ};
+
+struct FileFormat{
+    Format format;
+    bool gzipped;
+    string extension; // Includes the possible .gz extension
+};
+
+FileFormat figure_out_file_format(string filename);
 
 class NullStream : public std::ostream {
 public:
@@ -32,6 +39,35 @@ const NullStream &operator<<(NullStream &&os, const T &value) {
   return os;
 }
 
+// Creates a reverse-complement version of each file and return the filenames of the new files
+template<typename reader_t, typename writer_t>
+vector<string> create_reverse_complement_files(const vector<string>& files){
+    vector<string> newfiles;
+    for(string f : files){
+        SeqIO::FileFormat fileformat = SeqIO::figure_out_file_format(f);
+
+        string f_rev = get_temp_file_manager().create_filename("", fileformat.extension);
+        newfiles.push_back(f_rev);
+
+        reader_t sr(f);
+        writer_t sw(f_rev);
+
+        while(true) {
+            LL len = sr.get_next_read_to_buffer();
+            if(len == 0) break;
+
+            // Reverse complement
+            char* buf = sr.read_buf;
+            std::reverse(buf, buf + len);
+            for(LL i = 0; i < len; i++) buf[i] = get_rc(buf[i]);
+
+            sw.write_sequence(buf, len);
+        }
+    }
+    return newfiles;
+}
+
+template<typename ifstream_t = Buffered_ifstream<std::ifstream>> // The underlying file stream.
 class Reader {
 
 // The class is used like this:
@@ -53,7 +89,7 @@ private:
 Reader(const Reader& temp_obj) = delete; // No copying
 Reader& operator=(const Reader& temp_obj) = delete;  // No copying
 
-Buffered_ifstream stream;
+ifstream_t stream;
 LL mode;
 LL read_buf_cap;
 
@@ -89,9 +125,9 @@ public:
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
     Reader(string filename) : stream(filename, ios::binary) {
-        string format = figure_out_file_format(filename);
-        if(format == "fasta") mode = FASTA;
-        else if(format == "fastq") mode = FASTQ;
+        SeqIO::FileFormat fileformat = figure_out_file_format(filename);
+        if(fileformat.format == FASTA) mode = FASTA;
+        else if(fileformat.format == FASTQ) mode = FASTQ;
         else throw(runtime_error("Unknown file format: " + filename));
 
         // todo: check that fasta files start with > and fastq files start with @
@@ -182,7 +218,7 @@ public:
 
 };
 
-
+template<typename ofstream_t = Buffered_ofstream<std::ofstream>> // The underlying file stream.
 class Writer{
 
     string fasta_header = ">\n";
@@ -192,14 +228,14 @@ class Writer{
 
     public:
 
-    Buffered_ofstream out;
+    ofstream_t out;
     LL mode;
 
-    // Writes either fasta or fastq based on the file extension
+    // Tries to figure out the format based on the file extension.
     Writer(string filename) : out(filename) {
-        string format = figure_out_file_format(filename);
-        if(format == "fasta") mode = FASTA;
-        else if(format == "fastq") mode = FASTQ;
+        SeqIO::FileFormat fileformat = figure_out_file_format(filename);
+        if(fileformat.format == FASTA) mode = FASTA;
+        else if(fileformat.format == FASTQ) mode = FASTQ;
         else throw(runtime_error("Unknown file format: " + filename));
     }
 
@@ -326,9 +362,9 @@ public:
     }
 
     Unbuffered_Reader(string filename) : file(filename, ios::in | ios::binary), upper_case_enabled(true) {
-        string format = figure_out_file_format(filename);
-        if(format == "fasta") mode = FASTA;
-        else if(format == "fastq") mode = FASTQ;
+        SeqIO::FileFormat fileformat = figure_out_file_format(filename);
+        if(fileformat.format == FASTA) mode = FASTA;
+        else if(fileformat.format == FASTQ) mode = FASTQ;
         else throw(runtime_error("Unknown file format: " + filename));
         sanity_check();
     }
