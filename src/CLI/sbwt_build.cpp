@@ -120,12 +120,10 @@ int build_main(int argc, char** argv){
     config.temp_dir = temp_dir;
 
     sbwt::plain_matrix_sbwt_t matrixboss_plain(config);
-    char colex = false; // Lexicographic or colexicographic index? KMC sorts in lexicographic order.
 
     sbwt::throwing_ofstream out(out_file, ios::binary);
     LL bytes_written = 0;
     bytes_written += sbwt::serialize_string(variant, out.stream); // Write variant string to file
-    out.stream.write(&colex, 1); bytes_written++; // Write colex flag
 
     sbwt::write_log("Building subset rank support", sbwt::LogLevel::MAJOR);
     
@@ -134,44 +132,45 @@ int build_main(int argc, char** argv){
     sdsl::bit_vector& G_bits = matrixboss_plain.subset_rank.G_bits;
     sdsl::bit_vector& T_bits = matrixboss_plain.subset_rank.T_bits;
     sdsl::bit_vector& ssupport = matrixboss_plain.suffix_group_starts;
+    bool colex = matrixboss_plain.colex;
 
     if (variant == "plain-matrix"){
         bytes_written = matrixboss_plain.serialize(out.stream);
     }
     if (variant == "rrr-matrix"){
-        sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-matrix"){
-        sbwt::mef_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::mef_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-split"){
-        sbwt::plain_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::plain_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-split"){
-        sbwt::rrr_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::rrr_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-split"){
-        sbwt::mef_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::mef_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-concat"){
-        sbwt::plain_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::plain_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-concat"){
-        sbwt::mef_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::mef_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-subsetwt"){
-        sbwt::plain_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::plain_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-subsetwt"){
-        sbwt::rrr_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        sbwt::rrr_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
 

@@ -45,15 +45,13 @@ inline void print_vector(const vector<int64_t>& v, writer_t& out){
 }
 
 template<typename sbwt_t, typename reader_t, typename writer_t>
-LL run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt, bool colex){
+LL run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt){
 
     LL total_micros = 0;
     LL number_of_queries = 0;
     while(true){ 
         LL len = reader.get_next_read_to_buffer();
         if(len == 0) break;
-
-        if(!colex) std::reverse(reader.read_buf, reader.read_buf + len);
 
         LL t0 = cur_time_micros();
         vector<int64_t> out_buffer = sbwt.streaming_search(reader.read_buf, len);
@@ -62,7 +60,6 @@ LL run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt,
         number_of_queries += out_buffer.size();
 
         // Write out
-        if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
         print_vector(out_buffer, writer);
     }
     write_log("us/query: " + to_string((double)total_micros / number_of_queries) + " (excluding I/O etc)", LogLevel::MAJOR);
@@ -70,7 +67,7 @@ LL run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt,
 }
 
 template<typename sbwt_t, typename reader_t, typename writer_t>
-LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt, bool colex){
+LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt){
 
     LL total_micros = 0;
     LL number_of_queries = 0;
@@ -80,7 +77,6 @@ LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& s
         LL len = reader.get_next_read_to_buffer();
         if(len == 0) break;
 
-        if(!colex) std::reverse(reader.read_buf, reader.read_buf + len);
         for(LL i = 0; i < len - k + 1; i++){
             LL t0 = cur_time_micros();
             LL ans = sbwt.search(reader.read_buf + i);
@@ -88,7 +84,6 @@ LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& s
             number_of_queries++;
             out_buffer.push_back(ans);
         }
-        if(!colex) std::reverse(out_buffer.begin(), out_buffer.end());
 
         print_vector(out_buffer, writer);
         out_buffer.clear();
@@ -98,22 +93,22 @@ LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& s
 }
 
 template<typename sbwt_t, typename reader_t, typename writer_t>
-LL run_file(const string& infile, const string& outfile, const sbwt_t& sbwt, bool colex){
+LL run_file(const string& infile, const string& outfile, const sbwt_t& sbwt){
     reader_t reader(infile);
     writer_t writer(outfile);
     if(sbwt.has_streaming_query_support()){
         write_log("Running streaming queries from input file " + infile + " to output file " + outfile , LogLevel::MAJOR);
-        return run_queries_streaming<sbwt_t, reader_t, writer_t>(reader, writer, sbwt, colex);
+        return run_queries_streaming<sbwt_t, reader_t, writer_t>(reader, writer, sbwt);
     }
     else{
         write_log("Running non-streaming queries from input file " + infile + " to output file " + outfile , LogLevel::MAJOR);
-        return run_queries_not_streaming<sbwt_t, reader_t, writer_t>(reader, writer, sbwt, colex);
+        return run_queries_not_streaming<sbwt_t, reader_t, writer_t>(reader, writer, sbwt);
     }
 }
 
 // Returns number of queries executed
 template<typename sbwt_t>
-LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, const sbwt_t& sbwt, bool colex, bool gzip_output){
+LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, const sbwt_t& sbwt, bool gzip_output){
 
     if(infiles.size() != outfiles.size()){
         string count1 = to_string(infiles.size());
@@ -131,16 +126,16 @@ LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, co
     for(int64_t i = 0; i < infiles.size(); i++){
         bool gzip_input = SeqIO::figure_out_file_format(infiles[i]).gzipped;
         if(gzip_input && gzip_output){
-            n_queries_run += run_file<sbwt_t, in_gzip, out_gzip>(infiles[i], outfiles[i], sbwt, colex);
+            n_queries_run += run_file<sbwt_t, in_gzip, out_gzip>(infiles[i], outfiles[i], sbwt);
         } 
         if(gzip_input && !gzip_output){
-            n_queries_run += run_file<sbwt_t, in_gzip, out_no_gzip>(infiles[i], outfiles[i], sbwt, colex);
+            n_queries_run += run_file<sbwt_t, in_gzip, out_no_gzip>(infiles[i], outfiles[i], sbwt);
         }
         if(!gzip_input && gzip_output){
-            n_queries_run += run_file<sbwt_t, in_no_gzip, out_gzip>(infiles[i], outfiles[i], sbwt, colex);
+            n_queries_run += run_file<sbwt_t, in_no_gzip, out_gzip>(infiles[i], outfiles[i], sbwt);
         }
         if(!gzip_input && !gzip_output){
-            n_queries_run += run_file<sbwt_t, in_no_gzip, out_no_gzip>(infiles[i], outfiles[i], sbwt, colex);
+            n_queries_run += run_file<sbwt_t, in_no_gzip, out_no_gzip>(infiles[i], outfiles[i], sbwt);
         }
     }
     return n_queries_run;
@@ -200,7 +195,6 @@ int search_main(int argc, char** argv){
 
     throwing_ifstream in(indexfile, ios::binary);
     string variant = load_string(in.stream); // read variant type
-    char colex; in.stream.read(&colex, 1); // Read colex flag
     if(std::find(variants.begin(), variants.end(), variant) == variants.end()){
         cerr << "Error loading index from file: unrecognized variant specified in the file" << endl;
         return 1;
@@ -212,52 +206,52 @@ int search_main(int argc, char** argv){
     if (variant == "plain-matrix"){
         plain_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "rrr-matrix"){
         rrr_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "mef-matrix"){
         mef_matrix_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "plain-split"){
         plain_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "rrr-split"){
         rrr_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "mef-split"){
         mef_split_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "plain-concat"){
         plain_concat_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "mef-concat"){
         mef_concat_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "plain-subsetwt"){
         plain_sswt_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
     if (variant == "rrr-subsetwt"){
         rrr_sswt_sbwt_t sbwt;
         sbwt.load(in.stream);
-        number_of_queries += run_queries(input_files, output_files, sbwt, colex, gzip_output);
+        number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
 
     LL total_micros = cur_time_micros() - micros_start;

@@ -300,11 +300,12 @@ public:
         build_bit_vectors_from_sorted_streams(nodes_outfile, dummies_sortedfile, A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k);
         
         write_log("Building SBWT structure", LogLevel::MAJOR);
+        bool colex = false; // KMC sorts in lex order, not colex
         if(streaming_support){
-            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k);
+            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k, colex);
         } else{
             sdsl::bit_vector empty;
-            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, empty, k);
+            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, empty, k, colex);
         }
             
     }

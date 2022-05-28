@@ -31,8 +31,8 @@ void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers
             if(((mask >> 2*i) & 0x3) == 3) kmer += 'T';
         }
         bool is_found = true_kmers.count(kmer); // Truth
-        int64_t colex = nodeboss.search(kmer);
-        if(is_found) ASSERT_GE(colex, 0); else ASSERT_EQ(colex, -1);
+        int64_t column = nodeboss.search(kmer);
+        if(is_found) ASSERT_GE(column, 0); else ASSERT_EQ(column, -1);
         //logger << kmer << " " << colex << endl;
     }
 }
@@ -58,11 +58,13 @@ void run_small_testcase(const vector<string>& strings, LL k){
         reverse_strings.push_back(R);
     }
 
+    // Giving the reverse strings to in-memory construction so that the colex-index
+    // of that matches the lex-index from KMC
     plain_matrix_sbwt_t index_im;
-    build_nodeboss_in_memory(strings, index_im, k, false);
+    build_nodeboss_in_memory(reverse_strings, index_im, k, false); 
 
     string temp_filename = get_temp_file_manager().create_filename("", ".fna");
-    write_seqs_to_fasta_file(reverse_strings, temp_filename);
+    write_seqs_to_fasta_file(strings, temp_filename);
 
     plain_matrix_sbwt_t::BuildConfig config;
     config.input_files = {temp_filename};
@@ -89,7 +91,8 @@ void run_small_testcase(const vector<string>& strings, LL k){
     ASSERT_EQ(index_im.subset_rank.T_bits, index_kmc.subset_rank.T_bits);
 
     set<string> true_kmers = get_all_kmers(strings, k);
-    check_all_queries(index_im, true_kmers);
+    set<string> true_rev_kmers = get_all_kmers(reverse_strings, k);
+    check_all_queries(index_im, true_rev_kmers);
     check_all_queries(index_kmc, true_kmers);
 }
 

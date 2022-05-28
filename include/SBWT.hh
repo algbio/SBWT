@@ -12,6 +12,15 @@
 #include "Kmer.hh"
 #include <map>
 
+/*
+
+This file contains a class that implements the SBWT index described in the paper:
+
+Alanko, J. N., Puglisi, S. J., & Vuohtoniemi, J. (2022). Succinct k-mer Set 
+Representations Using Subset Rank Queries on the Spectral Burrows-Wheeler 
+Transform (SBWT). bioRxiv.
+*/
+
 using namespace std;
 
 namespace sbwt{
@@ -34,23 +43,27 @@ public:
         string temp_dir = ".";
     };
 
-    subset_rank_t subset_rank;
-    sdsl::bit_vector suffix_group_starts; // Used for streaming queries
+    subset_rank_t subset_rank; // The subset rank query implementation
+    sdsl::bit_vector suffix_group_starts; // Marks the first column of every suffix group (see paper)
+    vector<int64_t> C; // The array of cumulativ character counts
+    int64_t n_nodes; // Number of nodes (= columns) in the data structure
+    int64_t k; // The k-mer k
 
-    // C-array
-    vector<int64_t> C;
+    // Is the index for the reverse (lex-sorted k-mers) or forward (colex-sorted k-mers)?
+    // The paper describes the colex version, but if we construct the index via KMC, then
+    // we get the lex version, because KMC sorts in lex-order. Then the search will go backward
+    // instead of forward.
+    bool colex;
 
-    int64_t n_nodes;
-    int64_t k;
-
-    SBWT() : n_nodes(0), k(0) {}
+    SBWT() : n_nodes(0), k(0), colex(true) {}
     SBWT(const sdsl::bit_vector& A_bits, 
              const sdsl::bit_vector& C_bits, 
              const sdsl::bit_vector& G_bits, 
              const sdsl::bit_vector& T_bits, 
              const sdsl::bit_vector& streaming_support, // Streaming support may be empty
-             int64_t k);
-    SBWT(const BuildConfig& config);
+             int64_t k,
+             bool colex);
+    SBWT(const BuildConfig& config); // KMC construction
 
     int64_t search(const string& kmer) const; // Search for std::string
     int64_t search(const char* S) const; // Search for C-string
@@ -69,12 +82,13 @@ public:
 
 
 template <typename subset_rank_t>
-SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, const sdsl::bit_vector& streaming_support, int64_t k){
+SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, const sdsl::bit_vector& streaming_support, int64_t k, bool colex){
     subset_rank = subset_rank_t(A_bits, C_bits, G_bits, T_bits);
 
     this->n_nodes = A_bits.size();
     this->k = k;
     this->suffix_group_starts = streaming_support;
+    this->colex = colex;
 
     // Get the C-array
     C.clear(); C.resize(4);
@@ -107,16 +121,16 @@ int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
     int64_t node_left = 0;
     int64_t node_right = n_nodes-1;
     for(int64_t i = 0; i < k; i++){
-
+        char c = colex ? kmer[i] : kmer[k-1-i];
         char char_idx = 0;
-        if(toupper(kmer[i]) == 'A') char_idx = 0;
-        else if(toupper(kmer[i]) == 'C') char_idx = 1;
-        else if(toupper(kmer[i]) == 'G') char_idx = 2;
-        else if(toupper(kmer[i]) == 'T') char_idx = 3;
+        if(toupper(c) == 'A') char_idx = 0;
+        else if(toupper(c) == 'C') char_idx = 1;
+        else if(toupper(c) == 'G') char_idx = 2;
+        else if(toupper(c) == 'T') char_idx = 3;
         else return -1; // Invalid character
 
-        node_left = C[char_idx] + subset_rank.rank(node_left, kmer[i]);
-        node_right = C[char_idx] + subset_rank.rank(node_right+1, kmer[i]) - 1;
+        node_left = C[char_idx] + subset_rank.rank(node_left, c);
+        node_right = C[char_idx] + subset_rank.rank(node_right+1, c) - 1;
 
         if(node_left > node_right) return -1; // Not found
     }
@@ -165,6 +179,11 @@ int64_t SBWT<subset_rank_t>::serialize(ostream& os) const{
     os.write((char*)&k, sizeof(k));
     written += sizeof(k);
 
+    // Write colex flag
+    char flag = colex;
+    os.write(&flag, sizeof(flag));
+    written += sizeof(flag);
+
     return written;
 }
 
@@ -182,6 +201,10 @@ void SBWT<subset_rank_t>::load(istream& is){
     C = load_std_vector<int64_t>(is);
     is.read((char*)&n_nodes, sizeof(n_nodes));
     is.read((char*)&k, sizeof(k));
+
+    char colex_flag;
+    is.read(&colex_flag, sizeof(colex_flag));
+    colex = colex_flag;
 }
 
 template <typename subset_rank_t>
@@ -198,18 +221,21 @@ vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t
     vector<int64_t> ans;
     if(len < k) return ans;
 
-    ans.push_back(search(input)); // Search the first k-mer
+    // Search the first k-mer
+    const char* first_kmer_start = colex ? input : input + len - k;
+    ans.push_back(search(first_kmer_start)); 
+
     for(int64_t i = 1; i < len - k + 1; i++){
         if(ans.back() == -1){
             // Need to search from scratch
-            ans.push_back(search(input + i));
+            ans.push_back(search(first_kmer_start + (colex ? i : -i)));
         } else{
             // Got to the start of the suffix group and do one search iteration
-            int64_t colex = ans.back();
-            while(suffix_group_starts[colex] == 0) colex--; // can not go negative because the first column is always marked
+            int64_t column = ans.back();
+            while(suffix_group_starts[column] == 0) column--; // can not go negative because the first column is always marked
 
+            char c = toupper(input[colex ? i+k-1 : len-k-i]);
             char char_idx = -1;
-            char c = toupper(input[i+k-1]);
             if(c == 'A') char_idx = 0;
             else if(c == 'C') char_idx = 1;
             else if(c == 'G') char_idx = 2;
@@ -217,8 +243,8 @@ vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t
         
             if(char_idx == -1) ans.push_back(-1); // Not found
             else{
-                int64_t node_left = colex;
-                int64_t node_right = colex;
+                int64_t node_left = column;
+                int64_t node_right = column;
                 node_left = C[char_idx] + subset_rank.rank(node_left, c);
                 node_right = C[char_idx] + subset_rank.rank(node_right+1, c) - 1;
                 if(node_left == node_right) ans.push_back(node_left);
@@ -227,6 +253,7 @@ vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t
             }
         }
     }
+    if(!colex) std::reverse(ans.begin(), ans.end());
     return ans;
 }
 

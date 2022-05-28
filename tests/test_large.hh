@@ -30,35 +30,27 @@ class TEST_LARGE : public ::testing::Test {
     static LL k;
     static vector<string> seqs;
 
-    static void reverse_seqs_in_fasta(std::string infile, std::string outfile){
-        SeqIO::Unbuffered_Reader sr(infile, SeqIO::FASTA);
-        throwing_ofstream out(outfile);
-        while(!sr.done()){
-            SeqIO::Unbuffered_Read_stream rs = sr.get_next_query_stream();
-            string seq = rs.get_all();
-            std::reverse(seq.begin(), seq.end());
-            out << ">" + rs.header << "\n" << seq << "\n";
-        }
-    }
-
     static void SetUpTestSuite(){
         string filename = "example_data/coli3.fna";
 
-        string rev_file = get_temp_file_manager().create_filename("",".fna");
-        reverse_seqs_in_fasta(filename, rev_file);
-
+        // Give the reverses of the sequences to in-memory colex construction
+        // so that the bit vectors in the index will be exactly the same as with
+        // lex construction from KMC.
+        vector<string> reverse_seqs;
         SeqIO::Unbuffered_Reader sr(filename);
-        while(!sr.done())
-            seqs.push_back(sr.get_next_query_stream().get_all());
+        while(!sr.done()){
+            string S = sr.get_next_query_stream().get_all();
+            reverse_seqs.push_back(string(S.rbegin(), S.rend()));
+        }
 
         k = 30;
         logger << "Building E. coli in memory..." << endl;
         NodeBOSSInMemoryConstructor<plain_matrix_sbwt_t> builder;
-        builder.build(seqs, matrixboss_reference, k, true);
+        builder.build(reverse_seqs, matrixboss_reference, k, true);
 
         logger << "Building E. coli with external memory..." << endl;
         plain_matrix_sbwt_t::BuildConfig config;
-        config.input_files = {rev_file};
+        config.input_files = {filename};
         config.k = k;
         config.build_streaming_support = true;
         config.ram_gigas = 2;
