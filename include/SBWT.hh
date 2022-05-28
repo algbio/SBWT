@@ -45,7 +45,7 @@ public:
 
     subset_rank_t subset_rank; // The subset rank query implementation
     sdsl::bit_vector suffix_group_starts; // Marks the first column of every suffix group (see paper)
-    vector<int64_t> C; // The array of cumulativ character counts
+    vector<int64_t> C; // The array of cumulative character counts
     int64_t n_nodes; // Number of nodes (= columns) in the data structure
     int64_t k; // The k-mer k
 
@@ -65,7 +65,7 @@ public:
              bool colex);
     SBWT(const BuildConfig& config); // KMC construction
 
-    int64_t search(const string& kmer) const; // Search for std::string
+    int64_t search(const string& kmer) const; // Search for k-mer as std::string. If string is longer than k, only the first k characters are searched
     int64_t search(const char* S) const; // Search for C-string
 
     // Query for all k-mers in the input
