@@ -5,9 +5,11 @@
 #include <sdsl/rank_support_v.hpp>
 #include "libwheeler/BOSS.hh"
 #include "globals.hh"
-#include "NodeBOSS.hh"
+#include "SBWT.hh"
 #include <map>
 #include <sdsl/wavelet_trees.hpp>
+
+namespace sbwt{
 
 template<typename X_bitvector_t, typename X_bitvector_rank_t, typename Z_bitvector_t, typename Z_rank_support_t>
 class SubsetSplitRank{
@@ -183,3 +185,5 @@ public:
     }
 
 };
+
+}

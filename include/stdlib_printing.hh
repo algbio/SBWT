@@ -7,6 +7,8 @@
 #include <utility>
 #include <iostream>
 
+namespace sbwt{
+
 using namespace std;
 
 template <typename S, typename T>
@@ -68,4 +70,6 @@ template <typename S, typename T>
 ostream& operator<<(ostream& os, const pair<S,T>& x){
     os << "(" << x.first << ", " << x.second << ")";
     return os;
+}
+
 }

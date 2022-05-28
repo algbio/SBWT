@@ -74,9 +74,11 @@ Usage:
                                 k-mers. Note that we consider a k-mer 
                                 distinct from its reverse complement. 
                                 (default: 1)
+  -b, --max-abundance arg       Discard all k-mers occurring more than this 
+                                many times. (default: 1000000000)
   -m, --ram-gigas arg           RAM budget in gigabytes (not strictly 
                                 enforced). Must be at least 2. (default: 2)
-      --temp-dir arg            Location for temporary files. (default: .)
+  -d, --temp-dir arg            Location for temporary files. (default: .)
   -h, --help                    Print usage
 ```
 

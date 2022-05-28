@@ -10,6 +10,8 @@
 #include "sdsl/wavelet_trees.hpp"
 #include "WheelerIndex.hh"
 
+namespace sbwt{
+
 using namespace std;
 
 // Nodes are k-mers and edges are (k+1)-mers.
@@ -326,3 +328,4 @@ bool operator==(BOSS<bitvector_t>& boss1, BOSS<bitvector_t>& boss2){
            *static_cast<wgi::WheelerIndex<bitvector_t>*>(&boss2) && boss1.k == boss2.k;
 }
 
+}

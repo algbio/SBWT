@@ -73,7 +73,7 @@ int main(int argc, char** argv){
     std::filesystem::create_directory(temp_dir);
 
     write_log("Loading the matrixBOSS", LogLevel::MAJOR);
-    NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss;
+    SBWT<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss;
     throwing_ifstream in(infile, ios::binary);
     matrixboss.load(in.stream);
 
@@ -107,7 +107,7 @@ int main(int argc, char** argv){
 
     write_log("Building new MatrixBOSS", LogLevel::MAJOR);
     SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>> new_matrixrank(A_copy, C_copy, G_copy, T_copy);
-    NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> new_matrixboss;
+    SBWT<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> new_matrixboss;
     new_matrixboss.build_from_bit_matrix(A_copy, C_copy, G_copy, T_copy, matrixboss.k);
 
     throwing_ofstream out(outfile);

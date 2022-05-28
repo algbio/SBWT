@@ -1,7 +1,11 @@
 #include "SeqIO.hh"
 #include <algorithm>
 
+namespace sbwt{
 namespace SeqIO{
+
+using namespace sbwt;
+using namespace sbwt::SeqIO;
 
 const vector<string> fasta_suffixes = {".fasta", ".fna", ".ffn", ".faa", ".frn", ".fa"};
 const vector<string> fastq_suffixes = {".fastq", ".fq"};
@@ -40,3 +44,4 @@ FileFormat figure_out_file_format(string filename){
 }
 
 } // namespace SeqIO
+} // namespace sbwt

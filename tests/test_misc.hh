@@ -3,6 +3,8 @@
 #include "globals.hh"
 #include <gtest/gtest.h>
 
+using namespace sbwt;
+
 TEST(MISC, test_rc){
     ASSERT_EQ(get_rc('A'), 'T');
     ASSERT_EQ(get_rc('C'), 'G');

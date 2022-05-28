@@ -14,11 +14,25 @@
 
 using namespace std;
 
+namespace sbwt{
+
 // Assumes that a root node always exists
 template <typename subset_rank_t>
-class NodeBOSS{
+class SBWT{
 
-    public:
+public:
+
+    struct BuildConfig{
+        vector<string> input_files;
+        int k = 30;
+        bool add_reverse_complements = false;
+        bool build_streaming_support = true;
+        int n_threads = 1;
+        int min_abundance = 1;
+        int max_abundance = 1e9;
+        int ram_gigas = 2;
+        string temp_dir = ".";
+    };
 
     subset_rank_t subset_rank;
     sdsl::bit_vector suffix_group_starts; // Used for streaming queries
@@ -29,12 +43,15 @@ class NodeBOSS{
     int64_t n_nodes;
     int64_t k;
 
-    NodeBOSS() : n_nodes(0), k(0) {}
-    void build_from_strings(const vector<string>& input, int64_t k, bool streaming_support); // This sorts all k-mers in memory and thus takes a lot of memory. Not optimized at all.
-    void build_using_KMC(const vector<string>& input_files, int64_t k, bool streaming_support, int64_t n_threads, int64_t mem_gigas, int64_t min_abundance); // Construction via KMC. All k-mers that occur fewer than min_abundance times are discarded. mem_gigas must be at least 2. Also builds streaming support if streaming_support == true.
-    void build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss, bool streaming_support); // Also builds streaming support if streaming_support == true.
-    void build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k, bool streaming_support); // Also builds streaming support if streaming_support == true.
-    void build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits); // Build the streaming support just from the bit vectors. The NodeBOSS must be already built before calling this.
+    SBWT() : n_nodes(0), k(0) {}
+    SBWT(const sdsl::bit_vector& A_bits, 
+             const sdsl::bit_vector& C_bits, 
+             const sdsl::bit_vector& G_bits, 
+             const sdsl::bit_vector& T_bits, 
+             const sdsl::bit_vector& streaming_support, // Streaming support may be empty
+             int64_t k);
+    SBWT(const BuildConfig& config);
+
     int64_t search(const string& kmer) const; // Search for std::string
     int64_t search(const char* S) const; // Search for C-string
 
@@ -42,10 +59,6 @@ class NodeBOSS{
     vector<int64_t> streaming_search(const string& input) const;
     vector<int64_t> streaming_search(const char* input, int64_t len) const;
     bool has_streaming_query_support() const {return suffix_group_starts.size() > 0;}
-
-    // Return the label on the incoming edges to the given node.
-    // If the node is the root node, returns a dollar.
-    char incoming_label(int64_t node) const; 
     
     int64_t serialize(ostream& out) const; // Returns the number of bytes written
     int64_t serialize(const string& filename) const; // Returns the number of bytes written
@@ -56,9 +69,12 @@ class NodeBOSS{
 
 
 template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_from_bit_matrix(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, int64_t k, bool streaming_support){
+SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, const sdsl::bit_vector& streaming_support, int64_t k){
     subset_rank = subset_rank_t(A_bits, C_bits, G_bits, T_bits);
-    n_nodes = A_bits.size();
+
+    this->n_nodes = A_bits.size();
+    this->k = k;
+    this->suffix_group_starts = streaming_support;
 
     // Get the C-array
     C.clear(); C.resize(4);
@@ -67,68 +83,27 @@ void NodeBOSS<subset_rank_t>::build_from_bit_matrix(const sdsl::bit_vector& A_bi
     C[2] = C[1] + subset_rank.rank(n_nodes, 'C');
     C[3] = C[2] + subset_rank.rank(n_nodes, 'G');
 
-    this->k = k;
-
-    if(streaming_support) build_streaming_query_support(A_bits, C_bits, G_bits, T_bits);
 }
 
 template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_from_WheelerBOSS(const BOSS<sdsl::bit_vector>& boss, bool streaming_support){
+SBWT<subset_rank_t>::SBWT(const BuildConfig& config){
+    string old_temp_dir = get_temp_file_manager().get_dir();
+    get_temp_file_manager().set_dir(config.temp_dir);
 
-    n_nodes = boss.number_of_nodes();
+    NodeBOSSKMCConstructor<SBWT<subset_rank_t>> builder;
+    builder.build(config.input_files, *this, config.k, config.n_threads, config.ram_gigas, config.build_streaming_support, config.min_abundance, config.max_abundance);
 
-    // Takes the colex-smallest edge to each node.
-
-    // Build the bit vectors. Later build the bitvector_t versions
-    sdsl::bit_vector BWT_A_plain(boss.number_of_nodes(), 0);
-    sdsl::bit_vector BWT_C_plain(boss.number_of_nodes(), 0);
-    sdsl::bit_vector BWT_G_plain(boss.number_of_nodes(), 0);
-    sdsl::bit_vector BWT_T_plain(boss.number_of_nodes(), 0);
-
-    int64_t node_id = -1; // Wheeler rank
-    int64_t edge_id = -1; // Wheeler rank
-    int64_t edge_count_to_current_node = 0;
-    Progress_printer pp(boss.indegs_size(), 10);
-
-    for(int64_t i = 0; i < boss.indegs_size(); i++){
-        if(boss.indegs_at(i) == 1){
-            node_id++;
-            edge_count_to_current_node = 0;
-        } else{
-            // Process edge
-            edge_id++;
-            edge_count_to_current_node++;
-            char label = boss.incoming_character(node_id);
-
-            if(edge_count_to_current_node == 1){
-                int64_t source_node = boss.edge_source(edge_id);
-                switch(label){
-                    case 'A': BWT_A_plain[source_node] = 1; break;
-                    case 'C': BWT_C_plain[source_node] = 1; break;
-                    case 'G': BWT_G_plain[source_node] = 1; break;
-                    case 'T': BWT_T_plain[source_node] = 1; break;
-                    default: cerr << "Invalid character: " << label << "\n"; exit(1);
-                }                
-            }
-        }
-        pp.job_done();
-    }
-
-    sdsl::bit_vector sg = mark_suffix_groups(BWT_A_plain, BWT_C_plain, BWT_G_plain, BWT_T_plain, boss.get_k());
-    push_bits_left(BWT_A_plain, BWT_C_plain, BWT_G_plain, BWT_T_plain, sg);
-
-    build_from_bit_matrix(BWT_A_plain, BWT_C_plain, BWT_G_plain, BWT_T_plain, boss.get_k(), streaming_support);
-
+    get_temp_file_manager().set_dir(old_temp_dir); // Return the old temporary directory
 }
 
 template <typename subset_rank_t>
-int64_t NodeBOSS<subset_rank_t>::search(const string& kmer) const{
+int64_t SBWT<subset_rank_t>::search(const string& kmer) const{
     assert(kmer.size() == k);
     return search(kmer.c_str());
 }
 
 template <typename subset_rank_t>
-int64_t NodeBOSS<subset_rank_t>::search(const char* kmer) const{
+int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
     int64_t node_left = 0;
     int64_t node_right = n_nodes-1;
     for(int64_t i = 0; i < k; i++){
@@ -175,7 +150,7 @@ vector<T> load_std_vector(istream& is){
 
 
 template <typename subset_rank_t>
-int64_t NodeBOSS<subset_rank_t>::serialize(ostream& os) const{
+int64_t SBWT<subset_rank_t>::serialize(ostream& os) const{
     int64_t written = 0;
     written += subset_rank.serialize(os);
     written += suffix_group_starts.serialize(os);
@@ -194,14 +169,14 @@ int64_t NodeBOSS<subset_rank_t>::serialize(ostream& os) const{
 }
 
 template <typename subset_rank_t>
-int64_t NodeBOSS<subset_rank_t>::serialize(const string& filename) const{
+int64_t SBWT<subset_rank_t>::serialize(const string& filename) const{
     throwing_ofstream out(filename, ios::binary);
     return serialize(out.stream);
 }
 
 
 template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::load(istream& is){
+void SBWT<subset_rank_t>::load(istream& is){
     subset_rank.load(is);
     suffix_group_starts.load(is);
     C = load_std_vector<int64_t>(is);
@@ -210,40 +185,13 @@ void NodeBOSS<subset_rank_t>::load(istream& is){
 }
 
 template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::load(const string& filename){
+void SBWT<subset_rank_t>::load(const string& filename){
     throwing_ifstream in(filename, ios::binary);
     load(in.stream);
 }
 
 template <typename subset_rank_t>
-char NodeBOSS<subset_rank_t>::incoming_label(int64_t node) const{
-    if(node < C[0]) return '$';
-    else if(node < C[1]) return 'A';
-    else if(node < C[2]) return 'C';
-    else if(node < C[3]) return 'G';
-    else return 'T';
-}
-
-
-template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_from_strings(const vector<string>& input, int64_t k, bool streaming_support){
-    NodeBOSSInMemoryConstructor<NodeBOSS<subset_rank_t>> builder;
-    builder.build(input, *this, k, streaming_support);
-}
-
-template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_using_KMC(const vector<string>& input_files, int64_t k, bool streaming_support, int64_t n_threads, int64_t mem_gigas, int64_t min_abundance){
-    NodeBOSSKMCConstructor<NodeBOSS<subset_rank_t>> builder;
-    builder.build(input_files, *this, k, n_threads, mem_gigas, streaming_support, min_abundance);
-}
-
-template <typename subset_rank_t>
-void NodeBOSS<subset_rank_t>::build_streaming_query_support(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits){
-    suffix_group_starts = mark_suffix_groups(A_bits, C_bits, G_bits, T_bits, k);
-}
-
-template <typename subset_rank_t>
-vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const char* input, int64_t len) const{
+vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t len) const{
     if(suffix_group_starts.size() == 0)
         throw std::runtime_error("Error: streaming search support not built");
     
@@ -283,6 +231,8 @@ vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const char* input, int
 }
 
 template <typename subset_rank_t>
-vector<int64_t> NodeBOSS<subset_rank_t>::streaming_search(const string& input) const{
+vector<int64_t> SBWT<subset_rank_t>::streaming_search(const string& input) const{
     return streaming_search(input.c_str(), input.size());
 }
+
+} // namespace sbwt

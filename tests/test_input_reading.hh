@@ -5,6 +5,8 @@
 #include "setup_tests.hh"
 #include "SeqIO.hh"
 
+using namespace sbwt;
+
 void check_sequence_reader_output(const vector<string>& seqs, LL mode, string fastafile){
     SeqIO::Reader sr(fastafile, mode);
     LL n_seqs_read = 0;

@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <stdexcept>
 
+namespace sbwt{
+
 template<typename iter_t>
 class Kmer_stream_from_iterator_pair{
 
@@ -400,3 +402,5 @@ public:
     }
 
 };
+
+}

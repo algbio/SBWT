@@ -4,7 +4,6 @@
 #include <algorithm>
 #include "commands.hh"
 #include "globals.hh"
-#include "version.h"
 
 using namespace std;
 
@@ -23,7 +22,7 @@ int main(int argc, char** argv){
     cerr << "WARNING: This program was compiled for a CPU without support for the BMI2 instruction set. The performance of the Elias-Fano variants will be very bad." << endl;
     #endif
 
-    write_log("Maximum k-mer length is set to " + to_string(MAX_KMER_LENGTH), LogLevel::MAJOR);
+    sbwt::write_log("Maximum k-mer length is set to " + to_string(MAX_KMER_LENGTH), sbwt::LogLevel::MAJOR);
 
     if(argc == 1){
         print_help(argc, argv);

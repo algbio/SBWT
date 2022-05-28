@@ -3,6 +3,8 @@
 
 using namespace std;
 
+namespace sbwt{
+
 // Entropy of distribution P
 double entropy(const vector<double>& P){
     double ans = 0;
@@ -133,3 +135,5 @@ double compute_column_entropy(const sdsl::bit_vector& A_bits,
     }
     return entropy(P);
 }
+
+} // Namespace sbwt

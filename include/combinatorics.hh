@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <iostream>
 
+namespace sbwt{
+
 using namespace std;
 
 template<typename T> 
@@ -54,5 +56,7 @@ vector<vector<set<T>>> generate_all_set_partitions(const set<T>& S){
     }
 
     return partitions;
+
+}
 
 }

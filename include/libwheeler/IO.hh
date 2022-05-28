@@ -8,6 +8,8 @@
 #include <sstream>
 #include <vector>
 
+namespace sbwt{
+
 namespace wgi{
 
 using namespace std;
@@ -162,3 +164,5 @@ void load_std_vector(vector<T>& v, istream& is){
 }
 
 } // End of namespace
+
+}

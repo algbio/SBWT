@@ -4,6 +4,8 @@
 #include <cmath> 
 #include "TempFileManager.hh"
 
+namespace sbwt{
+
 using namespace std;
 
 #ifndef MAX_KMER_LENGTH
@@ -89,3 +91,4 @@ public:
 
 };
 
+}

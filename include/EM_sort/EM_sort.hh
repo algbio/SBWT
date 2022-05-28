@@ -16,6 +16,8 @@
 #include "ParallelBoundedQueue.hh"
 #include "generic_EM_classes.hh"
 
+namespace sbwt{
+
 /*
 Design:
   
@@ -53,3 +55,5 @@ void EM_sort_constant_binary(string infile, string outfile, const std::function<
 // Binary format of record: first 8 bytes give the length of the record, then comes the record
 // k = k-way merge parameter
 void EM_sort_variable_length_records(string infile, string outfile, const std::function<bool(const char* x, const char* y)>& cmp, int64_t RAM_bytes, int64_t n_threads);
+
+}

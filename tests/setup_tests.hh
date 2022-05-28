@@ -6,6 +6,8 @@
 #include "version.h"
 #include "throwing_streams.hh"
 
+using namespace sbwt;
+
 class TestLogger{
     public:
     bool verbose = false;

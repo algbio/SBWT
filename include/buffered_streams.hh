@@ -1,7 +1,10 @@
 #pragma once
 
 #include "globals.hh"
+#include <fstream>
 #include "zstr/zstr.hpp"
+
+namespace sbwt{
 
 // The c++ ifstream and ofstream classes are buffered. But each read involves a virtual function
 // call, which can be slow if the reads or writes are in small chunks. The buffer is also pretty
@@ -181,3 +184,5 @@ public:
     }
 
 };
+
+}

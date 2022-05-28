@@ -8,6 +8,8 @@
 #include <map>
 #include <cassert>
 
+namespace sbwt{
+
 template<typename WT_type>
 class SubsetWT{
 
@@ -126,3 +128,5 @@ public:
 
 
 };
+
+}

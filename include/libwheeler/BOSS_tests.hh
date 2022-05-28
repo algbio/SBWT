@@ -6,6 +6,8 @@
 #include "../tests/setup_tests.hh"
 #include <gtest/gtest.h>
 
+namespace sbwt{
+
 typedef BOSS<sdsl::bit_vector> boss_t;
 
 class BOSS_TestCase{
@@ -210,4 +212,6 @@ TEST_F(BOSS_TEST, empty){
 
     test(1);
     test(10);
+}
+
 }

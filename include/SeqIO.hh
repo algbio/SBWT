@@ -15,6 +15,8 @@
 #include "throwing_streams.hh"
 #include "buffered_streams.hh"
 
+namespace sbwt{
+
 using namespace std;
 
 namespace SeqIO{
@@ -390,3 +392,5 @@ public:
 };
 
 } // Namespace SeqIO
+
+} // Namespace sbwt

@@ -11,6 +11,8 @@
 #include <unordered_map>
 #include <stdexcept>
 
+namespace sbwt{
+
 namespace KMC_construction_helper_classes{
 
 typedef long long LL;
@@ -268,3 +270,4 @@ public:
 };
 
 } // End of namespace KMC_construction_helper_classes
+} // End of namepace sbwt

@@ -15,6 +15,8 @@
 #include <set>
 #include <filesystem>
 
+namespace sbwt{
+
 using namespace std;
 
 class Temp_File_Manager{
@@ -124,3 +126,5 @@ public:
     }
 
 };
+
+}

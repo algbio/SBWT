@@ -30,6 +30,8 @@
 
 #include <fstream>
 
+namespace sbwt{
+
 using namespace sdsl;
 using namespace std;
 
@@ -428,5 +430,6 @@ public:
 
 };
 
+}
 
 #endif

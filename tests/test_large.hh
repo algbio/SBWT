@@ -3,7 +3,7 @@
 #include "setup_tests.hh"
 #include "globals.hh"
 #include "Kmer.hh"
-#include "NodeBOSS.hh"
+#include "SBWT.hh"
 #include "SubsetSplitRank.hh"
 #include "SubsetMatrixRank.hh"
 #include "SubsetConcatRank.hh"
@@ -15,10 +15,12 @@
 #include <gtest/gtest.h>
 #include <unordered_set>
 
+using namespace sbwt;
+
 typedef long long LL;
 typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 
-typedef NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
+typedef SBWT<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
 
 class TEST_LARGE : public ::testing::Test {
     protected:
@@ -51,10 +53,18 @@ class TEST_LARGE : public ::testing::Test {
 
         k = 30;
         logger << "Building E. coli in memory..." << endl;
-        matrixboss_reference.build_from_strings(seqs, k, true);
+        NodeBOSSInMemoryConstructor<plain_matrix_sbwt_t> builder;
+        builder.build(seqs, matrixboss_reference, k, true);
 
-        logger << "Building E. coli with KMC..." << endl;
-        matrixboss.build_using_KMC({rev_file}, k, true, 2, 2, 1);
+        logger << "Building E. coli with external memory..." << endl;
+        plain_matrix_sbwt_t::BuildConfig config;
+        config.input_files = {rev_file};
+        config.k = k;
+        config.build_streaming_support = true;
+        config.ram_gigas = 2;
+        config.n_threads = 2;
+        config.min_abundance = 1;
+        matrixboss = plain_matrix_sbwt_t(config);
     }
 
     // static void SetUpTestCase(){

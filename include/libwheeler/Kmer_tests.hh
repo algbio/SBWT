@@ -5,6 +5,8 @@
 #include <gtest/gtest.h>
 #include "Kmer.hh"
 
+namespace sbwt{
+
 char get_random_DNA_char(){
     LL r = rand() % 4;
     if(r == 0) return 'A';
@@ -143,4 +145,6 @@ TEST(KMER, colex){
             }
         }
     }
+}
+
 }

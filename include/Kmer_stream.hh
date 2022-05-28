@@ -15,6 +15,7 @@
 
 using namespace std;
 
+namespace sbwt{
 
 class Kmer_stream{
 
@@ -140,3 +141,4 @@ class Kmer_stream{
 
 };
 
+}

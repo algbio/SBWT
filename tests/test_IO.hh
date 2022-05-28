@@ -5,6 +5,8 @@
 #include "setup_tests.hh"
 #include "SeqIO.hh"
 
+using namespace sbwt;
+
 TEST(TEST_BUFFERED_IO, getline){
     string filename = get_temp_file_manager().create_filename();
     throwing_ofstream out(filename, ios::binary);

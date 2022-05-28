@@ -17,6 +17,7 @@
 #include "ParallelBoundedQueue.hh"
 #include "buffered_streams.hh"
 
+namespace sbwt{
 
 class Generic_Block_Producer{
 public:
@@ -211,3 +212,5 @@ public:
     }
 
 };
+
+}

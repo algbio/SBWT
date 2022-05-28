@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include <stdexcept>
 
+namespace sbwt{
+
 template <typename nodeboss_t>
 class NodeBOSSKMCConstructor{
 
@@ -108,7 +110,7 @@ public:
     }
 
     // Returns the KMC database prefix
-    string run_kmc(const vector<string>& input_files, LL k, LL n_threads, LL ram_gigas, int64_t min_abundance){
+    string run_kmc(const vector<string>& input_files, LL k, LL n_threads, LL ram_gigas, int64_t min_abundance, int64_t max_abundance){
 
         write_log("Running KMC counter", LogLevel::MAJOR);
 
@@ -143,6 +145,7 @@ public:
         stage2Params.SetNThreads(n_threads)
             .SetMaxRamGB(ramForStage2)
             .SetCutoffMin(min_abundance)
+            .SetCutoffMax(max_abundance)
             .SetOutputFileName(KMC_db_file_prefix)
             .SetStrictMemoryMode(true);
 
@@ -268,9 +271,9 @@ public:
     }
 
     // Construct the given nodeboss from the given input strings
-    void build(const vector<string>& input_files, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance){
+    void build(const vector<string>& input_files, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance, int64_t max_abundance){
 
-        string KMC_db_path = run_kmc(input_files, k, n_threads, ram_gigas, min_abundance);
+        string KMC_db_path = run_kmc(input_files, k, n_threads, ram_gigas, min_abundance, max_abundance);
 
         string nodes_outfile = get_temp_file_manager().create_filename();
         string dummies_outfile = get_temp_file_manager().create_filename();
@@ -297,7 +300,14 @@ public:
         build_bit_vectors_from_sorted_streams(nodes_outfile, dummies_sortedfile, A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k);
         
         write_log("Building SBWT structure", LogLevel::MAJOR);
-        nodeboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, false);
-        if(streaming_support) nodeboss.suffix_group_starts = suffix_group_starts;
+        if(streaming_support){
+            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k);
+        } else{
+            sdsl::bit_vector empty;
+            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, empty, k);
+        }
+            
     }
 };
+
+}

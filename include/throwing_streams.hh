@@ -9,6 +9,8 @@
 #include <sstream>
 #include <vector>
 
+namespace sbwt{
+
 using namespace std;
 
 class throwing_ofstream{
@@ -137,4 +139,6 @@ throwing_ifstream& operator>>(throwing_ifstream& is, T& t){
     if(!is.stream.good() && !is.stream.eof()) 
         throw runtime_error("Error reading type " + string(typeid(T).name()) + " from file " + is.filename);
     return is;
+}
+
 }

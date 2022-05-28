@@ -9,6 +9,8 @@
 #include <iostream>
 #include <vector>
 
+namespace sbwt{
+
 using namespace std;
 
 template<int64_t max_len> class kmer_colex_compare; // Compiler needs this forward declaration to make it a friend class
@@ -249,22 +251,24 @@ inline void hash_combine(std::size_t& seed, const T& v)
     seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }
 
-// For unordered_map
-template<int64_t max_len>
-struct std::hash<Kmer<max_len>>{
-    std::size_t operator()(const Kmer<max_len>& X) const {
-        size_t h = 0;
-        for(int64_t i = 0; i < Kmer<max_len>::DATA_ARRAY_SIZE; i++)
-            hash_combine<uint64_t>(h, X.data[i]);
-        hash_combine<uint8_t>(h, X.k);
-        return h;
-    }
-};
-
 // Strict colexicographic comparison
 template<int64_t max_len>
 struct kmer_colex_compare{
     inline bool operator() (const Kmer<max_len>& A, const Kmer<max_len>& B){
         return A < B;
+    }
+};
+
+} // namespace sbwt
+
+// For unordered_map
+template<int64_t max_len>
+struct std::hash<sbwt::Kmer<max_len>>{
+    std::size_t operator()(const sbwt::Kmer<max_len>& X) const {
+        size_t h = 0;
+        for(int64_t i = 0; i < sbwt::Kmer<max_len>::DATA_ARRAY_SIZE; i++)
+            sbwt::hash_combine<uint64_t>(h, X.data[i]);
+        sbwt::hash_combine<uint8_t>(h, X.k);
+        return h;
     }
 };

@@ -16,12 +16,13 @@
 #include "EM_sort/EM_sort.hh"
 
 using namespace std;
+using namespace sbwt;
 
 // Interprets the strings as integers (no leading zeros allowed) and returns:
 //     -1 if x < y
 //      0 if x = y
 //      1 if x > y
-int compare_as_numbers(const char* x, const char* y){
+int sbwt::compare_as_numbers(const char* x, const char* y){
     int64_t nx = strlen(x);
     int64_t ny = strlen(y);
     if(nx < ny) return -1;
@@ -29,7 +30,7 @@ int compare_as_numbers(const char* x, const char* y){
     return strcmp(x,y);
 }
 
-bool memcmp_variable_binary_records(const char* x, const char* y){
+bool sbwt::memcmp_variable_binary_records(const char* x, const char* y){
     int64_t nx = parse_big_endian_LL(x);
     int64_t ny = parse_big_endian_LL(y);
     int64_t c = memcmp(x + 8, y + 8, min(nx-8,ny-8));
@@ -45,7 +46,7 @@ bool memcmp_variable_binary_records(const char* x, const char* y){
 }
 
 template <typename record_reader_t, typename record_writer_t>
-void merge_files_generic(const std::function<bool(const char* x, const char* y)>& cmp, int64_t& merge_count, record_reader_t& reader, record_writer_t& writer){
+static void merge_files_generic(const std::function<bool(const char* x, const char* y)>& cmp, int64_t& merge_count, record_reader_t& reader, record_writer_t& writer){
 
     write_log("Doing merge number " + to_string(merge_count), LogLevel::MINOR);
 
@@ -98,7 +99,7 @@ void merge_files_generic(const std::function<bool(const char* x, const char* y)>
 }
 
 template <typename record_reader_t, typename record_writer_t>
-void EM_sort_generic(string infile, string outfile, const std::function<bool(const char* x, const char* y)>& cmp, int64_t RAM_bytes, Generic_Block_Producer* producer, vector<Generic_Block_Consumer*> consumers, record_reader_t& reader, record_writer_t& writer){
+static void EM_sort_generic(string infile, string outfile, const std::function<bool(const char* x, const char* y)>& cmp, int64_t RAM_bytes, Generic_Block_Producer* producer, vector<Generic_Block_Consumer*> consumers, record_reader_t& reader, record_writer_t& writer){
 
     int64_t max_files = 512;
 
@@ -175,7 +176,7 @@ void EM_sort_generic(string infile, string outfile, const std::function<bool(con
 }
 
 // Constant size records of record_size bytes each
-void EM_sort_constant_binary(string infile, string outfile, const std::function<bool(const char* x, const char* y)>& cmp, int64_t RAM_bytes, int64_t record_size, int64_t n_threads){
+void sbwt::EM_sort_constant_binary(string infile, string outfile, const std::function<bool(const char* x, const char* y)>& cmp, int64_t RAM_bytes, int64_t record_size, int64_t n_threads){
 
     Generic_Block_Producer* producer = new Constant_Block_Producer(infile, record_size);
     vector<Generic_Block_Consumer*> consumers;
@@ -191,7 +192,7 @@ void EM_sort_constant_binary(string infile, string outfile, const std::function<
 
 }
 
-void EM_sort_variable_length_records(string infile, string outfile, const std::function<bool(const char* x, const char* y)>& cmp, int64_t RAM_bytes, int64_t n_threads){
+void sbwt::EM_sort_variable_length_records(string infile, string outfile, const std::function<bool(const char* x, const char* y)>& cmp, int64_t RAM_bytes, int64_t n_threads){
 
     Generic_Block_Producer* producer = new Variable_Block_Producer(infile);
 

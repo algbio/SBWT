@@ -5,7 +5,7 @@
 #include "globals.hh"
 #include "Kmer.hh"
 #include "variants.hh"
-#include "NodeBOSS.hh"
+#include "SBWT.hh"
 #include "SubsetSplitRank.hh"
 #include "SubsetMatrixRank.hh"
 #include "SubsetConcatRank.hh"
@@ -14,6 +14,7 @@
 #include "suffix_group_optimization.hh"
 #include <gtest/gtest.h>
 
+using namespace sbwt;
 
 typedef long long LL;
 typedef Kmer<MAX_KMER_LENGTH> kmer_t;
@@ -58,15 +59,19 @@ void run_small_testcase(const vector<string>& strings, LL k){
     }
 
     plain_matrix_sbwt_t index_im;
-    plain_matrix_sbwt_t index_kmc;
-
-    index_im.build_from_strings(strings, k, false);
+    build_nodeboss_in_memory(strings, index_im, k, false);
 
     string temp_filename = get_temp_file_manager().create_filename("", ".fna");
     write_seqs_to_fasta_file(reverse_strings, temp_filename);
 
-    NodeBOSSKMCConstructor<plain_matrix_sbwt_t> X;
-    X.build({temp_filename}, index_kmc, k, 1, 2, false, 1);
+    plain_matrix_sbwt_t::BuildConfig config;
+    config.input_files = {temp_filename};
+    config.k = k;
+    config.build_streaming_support = false;
+    config.ram_gigas = 2;
+    config.n_threads = 2;
+    config.min_abundance = 1;
+    plain_matrix_sbwt_t index_kmc(config);
 
     logger << index_im.subset_rank.A_bits << endl;
     logger << index_im.subset_rank.C_bits << endl;
@@ -108,8 +113,8 @@ TEST(TEST_KMC_CONSTRUCT, multiple_input_files){
 
     NodeBOSSKMCConstructor<plain_matrix_sbwt_t> X;
     plain_matrix_sbwt_t index1, index2;
-    X.build({f123}, index1, k, 1, 2, true, 1);
-    X.build({f1, f2, f3}, index2, k, 1, 2, true, 1);
+    X.build({f123}, index1, k, 1, 2, true, 1, 1e9);
+    X.build({f1, f2, f3}, index2, k, 1, 2, true, 1, 1e9);
 
     ASSERT_EQ(index1.subset_rank.A_bits, index2.subset_rank.A_bits);
     ASSERT_EQ(index1.subset_rank.C_bits, index2.subset_rank.C_bits);
@@ -127,13 +132,19 @@ TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
     logger << "Checking that there are no extra dummies" << endl;
 
     plain_matrix_sbwt_t X;
-    X.build_from_strings(strings, 4, false);
+    build_nodeboss_in_memory(strings, X, 4, false);
     ASSERT_EQ(X.n_nodes, 9); // Dummies C, CC and CCC should not be there.
 
-    plain_matrix_sbwt_t X2;
     string filename = get_temp_file_manager().create_filename("", ".fna");
     write_seqs_to_fasta_file(strings, filename);
-    X2.build_using_KMC({filename}, 4, false, 1, 2, 1);
+    plain_matrix_sbwt_t::BuildConfig config;
+    config.input_files = {filename};
+    config.k = 4;
+    config.build_streaming_support = false;
+    config.n_threads = 1;
+    config.ram_gigas = 2;
+    config.min_abundance = 1;
+    plain_matrix_sbwt_t X2(config);
     ASSERT_EQ(X2.n_nodes, 9); // Dummies C, CC and CCC should not be there.
 }
 
@@ -175,16 +186,16 @@ TEST(TEST_IM_CONSTRUCTION, test_serialization){
         plain_sswt_sbwt_t v9;
         rrr_sswt_sbwt_t v10;
 
-        v1.build_from_strings(strings, k, true);
-        v2.build_from_strings(strings, k, true);
-        v3.build_from_strings(strings, k, true);
-        v4.build_from_strings(strings, k, true);
-        v5.build_from_strings(strings, k, true);
-        v6.build_from_strings(strings, k, true);
-        v7.build_from_strings(strings, k, true);
-        v8.build_from_strings(strings, k, true);
-        v9.build_from_strings(strings, k, true);
-        v10.build_from_strings(strings, k, true);
+        build_nodeboss_in_memory(strings, v1, k, true);
+        build_nodeboss_in_memory(strings, v2, k, true);
+        build_nodeboss_in_memory(strings, v3, k, true);
+        build_nodeboss_in_memory(strings, v4, k, true);
+        build_nodeboss_in_memory(strings, v5, k, true);
+        build_nodeboss_in_memory(strings, v6, k, true);
+        build_nodeboss_in_memory(strings, v7, k, true);
+        build_nodeboss_in_memory(strings, v8, k, true);
+        build_nodeboss_in_memory(strings, v9, k, true);
+        build_nodeboss_in_memory(strings, v10, k, true);
 
         v1.serialize(filenames[0]);
         v2.serialize(filenames[1]);

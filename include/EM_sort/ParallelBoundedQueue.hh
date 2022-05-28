@@ -11,6 +11,8 @@
 #include <cassert>
 #include <atomic>
 
+namespace sbwt{
+
 using namespace std;
 
 /*
@@ -138,3 +140,5 @@ class ParallelBoundedQueue
   const int64_t max_load;
 
 };
+
+}

@@ -6,6 +6,8 @@
 #include "globals.hh"
 #include <map>
 
+namespace sbwt{
+
 using namespace std;
 
 template <typename L_bitvec_t, typename L_select0_t, typename concat_WT_t>
@@ -89,3 +91,5 @@ class SubsetConcatRank{
     }
 
 };
+
+}

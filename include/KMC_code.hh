@@ -33,6 +33,8 @@
 #endif
 using namespace std;
 
+namespace sbwt{
+
 struct KMCAlreadySortedException : public std::exception
 {
 	const char * what () const throw ()
@@ -638,5 +640,6 @@ public:
 	}
 };
 
+}
 
 // ***** EOF

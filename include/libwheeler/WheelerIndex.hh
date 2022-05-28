@@ -10,6 +10,8 @@
 #include "IO.hh"
 #include <type_traits>
 
+namespace sbwt{
+
 namespace wgi{
 
 using namespace std;
@@ -630,3 +632,5 @@ bool operator==(const WheelerIndex<bitvector_t>& wi1, const WheelerIndex<bitvect
 }
 
 } // End of namespace
+
+}

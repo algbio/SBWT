@@ -14,8 +14,9 @@
 #include "bit_level_stuff.hh"
 #include "../buffered_streams.hh"
 
-using namespace std;
+namespace sbwt{
 
+using namespace std;
 
 class Generic_Block{
     public:
@@ -151,3 +152,5 @@ public:
 // Reads up to B bytes into a new block
 // THE RETURN VALUE MUST BE FREED BY THE CALLER
 Constant_binary_block* get_next_constant_binary_block(Buffered_ifstream<>& input, int64_t B, int64_t record_size);
+
+}

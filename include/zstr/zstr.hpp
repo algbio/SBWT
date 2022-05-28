@@ -15,6 +15,8 @@
 #include <zlib.h>
 #include "strict_fstream.hpp"
 
+namespace sbwt{
+
 namespace zstr
 {
 
@@ -413,6 +415,6 @@ public:
 }; // class ofstream
 
 } // namespace zstr
-
+} // namespace sbwt
 #endif
 

@@ -3,6 +3,8 @@
 #include "globals.hh"
 #include "../buffered_streams.hh"
 
+namespace sbwt{
+
 inline int64_t byte_to_int(char c){
     return static_cast<int>(*reinterpret_cast<unsigned char*>(&c));
 }
@@ -62,4 +64,6 @@ inline void write_big_endian_LL(char* buf, LL x){
     buf[5] = get_byte(x,5);
     buf[6] = get_byte(x,6);
     buf[7] = get_byte(x,7);
+}
+
 }

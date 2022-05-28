@@ -16,6 +16,8 @@
 #include "EM_sort/EM_sort.hh"
 #include "setup_tests.hh"
 
+using namespace sbwt;
+
 string generate_variable_binary_testcase(LL max_record_len_bytes, LL n_records){
     string outfile = get_temp_file_manager().create_filename();
     Buffered_ofstream out(outfile, ios::binary);

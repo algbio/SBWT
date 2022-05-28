@@ -3,6 +3,8 @@
 #include "sdsl/bit_vectors.hpp"
 #include <iostream>
 
+namespace sbwt{
+
 using namespace std;
 
 // Entropy of distribution P
@@ -32,3 +34,5 @@ double compute_column_entropy(const sdsl::bit_vector& A_bits,
                               const sdsl::bit_vector& C_bits, 
                               const sdsl::bit_vector& G_bits, 
                               const sdsl::bit_vector& T_bits);
+
+}

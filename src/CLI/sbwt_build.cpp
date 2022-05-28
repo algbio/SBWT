@@ -1,22 +1,26 @@
-
 #include "globals.hh"
 #include "throwing_streams.hh"
 #include "cxxopts.hpp"
 #include "BOSS.hh"
-#include "NodeBOSS.hh"
+#include "SBWT.hh"
 #include "SubsetMatrixRank.hh"
 #include "SeqIO.hh"
 #include "variants.hh"
+#include "commands.hh"
 
 typedef long long LL;
 using namespace std;
 
+std::vector<std::string> get_available_variants(){
+    return {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"};
+}
+
 // Return the format, or throws if not all files have the same format
-SeqIO::FileFormat check_that_all_files_have_the_same_format(const vector<string>& filenames){
+sbwt::SeqIO::FileFormat check_that_all_files_have_the_same_format(const vector<string>& filenames){
     if(filenames.size() == 0) runtime_error("Error: empty input file list");
-    SeqIO::FileFormat f1 = SeqIO::figure_out_file_format(filenames[0]);
+    sbwt::SeqIO::FileFormat f1 = sbwt::SeqIO::figure_out_file_format(filenames[0]);
     for(LL i = 1; i < filenames.size(); i++){
-        SeqIO::FileFormat f2 = SeqIO::figure_out_file_format(filenames[i]);
+        sbwt::SeqIO::FileFormat f2 = sbwt::SeqIO::figure_out_file_format(filenames[i]);
         if(f1.format != f2.format || f1.gzipped != f2.gzipped){
             throw runtime_error("Error: not all input files have the same format (" + filenames[0] + " vs " + filenames[i] + ")");
         }
@@ -26,7 +30,7 @@ SeqIO::FileFormat check_that_all_files_have_the_same_format(const vector<string>
 
 int build_main(int argc, char** argv){
 
-    set_log_level(LogLevel::MAJOR);
+    sbwt::set_log_level(sbwt::LogLevel::MAJOR);
 
     cxxopts::Options options(argv[0], "Construct an SBWT variant.");
 
@@ -43,8 +47,9 @@ int build_main(int argc, char** argv){
         ("no-streaming-support", "Save space by not building the streaming query support bit vector. This leads to slower queries.", cxxopts::value<bool>()->default_value("false"))
         ("t,n-threads", "Number of parallel threads.", cxxopts::value<LL>()->default_value("1"))
         ("a,min-abundance", "Discard all k-mers occurring fewer than this many times. By default we keep all k-mers. Note that we consider a k-mer distinct from its reverse complement.", cxxopts::value<LL>()->default_value("1"))
+        ("b,max-abundance", "Discard all k-mers occurring more than this many times.", cxxopts::value<LL>()->default_value("1000000000"))
         ("m,ram-gigas", "RAM budget in gigabytes (not strictly enforced). Must be at least 2.", cxxopts::value<LL>()->default_value("2"))
-        ("temp-dir", "Location for temporary files.", cxxopts::value<string>()->default_value("."))
+        ("d,temp-dir", "Location for temporary files.", cxxopts::value<string>()->default_value("."))
         ("h,help", "Print usage")
     ;
 
@@ -65,16 +70,16 @@ int build_main(int argc, char** argv){
     }
 
     string out_file = opts["out-file"].as<string>();
-    check_writable(out_file);
+    sbwt::check_writable(out_file);
 
     string in_file = opts["in-file"].as<string>();
     vector<string> input_files;
     if(in_file.size() >= 4 && in_file.substr(in_file.size() - 4) == ".txt"){
-        input_files = readlines(in_file);
+        input_files = sbwt::readlines(in_file);
     } else{
         input_files = {in_file};
     }
-    for(string file : input_files) check_readable(file);
+    for(string file : input_files) sbwt::check_readable(file);
 
     bool streaming_support = !(opts["no-streaming-support"].as<bool>());
     bool revcomps = opts["add-reverse-complements"].as<bool>();
@@ -82,93 +87,96 @@ int build_main(int argc, char** argv){
     LL ram_gigas = opts["ram-gigas"].as<LL>();
     LL k = opts["k"].as<LL>();
     LL min_abundance = opts["min-abundance"].as<LL>();
+    LL max_abundance = opts["max-abundance"].as<LL>();
     string temp_dir = opts["temp-dir"].as<string>();
-    get_temp_file_manager().set_dir(temp_dir);    
+    sbwt::get_temp_file_manager().set_dir(temp_dir);    
 
-    SeqIO::FileFormat fileformat = check_that_all_files_have_the_same_format(input_files);
+    sbwt::SeqIO::FileFormat fileformat = check_that_all_files_have_the_same_format(input_files);
     if(revcomps){
-        write_log("Creating a reverse-complemented version of each input file to " + temp_dir, LogLevel::MAJOR);
+        sbwt::write_log("Creating a reverse-complemented version of each input file to " + temp_dir, sbwt::LogLevel::MAJOR);
         vector<string> new_files;
         if(fileformat.gzipped){
-            new_files = SeqIO::create_reverse_complement_files<
-                SeqIO::Reader<Buffered_ifstream<zstr::ifstream>>,
-                SeqIO::Writer<Buffered_ofstream<zstr::ofstream>>>(input_files);
+            new_files = sbwt::SeqIO::create_reverse_complement_files<
+                sbwt::SeqIO::Reader<sbwt::Buffered_ifstream<sbwt::zstr::ifstream>>,
+                sbwt::SeqIO::Writer<sbwt::Buffered_ofstream<sbwt::zstr::ofstream>>>(input_files);
         } else{
-            new_files = SeqIO::create_reverse_complement_files<
-                SeqIO::Reader<Buffered_ifstream<std::ifstream>>,
-                SeqIO::Writer<Buffered_ofstream<std::ofstream>>>(input_files);
+            new_files = sbwt::SeqIO::create_reverse_complement_files<
+                sbwt::SeqIO::Reader<sbwt::Buffered_ifstream<std::ifstream>>,
+                sbwt::SeqIO::Writer<sbwt::Buffered_ofstream<std::ofstream>>>(input_files);
         }
         for(string f : new_files) input_files.push_back(f);
     }
 
-    plain_matrix_sbwt_t matrixboss_plain;
+    write_log("Building SBWT subset sequence using KMC", sbwt::LogLevel::MAJOR);
+    sbwt::plain_matrix_sbwt_t::BuildConfig config;
+    config.input_files = input_files;
+    config.k = k;
+    config.add_reverse_complements = revcomps;
+    config.build_streaming_support = streaming_support;
+    config.n_threads = n_threads;
+    config.min_abundance = min_abundance;
+    config.max_abundance = max_abundance;
+    config.ram_gigas = ram_gigas;
+    config.temp_dir = temp_dir;
 
-    write_log("Building SBWT subset sequence using KMC", LogLevel::MAJOR);
-    matrixboss_plain.build_using_KMC(input_files, k, streaming_support, n_threads, ram_gigas, min_abundance);
+    sbwt::plain_matrix_sbwt_t matrixboss_plain(config);
     char colex = false; // Lexicographic or colexicographic index? KMC sorts in lexicographic order.
 
-    throwing_ofstream out(out_file, ios::binary);
+    sbwt::throwing_ofstream out(out_file, ios::binary);
     LL bytes_written = 0;
-    bytes_written += serialize_string(variant, out.stream); // Write variant string to file
+    bytes_written += sbwt::serialize_string(variant, out.stream); // Write variant string to file
     out.stream.write(&colex, 1); bytes_written++; // Write colex flag
 
-    write_log("Building subset rank support", LogLevel::MAJOR);
+    sbwt::write_log("Building subset rank support", sbwt::LogLevel::MAJOR);
     
     sdsl::bit_vector& A_bits = matrixboss_plain.subset_rank.A_bits;
     sdsl::bit_vector& C_bits = matrixboss_plain.subset_rank.C_bits;
     sdsl::bit_vector& G_bits = matrixboss_plain.subset_rank.G_bits;
     sdsl::bit_vector& T_bits = matrixboss_plain.subset_rank.T_bits;
+    sdsl::bit_vector& ssupport = matrixboss_plain.suffix_group_starts;
+
     if (variant == "plain-matrix"){
         bytes_written = matrixboss_plain.serialize(out.stream);
     }
     if (variant == "rrr-matrix"){
-        rrr_matrix_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-matrix"){
-        mef_matrix_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::mef_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-split"){
-        plain_split_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::plain_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-split"){
-        rrr_split_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::rrr_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-split"){
-        mef_split_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::mef_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-concat"){
-        plain_concat_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::plain_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-concat"){
-        mef_concat_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::mef_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-subsetwt"){
-        plain_sswt_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::plain_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-subsetwt"){
-        rrr_sswt_sbwt_t sbwt;
-        sbwt.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sbwt::rrr_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k);
         bytes_written = sbwt.serialize(out.stream);
     }
 
-    write_log("Built variant " + variant + " to file " + out_file, LogLevel::MAJOR);
-    write_log("Space on disk: " + to_string(bytes_written * 8.0 / matrixboss_plain.n_nodes) + " bits per column", LogLevel::MAJOR);
+    sbwt::write_log("Built variant " + variant + " to file " + out_file, sbwt::LogLevel::MAJOR);
+    sbwt::write_log("Space on disk: " + to_string(bytes_written * 8.0 / matrixboss_plain.n_nodes) + " bits per column", sbwt::LogLevel::MAJOR);
 
     return 0;
 }

@@ -6,6 +6,8 @@
 #include "globals.hh"
 #include <map>
 
+namespace sbwt{
+
 using namespace std;
 
 template <typename bitvector_t, typename rank_support_t>
@@ -112,3 +114,5 @@ void load(istream& is){
 }
 
 };
+
+}

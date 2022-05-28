@@ -14,8 +14,9 @@
 #include <cassert>
 
 using namespace std;
+using namespace sbwt;
 
-bool read_variable_binary_record(Buffered_ifstream<>& input, char** buffer, int64_t* buffer_len){
+bool sbwt::read_variable_binary_record(Buffered_ifstream<>& input, char** buffer, int64_t* buffer_len){
     assert(*buffer_len > 0);
     char rec_len_buf[8];
     int64_t bytes_read = input.read(rec_len_buf, 8); // Try to read the length of the record
@@ -33,7 +34,7 @@ bool read_variable_binary_record(Buffered_ifstream<>& input, char** buffer, int6
     return false;
 }
 
-Variable_binary_block* get_next_variable_binary_block(Buffered_ifstream<>& input, int64_t B){
+Variable_binary_block* sbwt::get_next_variable_binary_block(Buffered_ifstream<>& input, int64_t B){
     int64_t buffer_len = 1024; // MUST HAVE AT LEAST 8 BYTES
     char* buffer = (char*)malloc(buffer_len);
     Variable_binary_block* block = new Variable_binary_block();
@@ -47,7 +48,7 @@ Variable_binary_block* get_next_variable_binary_block(Buffered_ifstream<>& input
     return block;
 }
 
-Constant_binary_block* get_next_constant_binary_block(Buffered_ifstream<>& input, int64_t B, int64_t record_size){
+Constant_binary_block* sbwt::get_next_constant_binary_block(Buffered_ifstream<>& input, int64_t B, int64_t record_size){
     Constant_binary_block* block = new Constant_binary_block(record_size);
     char* buf = (char*)malloc(record_size);
     while(true){

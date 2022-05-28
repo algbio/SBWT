@@ -7,6 +7,8 @@
 #include "variants.hh"
 #include <gtest/gtest.h>
 
+using namespace sbwt;
+
 string read_gzipped_file(string filename){
     zstr::ifstream in(filename);
     string S;

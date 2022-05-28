@@ -11,6 +11,7 @@
 #include "zstr/zstr.hpp"
 
 using namespace std::chrono;
+using namespace sbwt;
 
 // Table mapping ascii values of characters to their reverse complements,
 // lower-case to lower case, upper-case to upper-case. Non-ACGT characters
@@ -34,18 +35,18 @@ static constexpr unsigned char rc_table[256] =
 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255};
 
 
-char get_rc(char c){
+char sbwt::get_rc(char c){
     return rc_table[(unsigned char)c];
 }
 
-string get_rc(const string& S){
+string sbwt::get_rc(const string& S){
     string T = S;
     std::reverse(T.begin(), T.end());
     for(char& c : T) c = get_rc(c);
     return T;
 }
 
-vector<string> readlines(string filename){
+vector<string> sbwt::readlines(string filename){
     vector<string> lines;
     string line;
     throwing_ifstream in(filename);
@@ -56,29 +57,29 @@ vector<string> readlines(string filename){
 }
 
 
-Temp_File_Manager& get_temp_file_manager(){
+Temp_File_Manager& sbwt::get_temp_file_manager(){
     static Temp_File_Manager temp_file_manager; // Singleton
     return temp_file_manager;
 }
 
-void check_readable(string filename){
+void sbwt::check_readable(string filename){
     throwing_ifstream F(filename); // Throws on failure
 }
 
 // Also clears the file
-void check_writable(string filename){
+void sbwt::check_writable(string filename){
     throwing_ofstream F(filename, std::ofstream::out | std::ofstream::app); // Throws on failure
 }
 
 // Returns the number of bytes written
-int64_t serialize_string(const string& S, ostream& out){
+int64_t sbwt::serialize_string(const string& S, ostream& out){
     int64_t size = S.size();
     out.write((char*)&size, sizeof(size));
     out.write(S.data(), size);
     return sizeof(size) + size;
 }
 
-string load_string(istream& in){
+string sbwt::load_string(istream& in){
     int64_t size;
     in.read((char*)&size, sizeof(size));
     string S(size, '\0');
@@ -86,37 +87,37 @@ string load_string(istream& in){
     return S;
 }
 
-long long cur_time_millis(){
+long long sbwt::cur_time_millis(){
     return (std::chrono::duration_cast< milliseconds >(high_resolution_clock::now().time_since_epoch())).count();
 }
 
-long long cur_time_micros(){
+long long sbwt::cur_time_micros(){
     return (std::chrono::duration_cast< microseconds >(high_resolution_clock::now().time_since_epoch())).count();
 }
 
-long long int program_start_millis = cur_time_millis();
-long long int program_start_micros = cur_time_micros();
+static long long int program_start_millis = cur_time_millis();
+static long long int program_start_micros = cur_time_micros();
 
-double seconds_since_program_start(){
+double sbwt::seconds_since_program_start(){
     return (cur_time_micros() - program_start_micros) / 1000.0;
 }
 
-string getTimeString(){
+string sbwt::getTimeString(){
     std::time_t result = std::time(NULL);
     string time = std::asctime(std::localtime(&result));
     return time.substr(0,time.size() - 1); // Trim the trailing newline
 }
 
 static LogLevel loglevel = MAJOR;
-void set_log_level(LogLevel level){
+void sbwt::set_log_level(LogLevel level){
     loglevel = level;
 }
-LogLevel get_log_level(){
+LogLevel sbwt::get_log_level(){
     return loglevel;
 }
 
 static std::mutex write_log_mutex;
-void write_log(string message, LogLevel level){
+void sbwt::write_log(string message, LogLevel level){
     if(level <= loglevel){
         std::lock_guard<std::mutex> lock(write_log_mutex);
         std::streamsize default_precision = std::cout.precision();
@@ -129,7 +130,7 @@ void write_log(string message, LogLevel level){
     }
 }
 
-void check_true(bool condition, string error_message){
+void sbwt::check_true(bool condition, string error_message){
     if(!condition){
         throw std::runtime_error(error_message);
     }

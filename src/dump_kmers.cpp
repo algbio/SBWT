@@ -58,7 +58,7 @@ int main(int argc, char** argv){
     check_readable(indexfile);
 
     write_log("Loading the DBG.", LogLevel::MAJOR);
-    NodeBOSS<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss;
+    SBWT<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss;
     throwing_ifstream in(indexfile, ios::binary);
     matrixboss.load(in.stream);
 

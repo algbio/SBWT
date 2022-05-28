@@ -6,6 +6,13 @@
 #include "Kmer.hh"
 #include "sdsl/bit_vectors.hpp"
 
+namespace sbwt{
+
+/*
+This file implements an in-memory construction algorithm for NodeBOSS. It is not intended for
+production use, but rather as a reference to debug other construction algorithm.
+*/
+
 template <typename nodeboss_t>
 class NodeBOSSInMemoryConstructor{
 
@@ -161,6 +168,19 @@ class NodeBOSSInMemoryConstructor{
         return kmers;
     }
 
+    sdsl::bit_vector build_streaming_support(vector<Node>& nodes, LL k){
+        sdsl::bit_vector bv(nodes.size(), 0);
+        bv[0] = 1;
+        for(LL i = 1; i < nodes.size(); i++){
+            kmer_t A = nodes[i-1].kmer;
+            kmer_t B = nodes[i].kmer;
+            if(A.get_k() == k) A.dropleft();
+            if(B.get_k() == k) B.dropleft();
+            bv[i] = (A != B);
+        }
+        return bv;
+    }
+
     // Construct the given nodeboss from the given input strings
     void build(const vector<string>& input, nodeboss_t& nodeboss, LL k, bool streaming_support){
 
@@ -183,6 +203,17 @@ class NodeBOSSInMemoryConstructor{
             if(nodes[i].has('T')) T_bits[i] = 1;
         }
 
-        nodeboss.build_from_bit_matrix(A_bits, C_bits, G_bits, T_bits, k, streaming_support);
+        sdsl::bit_vector ssupport;
+        if(streaming_support) ssupport = build_streaming_support(nodes, k);
+        nodeboss_t constructed(A_bits, C_bits, G_bits, T_bits, ssupport, k);
+        nodeboss = constructed;
     }
 };
+
+template<typename nodeboss_t>
+void build_nodeboss_in_memory(const vector<string>& input, nodeboss_t& nodeboss, int64_t k, bool streaming_support){
+    NodeBOSSInMemoryConstructor<nodeboss_t> builder;
+    builder.build(input, nodeboss, k, streaming_support);
+}
+
+}

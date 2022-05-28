@@ -4,18 +4,20 @@
 #include "version.h"
 #include "cxxopts.hpp"
 #include "globals.hh"
-#include "NodeBOSS.hh"
+#include "SBWT.hh"
 #include "SubsetWT.hh"
 #include "stdlib_printing.hh"
 #include "SeqIO.hh"
 #include "SubsetMatrixRank.hh"
 #include "buffered_streams.hh"
 #include "variants.hh"
+#include "commands.hh"
 #include <filesystem>
 #include <cstdio>
 
 using namespace std;
 typedef long long LL;
+using namespace sbwt;
 
 // Assumes values of v are -1 or larger
 template <typename writer_t>
