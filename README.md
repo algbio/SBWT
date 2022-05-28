@@ -82,7 +82,7 @@ Usage:
 
 # Running queries
 
-To query for existence of all k-mers in an index for all sequences in a fasta-file, run the following command:
+To query for existence of all k-mers in an index for all sequences in a fastq-file, run the following command:
 
 ```
 ./build/bin/sbwt search -i index.sbwt -q example_data/queries.fastq -o out.txt
