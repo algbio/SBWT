@@ -31,7 +31,7 @@ private:
     uint64_t data[DATA_ARRAY_SIZE]; 
     uint8_t k;
     
-    char to_char(uint8_t x) const{
+    char constexpr to_char(uint8_t x) const{
         // Don't mess with these values because the bit parallelism depends on these
         switch(x){
             case 0x00: return 'A';
@@ -43,7 +43,7 @@ private:
         return 0;
     }
 
-    char to_bitpair(char c) const{
+    char constexpr to_bitpair(char c) const{
         // Don't mess with these values because the bit parallelism depends on these
         switch(c){
             case 'A': return 0x00;
