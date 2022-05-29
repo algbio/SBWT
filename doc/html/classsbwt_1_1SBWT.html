@@ -249,7 +249,7 @@ template&lt;typename subset_rank_t &gt; </div>
     <tr><td class="paramname">streaming_support</td><td>The streaming support bit vector. Can be empty. </td></tr>
     <tr><td class="paramname">k</td><td>Length of the k-mers. </td></tr>
     <tr><td class="paramname">number_of_kmers</td><td>Number of k-mers in the data structure. </td></tr>
-    <tr><td class="paramname">colex</td><td>Whether then index is colex- or lex-sorted. </td></tr>
+    <tr><td class="paramname">colex</td><td>Whether the index is colex- or lex-sorted. </td></tr>
   </table>
   </dd>
 </dl>
@@ -569,7 +569,7 @@ template&lt;typename subset_rank_t &gt; </div>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>vector&lt;int64_t&gt; The ranks of the k-mers of the input in the data structure. These result will be the same as if <a class="el" href="classsbwt_1_1SBWT.html#a82f8c70eaaf4568c9d7e32a998d55bcb" title="Search for a k-mer as an std::string.">search()</a> was called for each k-mer of the input from left to right in order. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>vector&lt;int64_t&gt; The ranks of the k-mers of the input in the data structure, with -1 for those that are not found in the index. These result will be the same as if <a class="el" href="classsbwt_1_1SBWT.html#a82f8c70eaaf4568c9d7e32a998d55bcb" title="Search for a k-mer as an std::string.">search()</a> was called for each k-mer of the input from left to right in order. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classsbwt_1_1SBWT.html#a82f8c70eaaf4568c9d7e32a998d55bcb" title="Search for a k-mer as an std::string.">search()</a> </dd></dl>
 
 </div>
@@ -605,7 +605,7 @@ template&lt;typename subset_rank_t &gt; </div>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>vector&lt;int64_t&gt; The ranks of the k-mers of the input in the data structure. These result will be the same as if <a class="el" href="classsbwt_1_1SBWT.html#a82f8c70eaaf4568c9d7e32a998d55bcb" title="Search for a k-mer as an std::string.">search()</a> was called for each k-mer of the input from left to right in order. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>vector&lt;int64_t&gt; The ranks of the k-mers of the input in the data structure, with -1 for those that are not found in the index. These result will be the same as if <a class="el" href="classsbwt_1_1SBWT.html#a82f8c70eaaf4568c9d7e32a998d55bcb" title="Search for a k-mer as an std::string.">search()</a> was called for each k-mer of the input from left to right in order. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classsbwt_1_1SBWT.html#a82f8c70eaaf4568c9d7e32a998d55bcb" title="Search for a k-mer as an std::string.">search()</a> </dd></dl>
 
 </div>
