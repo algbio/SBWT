@@ -1,0 +1,1 @@
+The file `coli_files.txt` contains all the accession numbers of E. coli genomes included in the experiment in the paper. The dataset can be downloaded from [Zenodo](https://zenodo.org/record/6577997#.YpOdXTlBxH6).
