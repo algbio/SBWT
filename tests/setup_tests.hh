@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <gtest/gtest.h>
-#include "../globals.hh"
+#include "globals.hh"
 #include "version.h"
 #include "throwing_streams.hh"
 

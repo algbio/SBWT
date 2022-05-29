@@ -1,11 +1,12 @@
 #pragma once
 
-#include "../globals.hh"
-#include "../tests/setup_tests.hh"
+#include "globals.hh"
+#include "setup_tests.hh"
 #include <gtest/gtest.h>
 #include "Kmer.hh"
 
-namespace sbwt{
+using namespace sbwt;
+typedef long long LL;
 
 char get_random_DNA_char(){
     LL r = rand() % 4;
@@ -104,6 +105,12 @@ TEST(KMER, serialization){
     ASSERT_TRUE(loaded2.get_k() == S.size());    
 }
 
+bool colex_compare(std::string A, std::string B){
+    std::reverse(A.begin(), A.end());
+    std::reverse(B.begin(), B.end());
+    return A < B;
+}
+
 TEST(KMER, colex){
     vector<string> strings;
     vector<Kmer<255>> kmers;
@@ -145,6 +152,4 @@ TEST(KMER, colex){
             }
         }
     }
-}
-
 }

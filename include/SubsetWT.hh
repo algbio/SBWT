@@ -3,7 +3,7 @@
 #include <vector>
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/rank_support_v.hpp>
-#include "libwheeler/BOSS.hh"
+#include "sdsl/wavelet_trees.hpp"
 #include "globals.hh"
 #include <map>
 #include <cassert>

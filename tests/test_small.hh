@@ -10,7 +10,6 @@
 #include "SubsetMatrixRank.hh"
 #include "SubsetConcatRank.hh"
 #include "SubsetWT.hh"
-#include "libwheeler/BOSS_builder.hh"
 #include "suffix_group_optimization.hh"
 #include <gtest/gtest.h>
 

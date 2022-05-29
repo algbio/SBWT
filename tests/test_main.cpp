@@ -11,6 +11,7 @@
 #include "stdlib_printing.hh"
 #include "globals.hh"
 #include "setup_tests.hh"
+#include "test_kmer.hh"
 #include "test_small.hh"
 #include "test_large.hh"
 #include "test_misc.hh"

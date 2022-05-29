@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdint.h"
-#include "../globals.hh"
+#include "globals.hh"
 #include <string.h> // memcpy
 #include <cassert>
 #include <bitset>

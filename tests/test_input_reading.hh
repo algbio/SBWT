@@ -1,7 +1,7 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include "../globals.hh"
+#include "globals.hh"
 #include "setup_tests.hh"
 #include "SeqIO.hh"
 

@@ -3,7 +3,6 @@
 #include <vector>
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/rank_support_v.hpp>
-#include "libwheeler/BOSS.hh"
 #include "globals.hh"
 #include "SBWT.hh"
 #include <map>

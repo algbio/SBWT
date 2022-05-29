@@ -7,7 +7,6 @@
 #include "throwing_streams.hh"
 #include "suffix_group_optimization.hh"
 #include "kmc_construct.hh"
-#include "libwheeler/BOSS.hh"
 #include "globals.hh"
 #include "Kmer.hh"
 #include <map>
@@ -42,8 +41,8 @@ private:
     sdsl::bit_vector suffix_group_starts; // Marks the first column of every suffix group (see paper)
     vector<int64_t> C; // The array of cumulative character counts
     int64_t n_nodes; // Number of nodes (= columns) in the data structure
-    int64_t k; // The k-mer k
     int64_t n_kmers; // Number of k-mers indexed in the data structure
+    int64_t k; // The k-mer k
 
 public:
 
@@ -59,7 +58,7 @@ public:
         string temp_dir = ".";
     };
 
-    SBWT() : n_nodes(0), k(0), colex(true), n_kmers(0) {}
+    SBWT() : colex(true), n_nodes(0), n_kmers(0), k(0){}
 
     // Construct from precomputed data.
     SBWT(const sdsl::bit_vector& A_bits, 

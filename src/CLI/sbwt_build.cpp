@@ -1,7 +1,6 @@
 #include "globals.hh"
 #include "throwing_streams.hh"
 #include "cxxopts.hpp"
-#include "BOSS.hh"
 #include "SBWT.hh"
 #include "SubsetMatrixRank.hh"
 #include "SeqIO.hh"

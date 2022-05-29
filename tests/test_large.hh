@@ -9,7 +9,6 @@
 #include "SubsetConcatRank.hh"
 #include "SubsetWT.hh"
 #include "SeqIO.hh"
-#include "libwheeler/BOSS_builder.hh"
 #include "suffix_group_optimization.hh"
 #include "variants.hh"
 #include <gtest/gtest.h>

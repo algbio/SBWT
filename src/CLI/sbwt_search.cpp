@@ -1,4 +1,3 @@
-#include "libwheeler/BOSS.hh"
 #include <string>
 #include <cstring>
 #include "version.h"
