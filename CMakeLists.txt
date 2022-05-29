@@ -27,7 +27,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Our sources, excluding the file with the main function
-set(SBWT_SOURCES src/globals.cpp src/suffix_group_optimization.cpp src/EM_sort/Block.cpp src/EM_sort/EM_sort.cpp src/input_reading.cpp)
+set(SBWT_SOURCES src/globals.cpp src/suffix_group_optimization.cpp src/EM_sort/Block.cpp src/EM_sort/EM_sort.cpp src/SeqIO.cpp)
 
 # KMC tools object files
 set(KMC_TOOLS
