@@ -71,7 +71,7 @@ LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& s
 
     LL total_micros = 0;
     LL number_of_queries = 0;
-    LL k = sbwt.k;
+    LL k = sbwt.get_k();
     vector<int64_t> out_buffer;
     while(true){ 
         LL len = reader.get_next_read_to_buffer();

@@ -73,18 +73,18 @@ LL TEST_LARGE::k;
 vector<string> TEST_LARGE::seqs;
 
 TEST_F(TEST_LARGE, verify_suffix_group_starts){
-    sdsl::bit_vector reference = mark_suffix_groups(matrixboss.subset_rank.A_bits, matrixboss.subset_rank.C_bits, matrixboss.subset_rank.G_bits, matrixboss.subset_rank.T_bits, k);
-    ASSERT_EQ(reference, matrixboss.suffix_group_starts);
+    sdsl::bit_vector reference = mark_suffix_groups(matrixboss.get_subset_rank_structure().A_bits, matrixboss.get_subset_rank_structure().C_bits, matrixboss.get_subset_rank_structure().G_bits, matrixboss.get_subset_rank_structure().T_bits, k);
+    ASSERT_EQ(reference, matrixboss.get_streaming_support());
 }
 
 TEST_F(TEST_LARGE, check_bit_vectors){
-    logger << matrixboss_reference.subset_rank.A_bits.size() << " " << matrixboss.subset_rank.A_bits.size() << endl;
+    logger << matrixboss_reference.get_subset_rank_structure().A_bits.size() << " " << matrixboss.get_subset_rank_structure().A_bits.size() << endl;
 
-    ASSERT_EQ(matrixboss.subset_rank.A_bits, matrixboss_reference.subset_rank.A_bits);
-    ASSERT_EQ(matrixboss.subset_rank.C_bits, matrixboss_reference.subset_rank.C_bits);
-    ASSERT_EQ(matrixboss.subset_rank.G_bits, matrixboss_reference.subset_rank.G_bits);
-    ASSERT_EQ(matrixboss.subset_rank.T_bits, matrixboss_reference.subset_rank.T_bits);
-    ASSERT_EQ(matrixboss.suffix_group_starts, matrixboss_reference.suffix_group_starts);
+    ASSERT_EQ(matrixboss.get_subset_rank_structure().A_bits, matrixboss_reference.get_subset_rank_structure().A_bits);
+    ASSERT_EQ(matrixboss.get_subset_rank_structure().C_bits, matrixboss_reference.get_subset_rank_structure().C_bits);
+    ASSERT_EQ(matrixboss.get_subset_rank_structure().G_bits, matrixboss_reference.get_subset_rank_structure().G_bits);
+    ASSERT_EQ(matrixboss.get_subset_rank_structure().T_bits, matrixboss_reference.get_subset_rank_structure().T_bits);
+    ASSERT_EQ(matrixboss.get_streaming_support(), matrixboss_reference.get_streaming_support());
 }
 
 TEST_F(TEST_LARGE, streaming_queries){

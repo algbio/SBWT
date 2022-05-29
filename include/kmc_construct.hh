@@ -109,8 +109,8 @@ public:
         }
     }
 
-    // Returns the KMC database prefix
-    string run_kmc(const vector<string>& input_files, LL k, LL n_threads, LL ram_gigas, int64_t min_abundance, int64_t max_abundance){
+    // Returns the KMC database prefix and the number of distinct k-mers that had abundance within the given bounds
+    pair<string, int64_t> run_kmc(const vector<string>& input_files, LL k, LL n_threads, LL ram_gigas, int64_t min_abundance, int64_t max_abundance){
 
         write_log("Running KMC counter", LogLevel::MAJOR);
 
@@ -149,7 +149,9 @@ public:
             .SetOutputFileName(KMC_db_file_prefix)
             .SetStrictMemoryMode(true);
 
-        kmc.RunStage2(stage2Params);
+        auto stage2Results = kmc.RunStage2(stage2Params);
+
+        int64_t n_kmers = stage2Results.nUniqueKmers - stage2Results.nBelowCutoffMin - stage2Results.nAboveCutoffMax;
 
         write_log("Sorting KMC database", LogLevel::MAJOR);
 
@@ -173,7 +175,7 @@ public:
         CConfig::GetInstance().simple_output_desc.clear();
         CConfig::GetInstance().transform_output_desc.clear();
 
-        return KMC_db_file_prefix + "-sorted";
+        return {KMC_db_file_prefix + "-sorted", n_kmers};
     }
 
     void write_nodes_and_dummies(const string& KMC_db_path, const string& nodes_outfile, const string& dummies_outfile){
@@ -273,7 +275,8 @@ public:
     // Construct the given nodeboss from the given input strings
     void build(const vector<string>& input_files, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance, int64_t max_abundance){
 
-        string KMC_db_path = run_kmc(input_files, k, n_threads, ram_gigas, min_abundance, max_abundance);
+        string KMC_db_path; int64_t n_kmers;
+        std::tie(KMC_db_path, n_kmers) = run_kmc(input_files, k, n_threads, ram_gigas, min_abundance, max_abundance);
 
         string nodes_outfile = get_temp_file_manager().create_filename();
         string dummies_outfile = get_temp_file_manager().create_filename();
@@ -302,10 +305,10 @@ public:
         write_log("Building SBWT structure", LogLevel::MAJOR);
         bool colex = false; // KMC sorts in lex order, not colex
         if(streaming_support){
-            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k, colex);
+            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k, n_kmers, colex);
         } else{
             sdsl::bit_vector empty;
-            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, empty, k, colex);
+            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, empty, k, n_kmers, colex);
         }
             
     }

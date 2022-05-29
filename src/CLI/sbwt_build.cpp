@@ -125,57 +125,64 @@ int build_main(int argc, char** argv){
     LL bytes_written = 0;
     bytes_written += sbwt::serialize_string(variant, out.stream); // Write variant string to file
 
+    write_log("Build SBWT for " + to_string(matrixboss_plain.number_of_kmers()) + " distinct k-mers", sbwt::LogLevel::MAJOR);
+    write_log("SBWT has " + to_string(matrixboss_plain.number_of_subsets()) + " subsets", sbwt::LogLevel::MAJOR);
+
     sbwt::write_log("Building subset rank support", sbwt::LogLevel::MAJOR);
     
-    sdsl::bit_vector& A_bits = matrixboss_plain.subset_rank.A_bits;
-    sdsl::bit_vector& C_bits = matrixboss_plain.subset_rank.C_bits;
-    sdsl::bit_vector& G_bits = matrixboss_plain.subset_rank.G_bits;
-    sdsl::bit_vector& T_bits = matrixboss_plain.subset_rank.T_bits;
-    sdsl::bit_vector& ssupport = matrixboss_plain.suffix_group_starts;
-    bool colex = matrixboss_plain.colex;
+    const sdsl::bit_vector& A_bits = matrixboss_plain.get_subset_rank_structure().A_bits;
+    const sdsl::bit_vector& C_bits = matrixboss_plain.get_subset_rank_structure().C_bits;
+    const sdsl::bit_vector& G_bits = matrixboss_plain.get_subset_rank_structure().G_bits;
+    const sdsl::bit_vector& T_bits = matrixboss_plain.get_subset_rank_structure().T_bits;
+    const sdsl::bit_vector& ssupport = matrixboss_plain.get_streaming_support();
+    bool colex = matrixboss_plain.is_colex();
+    LL n_kmers = matrixboss_plain.number_of_kmers();
 
     if (variant == "plain-matrix"){
         bytes_written = matrixboss_plain.serialize(out.stream);
     }
     if (variant == "rrr-matrix"){
-        sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-matrix"){
-        sbwt::mef_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::mef_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-split"){
-        sbwt::plain_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::plain_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-split"){
-        sbwt::rrr_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::rrr_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-split"){
-        sbwt::mef_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::mef_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-concat"){
-        sbwt::plain_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::plain_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-concat"){
-        sbwt::mef_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::mef_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-subsetwt"){
-        sbwt::plain_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::plain_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-subsetwt"){
-        sbwt::rrr_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, colex);
+        sbwt::rrr_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, colex);
         bytes_written = sbwt.serialize(out.stream);
     }
 
     sbwt::write_log("Built variant " + variant + " to file " + out_file, sbwt::LogLevel::MAJOR);
-    sbwt::write_log("Space on disk: " + to_string(bytes_written * 8.0 / matrixboss_plain.n_nodes) + " bits per column", sbwt::LogLevel::MAJOR);
+    sbwt::write_log("Space on disk: " + 
+                    to_string(bytes_written * 8.0 / matrixboss_plain.number_of_subsets()) + " bits per column, " +
+                    to_string(bytes_written * 8.0 / matrixboss_plain.number_of_kmers()) + " bits per k-mer" , 
+                    sbwt::LogLevel::MAJOR);
 
     return 0;
 }

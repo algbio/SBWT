@@ -22,9 +22,9 @@ typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 // Queries all 4^k k-mers and checks that the membership queries give the right answers
 template<typename nodeboss_t>
 void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers){
-    for(uint64_t mask = 0; mask < (1 << (2*nodeboss.k)); mask++){
+    for(uint64_t mask = 0; mask < (1 << (2*nodeboss.get_k())); mask++){
         string kmer;
-        for(int64_t i = 0; i < nodeboss.k; i++){
+        for(int64_t i = 0; i < nodeboss.get_k(); i++){
             if(((mask >> 2*i) & 0x3) == 0) kmer += 'A';
             if(((mask >> 2*i) & 0x3) == 1) kmer += 'C';
             if(((mask >> 2*i) & 0x3) == 2) kmer += 'G';
@@ -44,7 +44,7 @@ void check_streaming_queries(const nodeboss_t& nodeboss, const set<string>& true
 
     // Check
     for(int64_t i = 0; i < (LL)result.size(); i++){
-        string kmer = input.substr(i, nodeboss.k);
+        string kmer = input.substr(i, nodeboss.get_k());
         bool is_found = true_kmers.count(kmer); // Truth
         if(is_found) ASSERT_GE(result[i], 0); else ASSERT_EQ(result[i], -1);
         //logger << kmer << " " << result[i] << endl;
@@ -75,20 +75,20 @@ void run_small_testcase(const vector<string>& strings, LL k){
     config.min_abundance = 1;
     plain_matrix_sbwt_t index_kmc(config);
 
-    logger << index_im.subset_rank.A_bits << endl;
-    logger << index_im.subset_rank.C_bits << endl;
-    logger << index_im.subset_rank.G_bits << endl;
-    logger << index_im.subset_rank.T_bits << endl;
+    logger << index_im.get_subset_rank_structure().A_bits << endl;
+    logger << index_im.get_subset_rank_structure().C_bits << endl;
+    logger << index_im.get_subset_rank_structure().G_bits << endl;
+    logger << index_im.get_subset_rank_structure().T_bits << endl;
     logger << "--" << endl;
-    logger << index_kmc.subset_rank.A_bits << endl;
-    logger << index_kmc.subset_rank.C_bits << endl;
-    logger << index_kmc.subset_rank.G_bits << endl;
-    logger << index_kmc.subset_rank.T_bits << endl;
+    logger << index_kmc.get_subset_rank_structure().A_bits << endl;
+    logger << index_kmc.get_subset_rank_structure().C_bits << endl;
+    logger << index_kmc.get_subset_rank_structure().G_bits << endl;
+    logger << index_kmc.get_subset_rank_structure().T_bits << endl;
 
-    ASSERT_EQ(index_im.subset_rank.A_bits, index_kmc.subset_rank.A_bits);
-    ASSERT_EQ(index_im.subset_rank.C_bits, index_kmc.subset_rank.C_bits);
-    ASSERT_EQ(index_im.subset_rank.G_bits, index_kmc.subset_rank.G_bits);
-    ASSERT_EQ(index_im.subset_rank.T_bits, index_kmc.subset_rank.T_bits);
+    ASSERT_EQ(index_im.get_subset_rank_structure().A_bits, index_kmc.get_subset_rank_structure().A_bits);
+    ASSERT_EQ(index_im.get_subset_rank_structure().C_bits, index_kmc.get_subset_rank_structure().C_bits);
+    ASSERT_EQ(index_im.get_subset_rank_structure().G_bits, index_kmc.get_subset_rank_structure().G_bits);
+    ASSERT_EQ(index_im.get_subset_rank_structure().T_bits, index_kmc.get_subset_rank_structure().T_bits);
 
     set<string> true_kmers = get_all_kmers(strings, k);
     set<string> true_rev_kmers = get_all_kmers(reverse_strings, k);
@@ -119,11 +119,11 @@ TEST(TEST_KMC_CONSTRUCT, multiple_input_files){
     X.build({f123}, index1, k, 1, 2, true, 1, 1e9);
     X.build({f1, f2, f3}, index2, k, 1, 2, true, 1, 1e9);
 
-    ASSERT_EQ(index1.subset_rank.A_bits, index2.subset_rank.A_bits);
-    ASSERT_EQ(index1.subset_rank.C_bits, index2.subset_rank.C_bits);
-    ASSERT_EQ(index1.subset_rank.G_bits, index2.subset_rank.G_bits);
-    ASSERT_EQ(index1.subset_rank.T_bits, index2.subset_rank.T_bits);
-    ASSERT_EQ(index1.suffix_group_starts, index2.suffix_group_starts);
+    ASSERT_EQ(index1.get_subset_rank_structure().A_bits, index2.get_subset_rank_structure().A_bits);
+    ASSERT_EQ(index1.get_subset_rank_structure().C_bits, index2.get_subset_rank_structure().C_bits);
+    ASSERT_EQ(index1.get_subset_rank_structure().G_bits, index2.get_subset_rank_structure().G_bits);
+    ASSERT_EQ(index1.get_subset_rank_structure().T_bits, index2.get_subset_rank_structure().T_bits);
+    ASSERT_EQ(index1.get_streaming_support(), index2.get_streaming_support());
 }
 
 
@@ -136,7 +136,7 @@ TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
 
     plain_matrix_sbwt_t X;
     build_nodeboss_in_memory(strings, X, 4, false);
-    ASSERT_EQ(X.n_nodes, 9); // Dummies C, CC and CCC should not be there.
+    ASSERT_EQ(X.number_of_subsets(), 9); // Dummies C, CC and CCC should not be there.
 
     string filename = get_temp_file_manager().create_filename("", ".fna");
     write_seqs_to_fasta_file(strings, filename);
@@ -148,7 +148,7 @@ TEST(TEST_IM_CONSTRUCTION, redundant_dummies){
     config.ram_gigas = 2;
     config.min_abundance = 1;
     plain_matrix_sbwt_t X2(config);
-    ASSERT_EQ(X2.n_nodes, 9); // Dummies C, CC and CCC should not be there.
+    ASSERT_EQ(X2.number_of_subsets(), 9); // Dummies C, CC and CCC should not be there.
 }
 
 TEST(TEST_IM_CONSTRUCTION, not_full_alphabet){
