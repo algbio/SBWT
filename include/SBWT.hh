@@ -65,7 +65,7 @@ public:
     SBWT() : colex(true), n_nodes(0), n_kmers(0), k(0){}
 
     /**
-     * @brief Construct SBWT from precompute data.
+     * @brief Construct SBWT from precomputed data.
      * 
      * @param A_bits Row of character A in the plain matrix SBWT.
      * @param C_bits Row of character C in the plain matrix SBWT.
