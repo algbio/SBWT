@@ -37,12 +37,13 @@ private:
     // we get the lex version, because KMC sorts in lex-order. Then the search will go backward
     // instead of forward.
     bool colex;
+
     subset_rank_t subset_rank; // The subset rank query implementation
     sdsl::bit_vector suffix_group_starts; // Marks the first column of every suffix group (see paper)
     vector<int64_t> C; // The array of cumulative character counts
     int64_t n_nodes; // Number of nodes (= columns) in the data structure
     int64_t k; // The k-mer k
-    int64_t n_kmers;
+    int64_t n_kmers; // Number of k-mers indexed in the data structure
 
 public:
 
