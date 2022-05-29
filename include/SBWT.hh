@@ -194,6 +194,10 @@ int64_t SBWT<subset_rank_t>::serialize(ostream& os) const{
     os.write((char*)&n_nodes, sizeof(n_nodes));
     written += sizeof(n_nodes);
 
+    // Write number of k-mers
+    os.write((char*)&n_kmers, sizeof(n_kmers));
+    written += sizeof(n_kmers);
+
     // Write k
     os.write((char*)&k, sizeof(k));
     written += sizeof(k);
@@ -219,6 +223,7 @@ void SBWT<subset_rank_t>::load(istream& is){
     suffix_group_starts.load(is);
     C = load_std_vector<int64_t>(is);
     is.read((char*)&n_nodes, sizeof(n_nodes));
+    is.read((char*)&n_kmers, sizeof(n_kmers));
     is.read((char*)&k, sizeof(k));
 
     char colex_flag;
