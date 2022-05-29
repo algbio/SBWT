@@ -47,20 +47,35 @@ private:
 public:
 
     struct BuildConfig{
-        vector<string> input_files;
-        int k = 30;
-        bool add_reverse_complements = false;
-        bool build_streaming_support = true;
-        int n_threads = 1;
-        int min_abundance = 1;
-        int max_abundance = 1e9;
-        int ram_gigas = 2;
-        string temp_dir = ".";
+        vector<string> input_files; /** List of paths to input filenames. */
+        int k = 30; /** Length of the k-mers. */
+        bool add_reverse_complements = false; /** Whether we should also add the reverse complemented k-mers to the index. */
+        bool build_streaming_support = true; /** Whether we should build the streaming query support. */
+        int n_threads = 1; /** Number of parallel threads in construction. */
+        int min_abundance = 1; /** k-mers occurring fewer than this many times are discarded. */
+        int max_abundance = 1e9; /** k-mers occurring more than this many times are discarded */
+        int ram_gigas = 2; /** RAM budged. Not strictly enforced. */
+        string temp_dir = "."; /** Path to the directory for the temporary files. */
     };
 
+    /**
+     * @brief Construct an empty SBWT.
+     * 
+     */
     SBWT() : colex(true), n_nodes(0), n_kmers(0), k(0){}
 
-    // Construct from precomputed data.
+    /**
+     * @brief Construct SBWT from precompute data.
+     * 
+     * @param A_bits Row of character A in the plain matrix SBWT.
+     * @param C_bits Row of character C in the plain matrix SBWT.
+     * @param G_bits Row of character G in the plain matrix SBWT.
+     * @param T_bits Row of character T in the plain matrix SBWT.
+     * @param streaming_support The streaming support bit vector. Can be empty.
+     * @param k Length of the k-mers.
+     * @param number_of_kmers Number of k-mers in the data structure.
+     * @param colex Whether then index is colex- or lex-sorted.
+     */
     SBWT(const sdsl::bit_vector& A_bits, 
          const sdsl::bit_vector& C_bits, 
          const sdsl::bit_vector& G_bits, 
@@ -70,29 +85,132 @@ public:
          int64_t number_of_kmers,
          bool colex);
 
-    // KMC construction
+    /**
+     * @brief Construct SBWT using the KMC construction algorithm.
+     * 
+     * @param config construction paramters.
+     */
     SBWT(const BuildConfig& config); 
 
     // Accessors
+
+    /**
+     * @brief Return whether this index uses colex- or lex-sorted k-mers.
+     * 
+     * @return true If colex-sorted.
+     * @return false If lex-sorted.
+     */
     bool is_colex() const {return colex;}
+
+    /**
+     * @brief Get a const reference to the internal subset rank structure.
+     */
     const subset_rank_t& get_subset_rank_structure() const {return subset_rank;}
+
+    /**
+     * @brief Get a const reference to the internal streaming support bit vector.
+     */
     const sdsl::bit_vector& get_streaming_support() const {return suffix_group_starts;}
+
+    /**
+     * @brief Get a const reference to the cumulative character count array.
+     */
     const vector<int64_t>& get_C_array() const {return C;}
+
+    /**
+     * @brief Get the number of subsets in the SBWT (= number of columns in the plain matrix representation).
+     */
     int64_t number_of_subsets() const {return n_nodes;}
+
+    /**
+     * @brief Get the number of k-mers indexed in the data structure.
+     */
     int64_t number_of_kmers() const {return n_kmers;}
+
+    /**
+     * @brief Get the length of the k-mers.
+     */
     int64_t get_k() const {return k;}
 
-    int64_t search(const string& kmer) const; // Search for k-mer as std::string. If string is longer than k, only the first k characters are searched
-    int64_t search(const char* S) const; // Search for C-string
+    /**
+     * @brief Search for a k-mer as an std::string.
+     * 
+     * @param kmer The k-mer to search for. If the length of this is longer than k, then only the first k-mer is searched.
+     * @return The rank of the k-mer in the data structure, or -1 if the k-mer is not in the index.
+     * @see streaming_search()
+     */
+    int64_t search(const string& kmer) const;
 
-    // Query for all k-mers in the input
+    /**
+     * @brief Search for a k-mer as C-string.
+     * 
+     * @param kmer The k-mer to search for.
+     * @return The rank of the k-mer in the data structure, or -1 if the k-mer is not in the index.
+     * @see streaming_search()
+     */
+    int64_t search(const char* kmer) const;
+
+    /**
+     * @brief Query all k-mers of the input std::string. Requires that the streaming support had been built.
+     * 
+     * @throws std::runtime_error If the streaming support has not been vuilt.
+     * @param input The input string 
+     * @return vector<int64_t> The ranks of the k-mers of the input in the data structure. These result will be the same as if search() was called for each k-mer of the input from left to right in order.
+     * @see search()
+     */
     vector<int64_t> streaming_search(const string& input) const;
+
+    /**
+     * @brief Query all k-mers of the input C-string. Requires that the streaming support had been built.
+     * 
+     * @throws std::runtime_error If the streaming support has not been vuilt.
+     * @param input The input string 
+     * @param len Length of the input string
+     * @return vector<int64_t> The ranks of the k-mers of the input in the data structure. These result will be the same as if search() was called for each k-mer of the input from left to right in order.
+     * @see search()
+     */
     vector<int64_t> streaming_search(const char* input, int64_t len) const;
+
+    /**
+     * @brief Whether streaming support is build for the data structure.
+     * 
+     * @return true If streaming support has been built.
+     * @return false If streaming support has not been built.
+     */
     bool has_streaming_query_support() const {return suffix_group_starts.size() > 0;}
     
+    /**
+     * @brief Write the data structure into the given output stream.
+     * 
+     * @param out The output stream.
+     * @return int64_t Number of bytes written.
+     * @see load()
+     */
     int64_t serialize(ostream& out) const; // Returns the number of bytes written
+
+    /**
+     * @brief Write the data structure into the given file.
+     * 
+     * @param filename The output file.
+     * @return int64_t Number of bytes written.
+     * @see load()
+     */
     int64_t serialize(const string& filename) const; // Returns the number of bytes written
+
+    /**
+     * @brief Load the serialized data structure from an input stream.
+     * 
+     * @param in The input stream.
+     * @see serialize()
+     */
     void load(istream& in);
+
+    /**
+     * @brief Load the serialized data structure from an input file.
+     * 
+     * @param filename The input file.
+     * @see serialize()
+     */
     void load(const string& filename);
 
 };
