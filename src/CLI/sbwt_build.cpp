@@ -49,6 +49,7 @@ int build_main(int argc, char** argv){
         ("b,max-abundance", "Discard all k-mers occurring more than this many times.", cxxopts::value<LL>()->default_value("1000000000"))
         ("m,ram-gigas", "RAM budget in gigabytes (not strictly enforced). Must be at least 2.", cxxopts::value<LL>()->default_value("2"))
         ("d,temp-dir", "Location for temporary files.", cxxopts::value<string>()->default_value("."))
+        ("v,verbose", "Print more verbose output.", cxxopts::value<bool>()->default_value("false"))
         ("h,help", "Print usage")
     ;
 
@@ -82,6 +83,7 @@ int build_main(int argc, char** argv){
 
     bool streaming_support = !(opts["no-streaming-support"].as<bool>());
     bool revcomps = opts["add-reverse-complements"].as<bool>();
+    bool verbose = opts["verbose"].as<bool>();
     LL n_threads = opts["n-threads"].as<LL>();
     LL ram_gigas = opts["ram-gigas"].as<LL>();
     LL k = opts["k"].as<LL>();
@@ -89,6 +91,10 @@ int build_main(int argc, char** argv){
     LL max_abundance = opts["max-abundance"].as<LL>();
     string temp_dir = opts["temp-dir"].as<string>();
     sbwt::get_temp_file_manager().set_dir(temp_dir);    
+
+    if(verbose){
+        sbwt::set_log_level(sbwt::LogLevel::MINOR);
+    }
 
     sbwt::SeqIO::FileFormat fileformat = check_that_all_files_have_the_same_format(input_files);
     if(revcomps){
