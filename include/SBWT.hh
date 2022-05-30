@@ -86,7 +86,7 @@ public:
          bool colex);
 
     /**
-     * @brief Construct SBWT using the KMC construction algorithm.
+     * @brief Construct SBWT using the KMC-based construction algorithm.
      * 
      * @param config construction paramters.
      */
@@ -153,7 +153,7 @@ public:
     /**
      * @brief Query all k-mers of the input std::string. Requires that the streaming support had been built.
      * 
-     * @throws std::runtime_error If the streaming support has not been vuilt.
+     * @throws std::runtime_error If the streaming support has not been built.
      * @param input The input string 
      * @return vector<int64_t> The ranks of the k-mers of the input in the data structure, with -1 for those that are not found in the index. These result will be the same as if search() was called for each k-mer of the input from left to right in order.
      * @see search()
@@ -163,7 +163,7 @@ public:
     /**
      * @brief Query all k-mers of the input C-string. Requires that the streaming support had been built.
      * 
-     * @throws std::runtime_error If the streaming support has not been vuilt.
+     * @throws std::runtime_error If the streaming support has not been built.
      * @param input The input string 
      * @param len Length of the input string
      * @return vector<int64_t> The ranks of the k-mers of the input in the data structure, with -1 for those that are not found in the index. These result will be the same as if search() was called for each k-mer of the input from left to right in order.
