@@ -75,8 +75,7 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:ac1b1dd80dd3278e44b3f96d35f36843e"><td class="memItemLeft" align="right" valign="top"><a id="ac1b1dd80dd3278e44b3f96d35f36843e"></a>
-vector&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>input_files</b></td></tr>
+<tr class="memitem:ac1b1dd80dd3278e44b3f96d35f36843e"><td class="memItemLeft" align="right" valign="top">vector&lt; string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#ac1b1dd80dd3278e44b3f96d35f36843e">input_files</a></td></tr>
 <tr class="separator:ac1b1dd80dd3278e44b3f96d35f36843e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b477315ee2de63d2e6d5df1ef201ca9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#a8b477315ee2de63d2e6d5df1ef201ca9">k</a> = 30</td></tr>
 <tr class="separator:a8b477315ee2de63d2e6d5df1ef201ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -109,7 +108,7 @@ template&lt;typename subset_rank_t &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Length of the k-mers. </p>
+<p>Whether we should also add the reverse complemented k-mers to the index. </p>
 
 </div>
 </div>
@@ -126,7 +125,24 @@ template&lt;typename subset_rank_t &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Whether we should also add the reverse complemented k-mers to the index. </p>
+<p>Whether we should build the streaming query support. </p>
+
+</div>
+</div>
+<a id="ac1b1dd80dd3278e44b3f96d35f36843e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1b1dd80dd3278e44b3f96d35f36843e">&#9670;&nbsp;</a></span>input_files</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename subset_rank_t &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">vector&lt;string&gt; <a class="el" href="classsbwt_1_1SBWT.html">sbwt::SBWT</a>&lt; subset_rank_t &gt;::BuildConfig::input_files</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>List of paths to input filenames. </p>
 
 </div>
 </div>
@@ -143,7 +159,7 @@ template&lt;typename subset_rank_t &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>List of paths to input filenames. </p>
+<p>Length of the k-mers. </p>
 
 </div>
 </div>
@@ -160,7 +176,7 @@ template&lt;typename subset_rank_t &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>k-mers occurring fewer than this many times are discarded. </p>
+<p>k-mers occurring more than this many times are discarded </p>
 
 </div>
 </div>
@@ -177,7 +193,7 @@ template&lt;typename subset_rank_t &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Number of parallel threads in construction. </p>
+<p>k-mers occurring fewer than this many times are discarded. </p>
 
 </div>
 </div>
@@ -194,7 +210,7 @@ template&lt;typename subset_rank_t &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Whether we should build the streaming query support. </p>
+<p>Number of parallel threads in construction. </p>
 
 </div>
 </div>
@@ -211,7 +227,7 @@ template&lt;typename subset_rank_t &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>k-mers occurring more than this many times are discarded </p>
+<p>RAM budget in gigabytes. Not strictly enforced. </p>
 
 </div>
 </div>
@@ -228,7 +244,7 @@ template&lt;typename subset_rank_t &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>RAM budget in gigabytes. Not strictly enforced. </p>
+<p>Path to the directory for the temporary files. </p>
 
 </div>
 </div>

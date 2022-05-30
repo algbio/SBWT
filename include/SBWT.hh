@@ -47,15 +47,15 @@ private:
 public:
 
     struct BuildConfig{
-        vector<string> input_files; /** List of paths to input filenames. */
-        int k = 30; /** Length of the k-mers. */
-        bool add_reverse_complements = false; /** Whether we should also add the reverse complemented k-mers to the index. */
-        bool build_streaming_support = true; /** Whether we should build the streaming query support. */
-        int n_threads = 1; /** Number of parallel threads in construction. */
-        int min_abundance = 1; /** k-mers occurring fewer than this many times are discarded. */
-        int max_abundance = 1e9; /** k-mers occurring more than this many times are discarded */
-        int ram_gigas = 2; /** RAM budget in gigabytes. Not strictly enforced. */
-        string temp_dir = "."; /** Path to the directory for the temporary files. */
+        vector<string> input_files; /**< List of paths to input filenames. */
+        int k = 30; /**< Length of the k-mers. */
+        bool add_reverse_complements = false; /**< Whether we should also add the reverse complemented k-mers to the index. */
+        bool build_streaming_support = true; /**< Whether we should build the streaming query support. */
+        int n_threads = 1; /**< Number of parallel threads in construction. */
+        int min_abundance = 1; /**< k-mers occurring fewer than this many times are discarded. */
+        int max_abundance = 1e9; /**< k-mers occurring more than this many times are discarded */
+        int ram_gigas = 2; /**< RAM budget in gigabytes. Not strictly enforced. */
+        string temp_dir = "."; /**< Path to the directory for the temporary files. */
     };
 
     /**
@@ -155,7 +155,7 @@ public:
      * 
      * @throws std::runtime_error If the streaming support has not been built.
      * @param input The input string 
-     * @return vector<int64_t> The ranks of the k-mers of the input in the data structure, with -1 for those that are not found in the index. These result will be the same as if search() was called for each k-mer of the input from left to right in order.
+     * @return vector<int64_t> The ranks of the k-mers of the input in the data structure, with -1 for those that are not found in the index. The result will be the same as if search() was called for each k-mer of the input from left to right in order.
      * @see search()
      */
     vector<int64_t> streaming_search(const string& input) const;
@@ -166,7 +166,7 @@ public:
      * @throws std::runtime_error If the streaming support has not been built.
      * @param input The input string 
      * @param len Length of the input string
-     * @return vector<int64_t> The ranks of the k-mers of the input in the data structure, with -1 for those that are not found in the index. These result will be the same as if search() was called for each k-mer of the input from left to right in order.
+     * @return vector<int64_t> The ranks of the k-mers of the input in the data structure, with -1 for those that are not found in the index. The result will be the same as if search() was called for each k-mer of the input from left to right in order.
      * @see search()
      */
     vector<int64_t> streaming_search(const char* input, int64_t len) const;
