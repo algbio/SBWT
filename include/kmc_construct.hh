@@ -178,7 +178,7 @@ public:
         return {KMC_db_file_prefix + "-sorted", n_kmers};
     }
 
-    void write_nodes_and_dummies(const string& KMC_db_path, const string& nodes_outfile, const string& dummies_outfile){
+    void write_nodes_and_dummies(const string& KMC_db_path, const string& nodes_outfile, const string& dummies_outfile, LL n_kmers){
         char node_serialize_buffer[Node::size_in_bytes()];
         
         Buffered_ofstream nodes_out(nodes_outfile, ios::binary);
@@ -197,6 +197,8 @@ public:
 
         // Rewind character streams to their starting positions
         for(char c : ACGT){
+            write_log(string("Rewinding ") + c,LogLevel::MAJOR);
+            Progress_printer pp1(n_kmers, 100);
             while(true){
                 if(char_streams[c]->done()){
                     // This character is not the last character of any k-mer in the data
@@ -208,12 +210,15 @@ public:
                     cur_kmers[c] = x;
                     break;
                 }
+                pp1.job_done();
             }
         }
         
         kmer_t prev_x;
         LL x_idx = 0;
 
+        write_log("Streaming",LogLevel::MAJOR);
+        Progress_printer pp2(n_kmers, 100);
         // Figure out out-edges and which nodes need dummy prefixes
         while(!all_stream.done()){
             kmer_t x = all_stream.next();
@@ -256,6 +261,7 @@ public:
             nodes_out.write(node_serialize_buffer, Node::size_in_bytes());
             x_idx++;
             prev_x = x;
+            pp2.job_done();
         }
 
         // Process the remaining k-mers
@@ -282,7 +288,7 @@ public:
         string dummies_outfile = get_temp_file_manager().create_filename();
 
         write_log("Writing nodes and dummies to disk", LogLevel::MAJOR);
-        write_nodes_and_dummies(KMC_db_path, nodes_outfile, dummies_outfile);
+        write_nodes_and_dummies(KMC_db_path, nodes_outfile, dummies_outfile, n_kmers);
 
         // Delete the KMC database files. The temp file manager can not do this because
         // KMC appends suffixes to the filename and the manager does not know about that.
