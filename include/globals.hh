@@ -43,16 +43,25 @@ class Progress_printer{
     int64_t processed;
     int64_t total_prints;
     int64_t next_print;
+    bool first_print;
 
-    Progress_printer(int64_t n_jobs, int64_t total_prints) : n_jobs(n_jobs), processed(0), total_prints(total_prints), next_print(0) {}
+    Progress_printer(int64_t n_jobs, int64_t total_prints) : n_jobs(n_jobs), processed(0), total_prints(total_prints), next_print(0), first_print(true) {}
 
     void job_done(){
-        if(next_print == processed){
-            int64_t progress_percent = round(100 * ((double)processed / n_jobs));
-            write_log("Progress: " + to_string(progress_percent) + "%", MINOR);
-            next_print += n_jobs / total_prints;
+        if(sbwt::get_log_level() > LogLevel::MINOR){
+            if(next_print == processed){
+                //string erase(current_string.size() + 1, '\b'); // Backspace characters. +1 For the endline
+                if(!first_print) cerr << '\r' << flush; // Erase current line
+                first_print = false;
+                
+                int64_t progress_percent = round(100 * ((double)processed / n_jobs));
+                cerr << to_string(progress_percent) + "%" << flush;
+
+                next_print += n_jobs / total_prints;
+            }
+            processed++;
+            if(processed == n_jobs) cerr << "\r100%" << endl; // No more prints coming
         }
-        processed++;
     }
 
 };
