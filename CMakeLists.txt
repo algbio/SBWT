@@ -106,3 +106,5 @@ else()
 #  set_target_properties(gtest PROPERTIES EXCLUDE_FROM_ALL 1)
 #  set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL 1)
 endif()
+
+add_library(sbwt_static STATIC ${SBWT_SOURCES} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a)

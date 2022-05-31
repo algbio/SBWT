@@ -2,7 +2,6 @@
 
 #include <string>
 #include <cstring>
-#include "version.h"
 #include "cxxopts.hpp"
 #include "globals.hh"
 #include "SBWT.hh"

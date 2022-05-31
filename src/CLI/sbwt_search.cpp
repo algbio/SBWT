@@ -1,6 +1,5 @@
 #include <string>
 #include <cstring>
-#include "version.h"
 #include "cxxopts.hpp"
 #include "globals.hh"
 #include "SBWT.hh"
@@ -48,7 +47,7 @@ LL run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt)
 
     LL total_micros = 0;
     LL number_of_queries = 0;
-    while(true){ 
+    while(true){
         LL len = reader.get_next_read_to_buffer();
         if(len == 0) break;
 
@@ -72,7 +71,7 @@ LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& s
     LL number_of_queries = 0;
     LL k = sbwt.get_k();
     vector<int64_t> out_buffer;
-    while(true){ 
+    while(true){
         LL len = reader.get_next_read_to_buffer();
         if(len == 0) break;
 
@@ -126,7 +125,7 @@ LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, co
         bool gzip_input = SeqIO::figure_out_file_format(infiles[i]).gzipped;
         if(gzip_input && gzip_output){
             n_queries_run += run_file<sbwt_t, in_gzip, out_gzip>(infiles[i], outfiles[i], sbwt);
-        } 
+        }
         if(gzip_input && !gzip_output){
             n_queries_run += run_file<sbwt_t, in_gzip, out_no_gzip>(infiles[i], outfiles[i], sbwt);
         }
@@ -138,7 +137,7 @@ LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, co
         }
     }
     return n_queries_run;
-    
+
 }
 
 int search_main(int argc, char** argv){
@@ -168,7 +167,7 @@ int search_main(int argc, char** argv){
     string indexfile = opts["index-file"].as<string>();
     check_readable(indexfile);
 
-    // Interpret input file    
+    // Interpret input file
     string queryfile = opts["query-file"].as<string>();
     vector<string> input_files;
     bool multi_file = queryfile.size() >= 4 && queryfile.substr(queryfile.size() - 4) == ".txt";
@@ -259,4 +258,3 @@ int search_main(int argc, char** argv){
     return 0;
 
 }
-
