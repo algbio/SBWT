@@ -48,7 +48,7 @@ class Progress_printer{
     Progress_printer(int64_t n_jobs, int64_t total_prints) : n_jobs(n_jobs), processed(0), total_prints(total_prints), next_print(0), first_print(true) {}
 
     void job_done(){
-        if(sbwt::get_log_level() > LogLevel::MINOR){
+        if(sbwt::get_log_level() >= LogLevel::MINOR){
             if(next_print == processed){
                 //string erase(current_string.size() + 1, '\b'); // Backspace characters. +1 For the endline
                 if(!first_print) cerr << '\r' << flush; // Erase current line
