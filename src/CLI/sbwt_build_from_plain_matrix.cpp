@@ -73,6 +73,7 @@ int build_from_plain_main(int argc, char** argv){
     LL bytes_written = 0;
     sbwt::throwing_ofstream out(out_file, ios::binary);
 
+    sbwt::serialize_string(variant, out.stream);
     if (variant == "plain-matrix"){
         bytes_written = matrixboss_plain.serialize(out.stream);
     }
