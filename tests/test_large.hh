@@ -32,20 +32,17 @@ class TEST_LARGE : public ::testing::Test {
     static void SetUpTestSuite(){
         string filename = "example_data/coli3.fna";
 
-        // Give the reverses of the sequences to in-memory colex construction
-        // so that the bit vectors in the index will be exactly the same as with
-        // lex construction from KMC.
-        vector<string> reverse_seqs;
+        vector<string> seqs;
         SeqIO::Unbuffered_Reader sr(filename);
         while(!sr.done()){
             string S = sr.get_next_query_stream().get_all();
-            reverse_seqs.push_back(string(S.rbegin(), S.rend()));
+            seqs.push_back(S);
         }
 
         k = 30;
         logger << "Building E. coli in memory..." << endl;
         NodeBOSSInMemoryConstructor<plain_matrix_sbwt_t> builder;
-        builder.build(reverse_seqs, matrixboss_reference, k, true);
+        builder.build(seqs, matrixboss_reference, k, true);
 
         logger << "Building E. coli with external memory..." << endl;
         plain_matrix_sbwt_t::BuildConfig config;
