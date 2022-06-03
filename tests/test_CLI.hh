@@ -87,7 +87,7 @@ TEST(CLI, end_to_end_build_and_query){
 
     search_main(ARGS.size, ARGS.array);
 
-    string correct_answer = "-1 -1 -1 -1 -1 14 43 72 21 61 80 56 69 18 51 39 64 -1 -1 -1 -1 -1 \n22 62 83 61 80 -1 -1 -1 -1 -1 6 -1 -1 27 82 59 78 53 44 76 47 26 77 52 41 -1 -1 -1 -1 4 4 4 \n-1 -1 40 65 10 30 -1 -1 \n";
+    string correct_answer = "-1 -1 -1 -1 -1 74 55 77 22 47 36 70 19 31 8 4 3 -1 -1 -1 -1 -1 \n57 78 23 47 36 -1 -1 -1 -1 -1 52 -1 -1 39 73 54 15 65 53 38 72 20 46 35 11 -1 -1 -1 -1 2 2 2 \n-1 -1 26 5 25 66 -1 -1 \n";
     string answer_file = get_temp_file_manager().create_filename("",".txt");
     write_to_file(correct_answer, answer_file);
 

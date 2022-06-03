@@ -30,13 +30,6 @@ class SBWT{
 
 private:
 
-
-    // Is the index for the reverse (lex-sorted k-mers) or forward (colex-sorted k-mers)?
-    // The paper describes the colex version, but if we construct the index via KMC, then
-    // we get the lex version, because KMC sorts in lex-order. Then the search will go backward
-    // instead of forward.
-    bool colex;
-
     subset_rank_t subset_rank; // The subset rank query implementation
     sdsl::bit_vector suffix_group_starts; // Marks the first column of every suffix group (see paper)
     vector<int64_t> C; // The array of cumulative character counts
@@ -62,7 +55,7 @@ public:
      * @brief Construct an empty SBWT.
      * 
      */
-    SBWT() : colex(true), n_nodes(0), n_kmers(0), k(0){}
+    SBWT() : n_nodes(0), n_kmers(0), k(0){}
 
     /**
      * @brief Construct SBWT from precomputed data.
@@ -74,7 +67,6 @@ public:
      * @param streaming_support The streaming support bit vector. Can be empty.
      * @param k Length of the k-mers.
      * @param number_of_kmers Number of k-mers in the data structure.
-     * @param colex Whether the index is colex- or lex-sorted.
      */
     SBWT(const sdsl::bit_vector& A_bits, 
          const sdsl::bit_vector& C_bits, 
@@ -82,8 +74,7 @@ public:
          const sdsl::bit_vector& T_bits, 
          const sdsl::bit_vector& streaming_support, // Streaming support may be empty
          int64_t k, 
-         int64_t number_of_kmers,
-         bool colex);
+         int64_t number_of_kmers);
 
     /**
      * @brief Construct SBWT using the KMC-based construction algorithm.
@@ -93,14 +84,6 @@ public:
     SBWT(const BuildConfig& config); 
 
     // Accessors
-
-    /**
-     * @brief Return whether this index uses colex- or lex-sorted k-mers.
-     * 
-     * @return true If colex-sorted.
-     * @return false If lex-sorted.
-     */
-    bool is_colex() const {return colex;}
 
     /**
      * @brief Get a const reference to the internal subset rank structure.
@@ -217,13 +200,12 @@ public:
 
 
 template <typename subset_rank_t>
-SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, const sdsl::bit_vector& streaming_support, int64_t k, int64_t n_kmers, bool colex){
+SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, const sdsl::bit_vector& streaming_support, int64_t k, int64_t n_kmers){
     subset_rank = subset_rank_t(A_bits, C_bits, G_bits, T_bits);
 
     this->n_nodes = A_bits.size();
     this->k = k;
     this->suffix_group_starts = streaming_support;
-    this->colex = colex;
     this->n_kmers = n_kmers;
 
     // Get the C-array
@@ -257,7 +239,7 @@ int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
     int64_t node_left = 0;
     int64_t node_right = n_nodes-1;
     for(int64_t i = 0; i < k; i++){
-        char c = colex ? kmer[i] : kmer[k-1-i];
+        char c = kmer[i];
         char char_idx = 0;
         if(toupper(c) == 'A') char_idx = 0;
         else if(toupper(c) == 'C') char_idx = 1;
@@ -319,11 +301,6 @@ int64_t SBWT<subset_rank_t>::serialize(ostream& os) const{
     os.write((char*)&k, sizeof(k));
     written += sizeof(k);
 
-    // Write colex flag
-    char flag = colex;
-    os.write(&flag, sizeof(flag));
-    written += sizeof(flag);
-
     return written;
 }
 
@@ -343,9 +320,6 @@ void SBWT<subset_rank_t>::load(istream& is){
     is.read((char*)&n_kmers, sizeof(n_kmers));
     is.read((char*)&k, sizeof(k));
 
-    char colex_flag;
-    is.read(&colex_flag, sizeof(colex_flag));
-    colex = colex_flag;
 }
 
 template <typename subset_rank_t>
@@ -363,19 +337,19 @@ vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t
     if(len < k) return ans;
 
     // Search the first k-mer
-    const char* first_kmer_start = colex ? input : input + len - k;
+    const char* first_kmer_start = input;
     ans.push_back(search(first_kmer_start)); 
 
     for(int64_t i = 1; i < len - k + 1; i++){
         if(ans.back() == -1){
             // Need to search from scratch
-            ans.push_back(search(first_kmer_start + (colex ? i : -i)));
+            ans.push_back(search(first_kmer_start + i));
         } else{
             // Got to the start of the suffix group and do one search iteration
             int64_t column = ans.back();
             while(suffix_group_starts[column] == 0) column--; // can not go negative because the first column is always marked
 
-            char c = toupper(input[colex ? i+k-1 : len-k-i]);
+            char c = toupper(input[i+k-1]);
             char char_idx = -1;
             if(c == 'A') char_idx = 0;
             else if(c == 'C') char_idx = 1;
@@ -394,7 +368,6 @@ vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t
             }
         }
     }
-    if(!colex) std::reverse(ans.begin(), ans.end());
     return ans;
 }
 
