@@ -51,16 +51,8 @@ void check_streaming_queries(const nodeboss_t& nodeboss, const set<string>& true
 }
 
 void run_small_testcase(const vector<string>& strings, LL k){
-    vector<string> reverse_strings;
-    for(const string& S : strings){
-        string R(S.rbegin(), S.rend());
-        reverse_strings.push_back(R);
-    }
-
-    // Giving the reverse strings to in-memory construction so that the colex-index
-    // of that matches the lex-index from KMC
     plain_matrix_sbwt_t index_im;
-    build_nodeboss_in_memory(reverse_strings, index_im, k, false); 
+    build_nodeboss_in_memory(strings, index_im, k, false); 
 
     string temp_filename = get_temp_file_manager().create_filename("", ".fna");
     write_seqs_to_fasta_file(strings, temp_filename);
@@ -90,8 +82,7 @@ void run_small_testcase(const vector<string>& strings, LL k){
     ASSERT_EQ(index_im.get_subset_rank_structure().T_bits, index_kmc.get_subset_rank_structure().T_bits);
 
     set<string> true_kmers = get_all_kmers(strings, k);
-    set<string> true_rev_kmers = get_all_kmers(reverse_strings, k);
-    check_all_queries(index_im, true_rev_kmers);
+    check_all_queries(index_im, true_kmers);
     check_all_queries(index_kmc, true_kmers);
 }
 

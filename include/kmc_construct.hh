@@ -309,7 +309,7 @@ public:
         build_bit_vectors_from_sorted_streams(nodes_outfile, dummies_sortedfile, A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k);
         
         write_log("Building SBWT structure", LogLevel::MAJOR);
-        bool colex = false; // KMC sorts in lex order, not colex
+        bool colex = true;
         if(streaming_support){
             nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k, n_kmers, colex);
         } else{
