@@ -67,7 +67,7 @@ public:
             fill_buffer();
 
             if (buf_size == 0)
-                return false
+                return false;
         }
         *c = buf[buf_pos++];
         return true;
