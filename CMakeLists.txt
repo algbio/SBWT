@@ -30,22 +30,22 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(SBWT_SOURCES src/globals.cpp src/suffix_group_optimization.cpp src/EM_sort/Block.cpp src/EM_sort/EM_sort.cpp src/SeqIO.cpp)
 
 # KMC tools object files
-set(KMC_TOOLS
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_filter.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_reader.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_writer.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/kff_info_reader.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/kmer_file_header.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/nc_utils.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/parameters_parser.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/parser.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/percent_progress.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/tokenizer.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_core/kff_writer.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_api/mmer.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_api/kmc_file.o
-  ${CMAKE_SOURCE_DIR}/KMC/kmc_api/kmer_api.o
-)
+# set(KMC_TOOLS
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_filter.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_reader.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/fastq_writer.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/kff_info_reader.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/kmer_file_header.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/nc_utils.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/parameters_parser.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/parser.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/percent_progress.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/tokenizer.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_core/kff_writer.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_api/mmer.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_api/kmc_file.o
+#   ${CMAKE_SOURCE_DIR}/KMC/kmc_api/kmer_api.o
+# )
 
 ## Require c++17
 set(CMAKE_CXX_STANDARD 17)
@@ -63,6 +63,16 @@ find_package(Threads REQUIRED)
 ## Get version number from git tags
 find_package(Git)
 if(GIT_FOUND)
+  option(GIT_SUBMODULE "Check submodules during build" ON)
+  if(GIT_SUBMODULE)
+    message(STATUS "Submodule update")
+    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      RESULT_VARIABLE GIT_SUBMOD_RESULT)
+    if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+      message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+    endif()
+  endif()
   execute_process(
     COMMAND ${GIT_EXECUTABLE} describe --tags
     WORKING_DIRECTORY "${local_dir}"
@@ -80,18 +90,27 @@ string(TIMESTAMP SBWT_BUILD_TIMESTAMP)
 ## Generate a version.h file containing build version and timestamp
 configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/include/version.h @ONLY)
 
-
 ## Add local dependencies as targets
 add_subdirectory(${CMAKE_SOURCE_DIR}/sdsl-lite
-		 ${CMAKE_BINARY_DIR}/external/sdsl-lite/build)
+  ${CMAKE_BINARY_DIR}/external/sdsl-lite/build)
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/KMC
+  ${CMAKE_BINARY_DIR}/external/KMC/build)
 
 ## Set includes
-include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/build/external/KMC/build/include ${CMAKE_SOURCE_DIR}/KMC/include ${CMAKE_SOURCE_DIR}/KMC/kmc_api ${CMAKE_SOURCE_DIR}/KMC/kmc_core ${CMAKE_SOURCE_DIR}/KMC/kmc_tools)
 
 ## Libraries & executables to build
 
+# set(KMC_LIB
+#   ${CMAKE_BINARY_DIR}/external/KMC/build/libkmc_core.a)
+
+# set(KMC_TOOLS
+#   ${CMAKE_BINARY_DIR}/external/KMC/build/libkmc_tools.a)
+
 add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
-target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
+# target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${KMC_LIB} ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
+target_link_libraries(sbwt sdsl kmc_tools kmc_core ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
 
 ## Build tests if doing a Debug build
 if (BUILD_TESTS)
@@ -101,10 +120,10 @@ if (BUILD_TESTS)
   add_executable(sbwt_tests tests/test_main.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp ${SBWT_SOURCES})
   include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/googletest/googletest/include)
   find_library(GTEST NAMES gtest PATHS ${CMAKE_SOURCE_DIR}/googletest/build/lib/)
-  target_link_libraries(sbwt_tests ${GTEST} ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
+  target_link_libraries(sbwt_tests ${GTEST} kmc_tools kmc_core ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
 else()
 #  set_target_properties(gtest PROPERTIES EXCLUDE_FROM_ALL 1)
 #  set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL 1)
 endif()
 
-add_library(sbwt_static STATIC ${SBWT_SOURCES} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a)
+add_library(sbwt_static STATIC ${SBWT_SOURCES})
