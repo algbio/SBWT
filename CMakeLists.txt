@@ -39,7 +39,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 find_library(ZLIB z PATHS ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/libs REQUIRED)
-find_library(BZIP2 bz2 PATHS ${CMAKE_BINARY_DIR}/external/bzip2 REQUIRED)
+find_library(BZIP2 bz2 REQUIRED)
 find_package(Threads REQUIRED)
 
 ## Get version number from git tags
