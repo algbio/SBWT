@@ -94,11 +94,11 @@ configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/include/vers
 add_subdirectory(${CMAKE_SOURCE_DIR}/sdsl-lite
   ${CMAKE_BINARY_DIR}/external/sdsl-lite/build)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/KMC
-  ${CMAKE_BINARY_DIR}/external/KMC/build)
+add_subdirectory(${CMAKE_SOURCE_DIR}/KMC)
+  # ${CMAKE_BINARY_DIR}/external/KMC/build)
 
 ## Set includes
-include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}/build/external/KMC/build/include ${CMAKE_SOURCE_DIR}/KMC/include ${CMAKE_SOURCE_DIR}/KMC/kmc_api ${CMAKE_SOURCE_DIR}/KMC/kmc_core ${CMAKE_SOURCE_DIR}/KMC/kmc_tools)
+include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/KMC/include) #${CMAKE_BINARY_DIR}/build/external/KMC/build/include ${CMAKE_SOURCE_DIR}/KMC/kmc_api ${CMAKE_SOURCE_DIR}/KMC/kmc_core ${CMAKE_SOURCE_DIR}/KMC/kmc_tools)
 
 ## Libraries & executables to build
 
@@ -110,7 +110,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libw
 
 add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
 # target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${KMC_LIB} ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
-target_link_libraries(sbwt sdsl kmc_tools kmc_core ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
+target_link_libraries(sbwt sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
 
 ## Build tests if doing a Debug build
 if (BUILD_TESTS)
@@ -118,9 +118,9 @@ if (BUILD_TESTS)
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(OpenMP REQUIRED)
   add_executable(sbwt_tests tests/test_main.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp ${SBWT_SOURCES})
-  include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/googletest/googletest/include)
+  include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/googletest/googletest/include ${CMAKE_SOURCE_DIR}/KMC/include)
   find_library(GTEST NAMES gtest PATHS ${CMAKE_SOURCE_DIR}/googletest/build/lib/)
-  target_link_libraries(sbwt_tests ${GTEST} kmc_tools kmc_core ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
+  target_link_libraries(sbwt_tests ${GTEST} ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
 else()
 #  set_target_properties(gtest PROPERTIES EXCLUDE_FROM_ALL 1)
 #  set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL 1)
