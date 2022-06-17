@@ -4,7 +4,7 @@ FROM ubuntu:18.04
 ENV TZ=Asia/Dubai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get update && apt-get install -y g++ gcc cmake libbz2-dev git python3-dev g++-8 libz-dev libbz2-dev
+RUN apt-get update && apt-get install -y g++ gcc cmake git python3-dev g++-8 libz-dev libbz2-dev
 
 RUN git clone https://github.com/algbio/SBWT
 WORKDIR /SBWT
