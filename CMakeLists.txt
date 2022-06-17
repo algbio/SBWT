@@ -84,6 +84,7 @@ target_compile_options(sbwt PRIVATE -march=native)
 
 ## Build tests if doing a Debug build
 if (BUILD_TESTS)
+  add_subdirectory(${CMAKE_SOURCE_DIR}/googletest ${CMAKE_BINARY_DIR}/external/googletest/build)
   find_package(Threads REQUIRED)
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(OpenMP REQUIRED)
