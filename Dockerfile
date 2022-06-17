@@ -11,6 +11,6 @@ WORKDIR /SBWT
 RUN git checkout kmcmake
 
 WORKDIR /SBWT/build
-RUN cmake .. -DCMAKE_CXX_COMPILER=g++-8
+RUN cmake .. -DCMAKE_CXX_COMPILER=g++-8 -DMAX_KMER_LENGTH=32
 RUN make -j8
 run /SBWT/build/bin/sbwt
