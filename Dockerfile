@@ -4,13 +4,13 @@ FROM ubuntu:18.04
 ENV TZ=Asia/Dubai
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get update && apt-get install -y g++ gcc cmake libbz2-dev git python3-dev
+RUN apt-get update && apt-get install -y g++ gcc cmake libbz2-dev git python3-dev g++-8 libz-dev libbz2-dev
 
 RUN git clone https://github.com/algbio/SBWT
 WORKDIR /SBWT
 RUN git checkout kmcmake
 
 WORKDIR /SBWT/build
-RUN cmake ..
+RUN cmake .. -DCMAKE_CXX_COMPILER=g++-8
 RUN make -j8
 run /SBWT/build/bin/sbwt
