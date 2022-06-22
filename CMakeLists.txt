@@ -84,11 +84,12 @@ target_compile_options(sbwt PRIVATE -march=native)
 
 ## Build tests if doing a Debug build
 if (BUILD_TESTS)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/googletest ${CMAKE_BINARY_DIR}/external/googletest/build)
+  add_subdirectory(${CMAKE_SOURCE_DIR}/googletest
+    ${CMAKE_BINARY_DIR}/external/googletest/build)
   find_package(Threads REQUIRED)
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(OpenMP REQUIRED)
-  find_library(GTEST NAMES gtest PATHS ${CMAKE_SOURCE_DIR}/external/googletest/build/lib/)
+  # find_library(GTEST NAMES gtest PATHS ${CMAKE_SOURCE_DIR}/external/googletest/build/lib/)
   add_executable(sbwt_tests tests/test_main.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp ${SBWT_SOURCES})
   target_include_directories(sbwt_tests PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/googletest/googletest/include ${CMAKE_SOURCE_DIR}/KMC/include)
   target_link_libraries(sbwt_tests PRIVATE gtest ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
