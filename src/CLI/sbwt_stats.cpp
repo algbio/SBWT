@@ -36,7 +36,7 @@ void print_column_distribution(const plain_matrix_sbwt_t& sbwt){
     vector<pair<LL, vector<bool>>> counts_vec;
     for(auto [column, count] : counts)
         counts_vec.push_back({count, column});
-    sort(counts_vec.begin(), counts_vec.end());
+    sort(counts_vec.rbegin(), counts_vec.rend()); // Descending order by count
 
     cout << "Column distribution: " << endl;
     for(auto [count, column] : counts_vec){
