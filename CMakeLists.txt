@@ -80,7 +80,6 @@ string(TIMESTAMP SBWT_BUILD_TIMESTAMP)
 ## Generate a version.h file containing build version and timestamp
 configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/include/version.h @ONLY)
 
-
 ## Add local dependencies as targets
 add_subdirectory(${CMAKE_SOURCE_DIR}/sdsl-lite
 		 ${CMAKE_BINARY_DIR}/external/sdsl-lite/build)
@@ -92,6 +91,16 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libw
 
 add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
 target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
+
+if(BUILD_PARQUET_SUPPORT)
+  message(STATUS "** Including Parquet support in the build **")
+  add_executable(build-from-parquet src/sbwt_build_from_parquet_files.cpp ${SBWT_SOURCES})
+
+  # Fix for GCC (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90050 )
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(CXX_FILESYSTEM_LIBRARIES "stdc++fs")
+  endif()
+endif()
 
 ## Build tests if doing a Debug build
 if (BUILD_TESTS)
@@ -108,3 +117,7 @@ else()
 endif()
 
 add_library(sbwt_static STATIC ${SBWT_SOURCES} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a)
+
+if(BUILD_PARQUET_SUPPORT)
+  target_link_libraries(build-from-parquet sdsl arrow parquet Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
+endif()
