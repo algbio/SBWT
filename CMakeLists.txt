@@ -89,7 +89,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libw
 
 ## Libraries & executables to build
 
-add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
+add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp src/CLI/sbwt_dump_kmers.cpp ${SBWT_SOURCES})
 target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
 
 if(BUILD_PARQUET_SUPPORT)

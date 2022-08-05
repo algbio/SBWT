@@ -7,7 +7,7 @@
 
 using namespace std;
 
-static vector<string> commands = {"build", "build-variant", "search"};
+static vector<string> commands = {"build", "build-variant", "search", "dump-kmers"};
 
 void print_help(int argc, char** argv){
     (void) argc; // Unused parameter
@@ -43,6 +43,7 @@ int main(int argc, char** argv){
         if(command == "build") return build_main(argc, argv);
         else if(command == "search") return search_main(argc, argv);
         else if(command == "build-variant") return build_from_plain_main(argc, argv);
+        else if(command == "dump-kmers") return dump_main(argc, argv);
         else{
             throw std::runtime_error("Invalid command: " + command);
             return 1;
