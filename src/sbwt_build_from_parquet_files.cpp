@@ -26,32 +26,37 @@ class Output_Bit_Stream{
 
 public:
 
-    static const LL buf_cap = 1 << 27; // In BITS. 2^27 bits = 2^24 bytes = 16 MB
+    static const LL buf_cap = 1 << 27; // In BITS. MUST BE DIVISIBLE BY 8. 2^27 bits = 2^24 bytes = 16 MB
 
     ofstream out;
-    unsigned char buf[buf_cap/8];
+    unsigned char* buf;
     LL bits_in_buf = 0;
 
     Output_Bit_Stream(const string& filename) : out(filename, ios_base::binary){
         if(!out.good()) throw runtime_error("Error opening file: " + filename);
+        buf = (unsigned char*)malloc(buf_cap/8); // ASSUMES BUFFER HAS A NUMBER OF BITS DIVISIBLE BY 8
         for(LL i = 0; i < buf_cap/8; i++) buf[i] = 0; // Zero-initialize
     }
 
     void add_bit(bool b){
         if(bits_in_buf == buf_cap) flush();
-        LL byte_index = b / 8;
-        LL byte_offset = b % 8;
+        LL byte_index = bits_in_buf / 8;
+        LL byte_offset = bits_in_buf % 8;
         buf[byte_index] |= (b << (7 - byte_offset));
+        bits_in_buf++;
     }
 
     void flush(){
         LL bytes = bits_in_buf / 8 + (bits_in_buf % 8 > 0); // ceil(bits_in_buf / 8)
-        out.write((char*)(&(buf[0])), bytes);
+        out.write((char*)buf, bytes);
+        out.flush();
         for(LL i = 0; i < buf_cap/8; i++) buf[i] = 0;
+        bits_in_buf = 0;
     }
 
     ~Output_Bit_Stream(){
         flush();
+        free(buf);
     }
 
 };
@@ -180,13 +185,13 @@ int main(int argc, char** argv){
     
     }
 
-    std::cerr << "Root k-mer exists: " << (root_kmer_exists ? "true" : "false") << endl;
-
     // Write the last suffix group
     write_suffix_group(column_idx - start_of_suffix_group);
     A_bit = 0; C_bit = 0; G_bit = 0; T_bit = 0;
 
     n_columns_out.stream << column_idx << endl;
+
+    std::cerr << "Root k-mer exists: " << (root_kmer_exists ? "true" : "false") << endl;
 
 /*
     LL n = rows[0].size();
