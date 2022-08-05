@@ -45,11 +45,11 @@ int main(int argc, char** argv){
     throwing_ifstream has_root_in(in_prefix + "_has_root.txt");
 
     LL n_columns; n_columns_in.stream >> n_columns;
-    bool has_root; has_root_in.stream >> has_root;
+    string has_root; has_root_in.stream >> has_root;
 
     cerr << "Number of columns: " << n_columns << endl;
     cerr << "Has root: " << has_root << endl;
-    if(!has_root){
+    if(has_root != "yes"){
         throw std::runtime_error("Error: Todo: has_root == false not implemented");
     }
 
