@@ -22,6 +22,40 @@ using namespace sbwt;
 
 typedef long long LL;
 
+class Output_Bit_Stream{
+
+public:
+
+    static const LL buf_cap = 1 << 27; // In BITS. 2^27 bits = 2^24 bytes = 16 MB
+
+    ofstream out;
+    unsigned char buf[buf_cap/8];
+    LL bits_in_buf = 0;
+
+    Output_Bit_Stream(const string& filename) : out(filename, ios_base::binary){
+        if(!out.good()) throw runtime_error("Error opening file: " + filename);
+        for(LL i = 0; i < buf_cap/8; i++) buf[i] = 0; // Zero-initialize
+    }
+
+    void add_bit(bool b){
+        if(bits_in_buf == buf_cap) flush();
+        LL byte_index = b / 8;
+        LL byte_offset = b % 8;
+        buf[byte_index] |= (b << (7 - byte_offset));
+    }
+
+    void flush(){
+        LL bytes = bits_in_buf / 8 + (bits_in_buf % 8 > 0); // ceil(bits_in_buf / 8)
+        out.write((char*)(&(buf[0])), bytes);
+        for(LL i = 0; i < buf_cap/8; i++) buf[i] = 0;
+    }
+
+    ~Output_Bit_Stream(){
+        flush();
+    }
+
+};
+
 vector<string> split(string s, char delimiter){
     stringstream test(s);
     string segment;
@@ -63,7 +97,7 @@ int main(int argc, char** argv){
 
     options.add_options()
         ("i,in-directory", "Parquet file directory", cxxopts::value<string>())
-        ("o,out-file", "Output file path.", cxxopts::value<string>())
+        ("o,out-prefix", "Output file path prefix.", cxxopts::value<string>())
         ("k", "The k-mer k.", cxxopts::value<LL>())
         ("h,help", "Print usage")
     ;
@@ -77,42 +111,84 @@ int main(int argc, char** argv){
     }
 
     string in_directory = opts["in-directory"].as<string>();
-    string outfile = opts["out-file"].as<string>();
+    string output_prefix = opts["out-prefix"].as<string>();
     LL k = opts["k"].as<LL>();
-
-    check_writable(outfile);
 
     Parquet_Kmer_Stream stream(in_directory, k);
 
     string prev_kmer;
     LL start_of_suffix_group = 0;
-    LL kmer_idx = 0;
+    LL column_idx = 0;
     vector<vector<bool> > rows(4); // DNA alphabet
     bool root_kmer_exists = false;
     string kmer, kmer_outlabels;
     LL n_kmers_without_dummies = 0;
+
+    bool A_bit = 0;
+    bool C_bit = 0;
+    bool G_bit = 0;
+    bool T_bit = 0;
+
+    Output_Bit_Stream A_out(output_prefix + "_A_bits.bin");
+    Output_Bit_Stream C_out(output_prefix + "_C_bits.bin");
+    Output_Bit_Stream G_out(output_prefix + "_G_bits.bin");
+    Output_Bit_Stream T_out(output_prefix + "_T_bits.bin");
+    throwing_ofstream n_columns_out(output_prefix + "_n_columns.txt");
+
+    // Writes a suffix group of given width bit bits set by A_bits, C_bits, G_bits and T_bits.
+    auto write_suffix_group = [&](LL width){
+
+        // Add the column for the first k-mer
+        A_out.add_bit(A_bit);
+        C_out.add_bit(C_bit);
+        G_out.add_bit(G_bit);
+        T_out.add_bit(T_bit);
+
+        // Add zero-columns for the rest
+        for(LL i = 0; i < width - 1; i++){
+            A_out.add_bit(0);
+            C_out.add_bit(0);
+            G_out.add_bit(0);
+            T_out.add_bit(0);
+        }
+    };
+
     while(stream.next(kmer, kmer_outlabels)){
         if(kmer.back() == '$') root_kmer_exists = true; // K-mer is all dollars if the last k-mer is a dollar
         if(std::find(kmer.begin(), kmer.end(), '$') == kmer.end()) n_kmers_without_dummies++;
         if(prev_kmer == "" || prev_kmer.substr(1) != kmer.substr(1)){
-            start_of_suffix_group = kmer_idx;
+            // New suffix group starts
+
+            if(column_idx != 0){
+                // Write the previous suffix group
+                write_suffix_group(column_idx - start_of_suffix_group);
+                A_bit = 0; C_bit = 0; G_bit = 0; T_bit = 0;
+            }
+
+            start_of_suffix_group = column_idx;   
         }
 
-        for(LL i = 0; i < 4; i++) rows[i].push_back(0);
         for(char c : kmer_outlabels){
-            if(c == 'A') rows[0][start_of_suffix_group] = 1;
-            if(c == 'C') rows[1][start_of_suffix_group] = 1;
-            if(c == 'G') rows[2][start_of_suffix_group] = 1;
-            if(c == 'T') rows[3][start_of_suffix_group] = 1;
+            if(c == 'A') A_bit = 1;
+            if(c == 'C') C_bit = 1;
+            if(c == 'G') G_bit = 1;
+            if(c == 'T') T_bit = 1;
         }
 
-        kmer_idx++;
+        column_idx++;
         prev_kmer = kmer;
     
     }
 
-    cerr << "Root k-mer exists: " << (root_kmer_exists ? "true" : "false") << endl;
+    std::cerr << "Root k-mer exists: " << (root_kmer_exists ? "true" : "false") << endl;
 
+    // Write the last suffix group
+    write_suffix_group(column_idx - start_of_suffix_group);
+    A_bit = 0; C_bit = 0; G_bit = 0; T_bit = 0;
+
+    n_columns_out.stream << column_idx << endl;
+
+/*
     LL n = rows[0].size();
     vector<sdsl::bit_vector> sdsl_vectors;
     for(LL i = 0; i < 4; i++){
@@ -130,5 +206,6 @@ int main(int argc, char** argv){
     plain_matrix_sbwt_t matrixboss(sdsl_vectors[0], sdsl_vectors[1], sdsl_vectors[2], sdsl_vectors[3], empty, k, n_kmers_without_dummies);
     throwing_ofstream out(outfile, ios::binary);
     matrixboss.serialize(out.stream);
+*/
 
 }
