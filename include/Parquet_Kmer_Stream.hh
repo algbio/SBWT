@@ -85,8 +85,8 @@ class Parquet_Kmer_Stream{
             }
 
             int64_t packed_kmer;
-            int32_t packed_edges;
-            int32_t length;
+            int16_t packed_edges;
+            int8_t length;
             current_stream >> packed_kmer >> packed_edges >> length >> parquet::EndRow;
             kmer = unpack_kmer(packed_kmer, length);
             outlabels = unpack_edges(packed_edges);

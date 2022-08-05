@@ -59,6 +59,7 @@ endif()
 find_library(ZLIB z PATHS ${CMAKE_SOURCE_DIR}/KMC/kmc_tools/libs REQUIRED)
 find_library(BZIP2 bz2 PATHS ${CMAKE_BINARY_DIR}/external/bzip2 REQUIRED)
 find_package(Threads REQUIRED)
+find_package(OpenMP)
 
 ## Get version number from git tags
 find_package(Git)
