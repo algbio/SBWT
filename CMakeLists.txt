@@ -94,7 +94,7 @@ target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_
 
 if(BUILD_PARQUET_SUPPORT)
   message(STATUS "** Including Parquet support in the build **")
-  add_executable(build-from-parquet src/sbwt_build_from_parquet_files.cpp ${SBWT_SOURCES})
+  add_executable(build-from-parquet src/parquet_files_to_raw_bit_vectors.cpp ${SBWT_SOURCES})
 
   # Fix for GCC (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90050 )
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
