@@ -12,6 +12,27 @@ typedef long long LL;
 using namespace std;
 using namespace sbwt;
 
+sdsl::bit_vector read_raw_bit_vector(string filename, LL n_bits){
+    sdsl::bit_vector bv(n_bits, 0); // Reading the bits into here
+
+    Buffered_ifstream<> in(filename, ios::binary);
+
+    LL n_bytes = n_bits / 8 + (n_bits % 8 > 0); // ceil(n_bits/8)
+    unsigned char byte;
+    LL bits_read = 0;
+    for(LL i = 0; i < n_bytes; i++){
+        in.read((char*)(&byte), 1);
+        for(LL j = 0; j < 8; j++){
+            if(bits_read < n_bits){
+                bv[bits_read++] = (byte & (1 << (7-j))) > 0; // Extract the j-th bit from left
+            }
+        }
+    }
+
+    return bv;
+    
+}
+
 int main(int argc, char** argv){
 
     sbwt::set_log_level(sbwt::LogLevel::MAJOR);
@@ -37,13 +58,8 @@ int main(int argc, char** argv){
 
     string in_prefix = opts["in-prefix"].as<string>();
 
-    throwing_ifstream A_in(in_prefix + "_A_bits.bin");
-    throwing_ifstream C_in(in_prefix + "_C_bits.bin");
-    throwing_ifstream G_in(in_prefix + "_G_bits.bin");
-    throwing_ifstream T_in(in_prefix + "_T_bits.bin");
     throwing_ifstream n_columns_in(in_prefix + "_n_columns.txt");
     throwing_ifstream has_root_in(in_prefix + "_has_root.txt");
-
     LL n_columns; n_columns_in.stream >> n_columns;
     string has_root; has_root_in.stream >> has_root;
 
@@ -52,6 +68,16 @@ int main(int argc, char** argv){
     if(has_root != "yes"){
         throw std::runtime_error("Error: Todo: has_root == false not implemented");
     }
+
+    sdsl::bit_vector A_bits = read_raw_bit_vector(in_prefix + "_A_bits.bin", n_columns);
+    sdsl::bit_vector C_bits = read_raw_bit_vector(in_prefix + "_C_bits.bin", n_columns);
+    sdsl::bit_vector G_bits = read_raw_bit_vector(in_prefix + "_G_bits.bin", n_columns);
+    sdsl::bit_vector T_bits = read_raw_bit_vector(in_prefix + "_T_bits.bin", n_columns);
+
+    cout << A_bits << endl;
+    cout << C_bits << endl;
+    cout << G_bits << endl;
+    cout << T_bits << endl;
 
 /*
     sbwt::plain_matrix_sbwt_t matrixboss_plain;
