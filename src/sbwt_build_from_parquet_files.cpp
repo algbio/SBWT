@@ -139,6 +139,7 @@ int main(int argc, char** argv){
     Output_Bit_Stream G_out(output_prefix + "_G_bits.bin");
     Output_Bit_Stream T_out(output_prefix + "_T_bits.bin");
     throwing_ofstream n_columns_out(output_prefix + "_n_columns.txt");
+    throwing_ofstream has_root_out(output_prefix + "_has_root.txt");
 
     // Writes a suffix group of given width bit bits set by A_bits, C_bits, G_bits and T_bits.
     auto write_suffix_group = [&](LL width){
@@ -190,6 +191,7 @@ int main(int argc, char** argv){
     A_bit = 0; C_bit = 0; G_bit = 0; T_bit = 0;
 
     n_columns_out.stream << column_idx << endl;
+    has_root_out.stream << (root_kmer_exists ? "yes" : "no") << endl;
 
     std::cerr << "Root k-mer exists: " << (root_kmer_exists ? "true" : "false") << endl;
 
