@@ -42,6 +42,7 @@ int main(int argc, char** argv){
     options.add_options()
         ("i,in-prefix", "Input file prefix that was given to the parquet-to-raw-bit-vectors program.", cxxopts::value<string>())
         ("o,out-file", "Output file for the constructed plain matrix SBWT.", cxxopts::value<string>())
+        ("k", "The k-mer k (node length).", cxxopts::value<LL>())
         ("h,help", "Print usage")
     ;
 
@@ -58,9 +59,14 @@ int main(int argc, char** argv){
 
     string in_prefix = opts["in-prefix"].as<string>();
 
+    LL k = opts["k"].as<LL>();
+
     throwing_ifstream n_columns_in(in_prefix + "_n_columns.txt");
+    throwing_ifstream n_kmers_in(in_prefix + "_n_kmers.txt");
     throwing_ifstream has_root_in(in_prefix + "_has_root.txt");
+    
     LL n_columns; n_columns_in.stream >> n_columns;
+    LL n_kmers; n_kmers_in.stream >> n_kmers;
     string has_root; has_root_in.stream >> has_root;
 
     cerr << "Number of columns: " << n_columns << endl;
@@ -79,32 +85,15 @@ int main(int argc, char** argv){
     cout << G_bits << endl;
     cout << T_bits << endl;
 
-/*
-    sbwt::plain_matrix_sbwt_t matrixboss_plain;
-    write_log("Reading input.", sbwt::LogLevel::MAJOR);    
-    matrixboss_plain.load(in.stream);
+    sdsl::bit_vector empty;
 
-    sbwt::write_log("Building variant " + variant, sbwt::LogLevel::MAJOR);
+    sbwt::plain_matrix_sbwt_t matrixboss_plain(A_bits, C_bits, G_bits, T_bits, empty, k, n_kmers);
+
+    throwing_ofstream out(out_file, ios::binary);
     
-    const sdsl::bit_vector& A_bits = matrixboss_plain.get_subset_rank_structure().A_bits;
-    const sdsl::bit_vector& C_bits = matrixboss_plain.get_subset_rank_structure().C_bits;
-    const sdsl::bit_vector& G_bits = matrixboss_plain.get_subset_rank_structure().G_bits;
-    const sdsl::bit_vector& T_bits = matrixboss_plain.get_subset_rank_structure().T_bits;
-    const sdsl::bit_vector& ssupport = matrixboss_plain.get_streaming_support();
-    LL n_kmers = matrixboss_plain.number_of_kmers();
-    LL k = matrixboss_plain.get_k();
-
-    LL bytes_written = 0;
-    sbwt::throwing_ofstream out(out_file, ios::binary);
-
-    sbwt::serialize_string(variant, out.stream);
-
-    sbwt::write_log("Built variant " + variant + " to file " + out_file, sbwt::LogLevel::MAJOR);
-    sbwt::write_log("Space on disk: " + 
-                    to_string(bytes_written * 8.0 / matrixboss_plain.number_of_subsets()) + " bits per column, " +
-                    to_string(bytes_written * 8.0 / matrixboss_plain.number_of_kmers()) + " bits per k-mer" , 
-                    sbwt::LogLevel::MAJOR);
+    sbwt::serialize_string("plain-matrix", out.stream);
+    matrixboss_plain.serialize(out.stream);
 
     return 0;
-*/
+
 }
