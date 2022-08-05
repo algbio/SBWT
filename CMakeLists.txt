@@ -94,7 +94,8 @@ target_link_libraries(sbwt sdsl ${KMC_TOOLS} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_
 
 if(BUILD_PARQUET_SUPPORT)
   message(STATUS "** Including Parquet support in the build **")
-  add_executable(build-from-parquet src/parquet_files_to_raw_bit_vectors.cpp ${SBWT_SOURCES})
+  add_executable(parquet-to-raw-bit-vectors src/parquet_files_to_raw_bit_vectors.cpp ${SBWT_SOURCES})
+  add_executable(raw-bit-vectors-to-plain-matrix src/build_from_raw_bit_vectors.cpp ${SBWT_SOURCES})
 
   # Fix for GCC (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90050 )
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -119,5 +120,6 @@ endif()
 add_library(sbwt_static STATIC ${SBWT_SOURCES} ${CMAKE_SOURCE_DIR}/KMC/bin/libkmc_core.a)
 
 if(BUILD_PARQUET_SUPPORT)
-  target_link_libraries(build-from-parquet sdsl arrow parquet Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
+  target_link_libraries(parquet-to-raw-bit-vectors sdsl arrow parquet Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
+  target_link_libraries(raw-bit-vectors-to-plain-matrix sdsl arrow parquet Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES})
 endif()
