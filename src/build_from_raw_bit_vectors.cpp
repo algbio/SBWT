@@ -80,11 +80,6 @@ int main(int argc, char** argv){
     sdsl::bit_vector G_bits = read_raw_bit_vector(in_prefix + "_G_bits.bin", n_columns);
     sdsl::bit_vector T_bits = read_raw_bit_vector(in_prefix + "_T_bits.bin", n_columns);
 
-    cout << A_bits << endl;
-    cout << C_bits << endl;
-    cout << G_bits << endl;
-    cout << T_bits << endl;
-
     sdsl::bit_vector empty;
 
     sbwt::plain_matrix_sbwt_t matrixboss_plain(A_bits, C_bits, G_bits, T_bits, empty, k, n_kmers);
