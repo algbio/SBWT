@@ -310,10 +310,10 @@ public:
         
         write_log("Building SBWT structure", LogLevel::MAJOR);
         if(streaming_support){
-            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k, n_kmers);
+            nodeboss = nodeboss_t(std::move(A_bits), std::move(C_bits), std::move(G_bits), std::move(T_bits), std::move(suffix_group_starts), k, n_kmers);
         } else{
             sdsl::bit_vector empty;
-            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, empty, k, n_kmers);
+            nodeboss = nodeboss_t(std::move(A_bits), std::move(C_bits), std::move(G_bits), std::move(T_bits), std::move(empty), k, n_kmers);
         }
             
     }
