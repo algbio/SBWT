@@ -142,6 +142,8 @@ int build_main(int argc, char** argv){
     const sdsl::bit_vector& ssupport = matrixboss_plain.get_streaming_support();
     LL n_kmers = matrixboss_plain.number_of_kmers();
 
+    // Todo: move constructors below to save the copying overhead
+
     if (variant == "plain-matrix"){
         bytes_written = matrixboss_plain.serialize(out.stream);
     }
