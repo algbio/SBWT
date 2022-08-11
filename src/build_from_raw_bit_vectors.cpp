@@ -82,7 +82,7 @@ int main(int argc, char** argv){
 
     sdsl::bit_vector empty;
 
-    sbwt::plain_matrix_sbwt_t matrixboss_plain(A_bits, C_bits, G_bits, T_bits, empty, k, n_kmers);
+    sbwt::plain_matrix_sbwt_t matrixboss_plain(std::move(A_bits), std::move(C_bits), std::move(G_bits), std::move(T_bits), empty, k, n_kmers);
 
     throwing_ofstream out(out_file, ios::binary);
     

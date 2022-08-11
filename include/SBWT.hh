@@ -77,6 +77,25 @@ public:
          int64_t number_of_kmers);
 
     /**
+     * @brief Construct SBWT from precomputed data. Uses std::move on the bit vectors to save the copying space overhead.
+     * 
+     * @param A_bits Row of character A in the plain matrix SBWT.
+     * @param C_bits Row of character C in the plain matrix SBWT.
+     * @param G_bits Row of character G in the plain matrix SBWT.
+     * @param T_bits Row of character T in the plain matrix SBWT.
+     * @param streaming_support The streaming support bit vector. Can be empty.
+     * @param k Length of the k-mers.
+     * @param number_of_kmers Number of k-mers in the data structure.
+     */
+    SBWT(sdsl::bit_vector&& A_bits, 
+         sdsl::bit_vector&& C_bits, 
+         sdsl::bit_vector&& G_bits, 
+         sdsl::bit_vector&& T_bits, 
+         sdsl::bit_vector&& streaming_support, // Streaming support may be empty
+         int64_t k, 
+         int64_t number_of_kmers);
+
+    /**
      * @brief Construct SBWT using the KMC-based construction algorithm.
      * 
      * @param config construction paramters.
@@ -201,6 +220,9 @@ public:
 
 template <typename subset_rank_t>
 SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, const sdsl::bit_vector& streaming_support, int64_t k, int64_t n_kmers){
+
+    // IF YOU CHANGE THIS CODE, REMEMBER TO MAKE THE CORRESPONDING CHANGES TO THE OTHER CONSTRUCTOR WITH THE && bitvectors
+
     subset_rank = subset_rank_t(A_bits, C_bits, G_bits, T_bits);
 
     this->n_nodes = A_bits.size();
@@ -216,6 +238,27 @@ SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector
     C[3] = C[2] + subset_rank.rank(n_nodes, 'G');
 
 }
+
+template <typename subset_rank_t>
+SBWT<subset_rank_t>::SBWT(sdsl::bit_vector&& A_bits, sdsl::bit_vector&& C_bits, sdsl::bit_vector&& G_bits, sdsl::bit_vector&& T_bits, sdsl::bit_vector&& streaming_support, int64_t k, int64_t n_kmers){
+
+    // IF YOU CHANGE THIS CODE, REMEMBER TO MAKE THE CORRESPONDING CHANGES TO THE OTHER CONSTRUCTOR WITHOUT THE && bitvectors
+    subset_rank = subset_rank_t(A_bits, C_bits, G_bits, T_bits);
+
+    this->n_nodes = A_bits.size();
+    this->k = k;
+    this->suffix_group_starts = streaming_support;
+    this->n_kmers = n_kmers;
+
+    // Get the C-array
+    C.clear(); C.resize(4);
+    C[0] = 1; // There is one incoming ghost-dollar to the root node
+    C[1] = C[0] + subset_rank.rank(n_nodes, 'A');
+    C[2] = C[1] + subset_rank.rank(n_nodes, 'C');
+    C[3] = C[2] + subset_rank.rank(n_nodes, 'G');
+
+}
+
 
 template <typename subset_rank_t>
 SBWT<subset_rank_t>::SBWT(const BuildConfig& config){

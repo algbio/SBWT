@@ -46,6 +46,15 @@ class SubsetMatrixRank{
         sdsl::util::init_support(this->T_bits_rs, &(this->T_bits));
     }
 
+    // Moving the bit vectors instead of copying
+    SubsetMatrixRank(sdsl::bit_vector&& A_bits, sdsl::bit_vector&& C_bits, sdsl::bit_vector&& G_bits, sdsl::bit_vector&& T_bits)
+        : A_bits(std::move(A_bits)), C_bits(std::move(C_bits)), G_bits(std::move(G_bits)), T_bits(std::move(T_bits)){
+        sdsl::util::init_support(this->A_bits_rs, &(this->A_bits));
+        sdsl::util::init_support(this->C_bits_rs, &(this->C_bits));
+        sdsl::util::init_support(this->G_bits_rs, &(this->G_bits));
+        sdsl::util::init_support(this->T_bits_rs, &(this->T_bits));
+    }
+
     SubsetMatrixRank(const SubsetMatrixRank& other){
         assert(&other != this); // What on earth are you trying to do?
         operator=(other);

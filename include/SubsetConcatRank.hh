@@ -26,6 +26,8 @@ class SubsetConcatRank{
 
     SubsetConcatRank(){}
 
+    // Todo: constructor that takes std::move bit vectors?
+
     SubsetConcatRank(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits){
         assert(A_bits.size() == C_bits.size() && C_bits.size() == G_bits.size() && G_bits.size() == T_bits.size());
     

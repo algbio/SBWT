@@ -87,6 +87,8 @@ public:
 
     SubsetSplitRank() {}
 
+    // Todo: constructor that takes std::move bit vectors?
+
     SubsetSplitRank(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits){
         int64_t n = A_bits.size();
         int64_t n_b = 0; // Number of branching nodes plus the nodes that do not have outedges

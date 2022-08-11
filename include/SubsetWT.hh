@@ -38,6 +38,8 @@ public:
 
     SubsetWT(){}
 
+    // Todo: constructor that takes std::move bit vectors?
+
     SubsetWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits){
         sdsl::bit_vector AC_bv;
         sdsl::bit_vector GT_bv;
