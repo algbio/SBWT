@@ -6,19 +6,15 @@ This construction algorithm is based on the lightning-fast [k-mer counter KMC](h
 
 # Compiling
 
+The following commands have been tested to successfully build SBWT on a clean Ubuntu 18.04 Docker image.
+
 ```
-git submodule init
-git submodule update
-
-# Build the KMC components
-cd KMC
-make -j4
-cd ..
-
-# Build the SBWT code
-cd build
-cmake .. -DMAX_KMER_LENGTH=32
-make -j4
+apt-get update
+apt-get install -y g++ gcc cmake git python3-dev g++-8 libz-dev libbz2-dev
+git clone https://github.com/algbio/SBWT
+cd SBWT/build
+cmake .. -DCMAKE_CXX_COMPILER=g++-8 -DMAX_KMER_LENGTH=32
+make -j8
 ```
 
 Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-mer length, up to 255. Larger values lead to slower construction and higher disk usage during construction.
@@ -136,7 +132,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DMAX_KMER_LENGTH=32
 make
 ```
 
-This will build the executable `./build/bin/sbwt_tests`. Make sure to run the test executable from the root of the repository, or otherwise it will not find the example data in ./example_data.
+This will build the executable `./build/bin/sbwt_tests`. Make sure to run the test executable from the root of the repository, or otherwise it will not find the example data in ./example\_data.
 
 # Acknowledgements
 
