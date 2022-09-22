@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y g++ gcc cmake git python3-dev g++-8 lib
 
 RUN git clone https://github.com/algbio/SBWT
 WORKDIR /SBWT
-RUN git checkout kmcmake
+RUN git checkout dev
 
 WORKDIR /SBWT/build
 RUN cmake .. -DCMAKE_CXX_COMPILER=g++-8 -DMAX_KMER_LENGTH=32 -DBUILD_TESTS=1
