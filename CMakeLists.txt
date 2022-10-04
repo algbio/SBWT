@@ -78,7 +78,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/KMC
   ${PROJECT_BINARY_DIR}/external/KMC/build)
 
 add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
-target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/include/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
+target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/include/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
 target_link_libraries(sbwt PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
 target_compile_options(sbwt PRIVATE -march=native)
 
