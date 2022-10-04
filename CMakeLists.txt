@@ -78,7 +78,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/KMC
   ${PROJECT_BINARY_DIR}/external/KMC/build)
 
 add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
-target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/include/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
+target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt/ ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
 target_link_libraries(sbwt PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
 target_compile_options(sbwt PRIVATE -march=native)
 
@@ -91,7 +91,7 @@ if (BUILD_TESTS)
   find_package(OpenMP REQUIRED)
   find_library(GTEST NAMES gtest PATHS ${PROJECT_SOURCE_DIR}/external/googletest/build/lib/)
   add_executable(sbwt_tests tests/test_main.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp ${SBWT_SOURCES})
-  target_include_directories(sbwt_tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/include/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/googletest/googletest/include ${PROJECT_SOURCE_DIR}/KMC/include)
+  target_include_directories(sbwt_tests PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/googletest/googletest/include ${PROJECT_SOURCE_DIR}/KMC/include)
   target_link_libraries(sbwt_tests PRIVATE gtest ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
   target_compile_options(sbwt_tests PRIVATE -march=native)
 else()
