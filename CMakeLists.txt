@@ -99,4 +99,7 @@ else()
 #  set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL 1)
 endif()
 
-# add_library(sbwt_static STATIC ${SBWT_SOURCES})
+add_library(sbwt_static STATIC ${SBWT_SOURCES})
+target_include_directories(sbwt_static PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt/ ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
+target_link_libraries(sbwt_static PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
+target_compile_options(sbwt_static PRIVATE -march=native)
