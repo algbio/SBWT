@@ -23,8 +23,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 # Our sources, excluding the file with the main function
 set(SBWT_SOURCES src/globals.cpp src/suffix_group_optimization.cpp src/EM_sort/Block.cpp src/EM_sort/EM_sort.cpp src/SeqIO.cpp)
@@ -68,30 +68,30 @@ endif()
 string(TIMESTAMP SBWT_BUILD_TIMESTAMP)
 
 ## Generate a version.h file containing build version and timestamp
-configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/include/version.h @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/version.h.in ${PROJECT_BINARY_DIR}/include/version.h @ONLY)
 
 ## Add local dependencies as targets
-add_subdirectory(${CMAKE_SOURCE_DIR}/sdsl-lite
-  ${CMAKE_BINARY_DIR}/external/sdsl-lite/build)
+add_subdirectory(${PROJECT_SOURCE_DIR}/sdsl-lite
+  ${PROJECT_BINARY_DIR}/external/sdsl-lite/build)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/KMC
-  ${CMAKE_BINARY_DIR}/external/KMC/build)
+add_subdirectory(${PROJECT_SOURCE_DIR}/KMC
+  ${PROJECT_BINARY_DIR}/external/KMC/build)
 
 add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
-target_include_directories(sbwt PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/KMC/include)
+target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/include/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
 target_link_libraries(sbwt PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
 target_compile_options(sbwt PRIVATE -march=native)
 
 ## Build tests if doing a Debug build
 if (BUILD_TESTS)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/googletest
-    ${CMAKE_BINARY_DIR}/external/googletest/build)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/googletest
+    ${PROJECT_BINARY_DIR}/external/googletest/build)
   find_package(Threads REQUIRED)
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(OpenMP REQUIRED)
-  find_library(GTEST NAMES gtest PATHS ${CMAKE_SOURCE_DIR}/external/googletest/build/lib/)
+  find_library(GTEST NAMES gtest PATHS ${PROJECT_SOURCE_DIR}/external/googletest/build/lib/)
   add_executable(sbwt_tests tests/test_main.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp ${SBWT_SOURCES})
-  target_include_directories(sbwt_tests PRIVATE ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/include/libwheeler ${CMAKE_SOURCE_DIR}/sdsl-lite/include ${CMAKE_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${CMAKE_BINARY_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/googletest/googletest/include ${CMAKE_SOURCE_DIR}/KMC/include)
+  target_include_directories(sbwt_tests PRIVATE ${PROJECT_SOURCE_DIR}/include ${PROJECT_SOURCE_DIR}/include/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_SOURCE_DIR}/build/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/googletest/googletest/include ${PROJECT_SOURCE_DIR}/KMC/include)
   target_link_libraries(sbwt_tests PRIVATE gtest ${BZIP2} ${ZLIB} sdsl Threads::Threads OpenMP::OpenMP_CXX ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
   target_compile_options(sbwt_tests PRIVATE -march=native)
 else()
