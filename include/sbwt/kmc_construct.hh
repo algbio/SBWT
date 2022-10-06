@@ -46,8 +46,13 @@ public:
             sdsl::bit_vector& A_bits_sdsl, sdsl::bit_vector& C_bits_sdsl, sdsl::bit_vector& G_bits_sdsl, sdsl::bit_vector& T_bits_sdsl, sdsl::bit_vector& suffix_group_starts_sdsl, LL k){
         vector<bool> A_bits, C_bits, G_bits, T_bits, suffix_group_starts;
 
+        // These streams are such that the always start with an empty k-mer and an empty edge set.
+        // This will always add the empty string to the graph even if the graph is cyclic. This is
+        // intentional to ensure that the root node in the SBWT graph always exists - otherwise the
+        // search would need a special case for cyclic graphs.
         Disk_Instream nodes_in(nodefile);
         Disk_Instream dummies_in(dummyfile);
+
         Node_stream_merger merger(nodes_in, dummies_in);
 
         Node prev_node;

@@ -101,6 +101,9 @@ class NodeBOSSInMemoryConstructor{
         for(char c : ACGT) char_ptrs[c] = get_char_ptr(kmers, c);
 
         vector<Node> nodes;
+        Node empty;
+        nodes.push_back(empty); // Always have a root node.
+
         for(LL i = 0; i < kmers.size(); i++){
             bool suffix_group_start = false;
             if(i == 0 || kmers[i].copy().dropleft() != kmers[i-1].copy().dropleft())

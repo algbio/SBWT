@@ -32,7 +32,6 @@ class TEST_LARGE : public ::testing::Test {
     static void SetUpTestSuite(){
         string filename = "example_data/coli3.fna";
 
-        vector<string> seqs;
         SeqIO::Unbuffered_Reader sr(filename);
         while(!sr.done()){
             string S = sr.get_next_query_stream().get_all();

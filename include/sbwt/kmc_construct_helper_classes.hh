@@ -196,6 +196,7 @@ public:
 
 };
 
+// This stream will always start with an empty k-mer with an empty edge label set
 class Disk_Instream{
 
 private:
@@ -208,7 +209,7 @@ private:
     Buffered_ifstream<> in;
     char* in_buffer;
 
-    Node top;
+    Node top; // Default-initialized to an empty k-mer and an empty edge set
 
     void update_top(){
         in.read(in_buffer, Node::size_in_bytes());

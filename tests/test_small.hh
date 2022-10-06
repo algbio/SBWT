@@ -154,6 +154,10 @@ TEST(TEST_IM_CONSTRUCTION, lots_of_dummies){
     run_small_testcase(strings, 6);
 }
 
+TEST(TEST_IM_CONSTRUCTION, cyclic){
+    vector<string> strings = {"ACGTACGTACGT"}; // String is cyclic
+    run_small_testcase(strings, 3);
+}
 
 
 TEST(TEST_IM_CONSTRUCTION, test_serialization){
