@@ -41,7 +41,10 @@ class TEST_LARGE : public ::testing::Test {
             string S = sr.get_next_query_stream().get_all();
             seqs.push_back(S);
             for(LL i = 0; i < (LL)S.size()-k+1; i++){
-                all_kmers.insert(kmer_t(S.substr(i,k)));
+                string kmer = S.substr(i,k);
+                bool is_valid = true;
+                for(char c : kmer) if(c != 'A' && c != 'C' && c != 'G' && c != 'T') is_valid = false;
+                if(is_valid) all_kmers.insert(kmer_t(kmer));
             }
         }
 
@@ -104,7 +107,6 @@ TEST_F(TEST_LARGE, streaming_queries){
 }
 
 TEST_F(TEST_LARGE, query_lots_of_kmers){
-    unordered_set<kmer_t> all_kmers; // Also collect a set of all k-mers in the input for later
     LL search_count = 0;
 
     string ACGT = "ACGT";
@@ -117,12 +119,11 @@ TEST_F(TEST_LARGE, query_lots_of_kmers){
             if(is_valid){
                 LL colex = matrixboss.search(kmer);
                 ASSERT_GE(colex, 0); // Should be found
-                all_kmers.insert(kmer);
                 search_count++;
 
                 // Try all forward moves
                 for(char c : ACGT){
-                    kmer_t next_kmer(S.substr(1) + c);
+                    kmer_t next_kmer(kmer.substr(1) + c);
                     int64_t r = matrixboss.forward(colex, c);
                     if(all_kmers.count(next_kmer) == 0)
                         ASSERT_EQ(r, -1); // Should not be found
