@@ -37,7 +37,7 @@ private:
     int64_t n_kmers; // Number of k-mers indexed in the data structure
     int64_t k; // The k-mer k
 
-    int64_t get_char_idx(char c){
+    int64_t get_char_idx(char c) const{
         switch(c){
             case 'A': return 0;
             case 'C': return 1;
@@ -260,11 +260,11 @@ int64_t SBWT<subset_rank_t>::forward(int64_t node, char c) const{
     // Go to start of the suffix group.
     while(!suffix_group_starts[node]) node--; // Guaranteed to terminate because the first node is always marked
 
-    int64_t r1 = subset_struct.rank(node, c);
-    int64_t r2 = subset_struct.rank(node+1, c);
+    int64_t r1 = subset_rank.rank(node, c);
+    int64_t r2 = subset_rank.rank(node+1, c);
     if(r1 == r2) return -1; // No edge found. TODO: could save one rank query if we had direct access to the SBWT sets
 
-    return C_array[get_char_idx(c)] + r1;
+    return C[get_char_idx(c)] + r1;
 }
 
 template <typename subset_rank_t>
@@ -279,7 +279,7 @@ int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
     int64_t node_right = n_nodes-1;
     for(int64_t i = 0; i < k; i++){
         char c = toupper(kmer[i]);
-        char char_idx = get_char_idx(kmer[i]);
+        int64_t char_idx = get_char_idx(kmer[i]);
         if(char_idx == -1) return -1; // Invalid character
 
         node_left = C[char_idx] + subset_rank.rank(node_left, c);
@@ -385,7 +385,7 @@ vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t
             while(suffix_group_starts[column] == 0) column--; // can not go negative because the first column is always marked
 
             char c = toupper(input[i+k-1]);
-            char char_idx = get_char_idx(c);
+            int64_t char_idx = get_char_idx(c);
         
             if(char_idx == -1) ans.push_back(-1); // Not found
             else{
