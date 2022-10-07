@@ -74,6 +74,7 @@ matrixboss_t TEST_LARGE::matrixboss;
 matrixboss_t TEST_LARGE::matrixboss_reference;
 LL TEST_LARGE::k;
 vector<string> TEST_LARGE::seqs;
+unordered_set<Kmer<MAX_KMER_LENGTH>> TEST_LARGE::all_kmers;
 
 TEST_F(TEST_LARGE, verify_suffix_group_starts){
     sdsl::bit_vector reference = mark_suffix_groups(matrixboss.get_subset_rank_structure().A_bits, matrixboss.get_subset_rank_structure().C_bits, matrixboss.get_subset_rank_structure().G_bits, matrixboss.get_subset_rank_structure().T_bits, k);
