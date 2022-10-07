@@ -106,6 +106,15 @@ TEST_F(TEST_LARGE, streaming_queries){
     }
 }
 
+TEST_F(TEST_LARGE, dummy_node_marks){
+    // This test is really weak but it's something
+    sdsl::bit_vector marks = matrixboss.compute_dummy_node_marks();
+    int64_t n_marks = 0;
+    for(bool x : marks) n_marks += x;
+    logger << "dummy node marks test: " << matrixboss.number_of_subsets() << " " << matrixboss.number_of_kmers() + n_marks << endl;
+    ASSERT_EQ(matrixboss.number_of_subsets(), matrixboss.number_of_kmers() + n_marks);
+}
+
 TEST_F(TEST_LARGE, query_lots_of_kmers){
     LL search_count = 0;
 
