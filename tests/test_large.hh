@@ -28,17 +28,27 @@ class TEST_LARGE : public ::testing::Test {
     static matrixboss_t matrixboss_reference;
     static LL k;
     static vector<string> seqs;
+    static unordered_set<Kmer<MAX_KMER_LENGTH>> all_kmers;
 
     static void SetUpTestSuite(){
         string filename = "example_data/coli3.fna";
 
+        k = 30;
+
         SeqIO::Unbuffered_Reader sr(filename);
+        logger << "Reading sequences and hashing all k-mers" << endl;
         while(!sr.done()){
             string S = sr.get_next_query_stream().get_all();
             seqs.push_back(S);
+            for(LL i = 0; i < (LL)S.size()-k+1; i++){
+                string kmer = S.substr(i,k);
+                bool is_valid = true;
+                for(char c : kmer) if(c != 'A' && c != 'C' && c != 'G' && c != 'T') is_valid = false;
+                if(is_valid) all_kmers.insert(kmer_t(kmer));
+            }
         }
 
-        k = 30;
+        
         logger << "Building E. coli in memory..." << endl;
         NodeBOSSInMemoryConstructor<plain_matrix_sbwt_t> builder;
         builder.build(seqs, matrixboss_reference, k, true);
@@ -52,6 +62,7 @@ class TEST_LARGE : public ::testing::Test {
         config.n_threads = 2;
         config.min_abundance = 1;
         matrixboss = plain_matrix_sbwt_t(config);
+
     }
 
     // static void SetUpTestCase(){
@@ -66,6 +77,7 @@ matrixboss_t TEST_LARGE::matrixboss;
 matrixboss_t TEST_LARGE::matrixboss_reference;
 LL TEST_LARGE::k;
 vector<string> TEST_LARGE::seqs;
+unordered_set<Kmer<MAX_KMER_LENGTH>> TEST_LARGE::all_kmers;
 
 TEST_F(TEST_LARGE, verify_suffix_group_starts){
     sdsl::bit_vector reference = mark_suffix_groups(matrixboss.get_subset_rank_structure().A_bits, matrixboss.get_subset_rank_structure().C_bits, matrixboss.get_subset_rank_structure().G_bits, matrixboss.get_subset_rank_structure().T_bits, k);
@@ -94,10 +106,19 @@ TEST_F(TEST_LARGE, streaming_queries){
     }
 }
 
+TEST_F(TEST_LARGE, dummy_node_marks){
+    // This test is really weak but it's something
+    sdsl::bit_vector marks = matrixboss.compute_dummy_node_marks();
+    int64_t n_marks = 0;
+    for(bool x : marks) n_marks += x;
+    logger << "dummy node marks test: " << matrixboss.number_of_subsets() << " " << matrixboss.number_of_kmers() + n_marks << endl;
+    ASSERT_EQ(matrixboss.number_of_subsets(), matrixboss.number_of_kmers() + n_marks);
+}
+
 TEST_F(TEST_LARGE, query_lots_of_kmers){
-    unordered_set<kmer_t> all_kmers; // Also collect a set of all k-mers in the input for later
     LL search_count = 0;
 
+    string ACGT = "ACGT";
     logger << "Querying all input k-mers..." << endl;
     for(const string& S : seqs){
         for(LL i = 0; i < (LL)S.size() - k + 1; i++){
@@ -106,9 +127,18 @@ TEST_F(TEST_LARGE, query_lots_of_kmers){
             for(char c : kmer) if(c != 'A' && c != 'C' && c != 'G' && c != 'T') is_valid = false;
             if(is_valid){
                 LL colex = matrixboss.search(kmer);
-                ASSERT_GE(colex, 0); // Should be sound
-                all_kmers.insert(kmer);
+                ASSERT_GE(colex, 0); // Should be found
                 search_count++;
+
+                // Try all forward moves
+                for(char c : ACGT){
+                    kmer_t next_kmer(kmer.substr(1) + c);
+                    int64_t r = matrixboss.forward(colex, c);
+                    if(all_kmers.count(next_kmer) == 0)
+                        ASSERT_EQ(r, -1); // Should not be found
+                    else
+                        ASSERT_EQ(r, matrixboss.search(next_kmer.to_string()));
+                }
 
                 // Print verbose output
                 if(search_count % 100000 == 0)  logger << kmer << " " << colex << endl;

@@ -39,6 +39,16 @@ private:
     int64_t n_kmers; // Number of k-mers indexed in the data structure
     int64_t k; // The k-mer k
 
+    int64_t get_char_idx(char c) const{
+        switch(c){
+            case 'A': return 0;
+            case 'C': return 1;
+            case 'G': return 2;
+            case 'T': return 3;
+            default: return -1;
+        }
+    }
+
 public:
 
     struct BuildConfig{
@@ -98,6 +108,11 @@ public:
     const sdsl::bit_vector& get_streaming_support() const {return suffix_group_starts;}
 
     /**
+     * @brief Compute and return a bit vector that marks which nodes do not correspond to a full k-mer.
+     */
+    sdsl::bit_vector compute_dummy_node_marks() const;
+
+    /**
      * @brief Get a const reference to the cumulative character count array.
      */
     const vector<int64_t>& get_C_array() const {return C;}
@@ -116,6 +131,15 @@ public:
      * @brief Get the length of the k-mers.
      */
     int64_t get_k() const {return k;}
+
+    /**
+     * @brief Follow an edge in the de Bruijn graph. If called on a dummy node, follows an edge in the dummy node tree.
+     * 
+     * @param node The node to move from.
+     * @param c The character to follow.
+     * @return The node id of the node at the end of the edge from `node` labeled with `c`, or -1 if does not exist.
+     */
+    int64_t forward(int64_t node, char c) const;
 
     /**
      * @brief Search for a k-mer as an std::string.
@@ -231,6 +255,21 @@ SBWT<subset_rank_t>::SBWT(const BuildConfig& config){
 }
 
 template <typename subset_rank_t>
+int64_t SBWT<subset_rank_t>::forward(int64_t node, char c) const{
+    if(!has_streaming_query_support())
+        throw std::runtime_error("Error: Streaming support required for SBWT::forward");
+
+    // Go to start of the suffix group.
+    while(!suffix_group_starts[node]) node--; // Guaranteed to terminate because the first node is always marked
+
+    int64_t r1 = subset_rank.rank(node, c);
+    int64_t r2 = subset_rank.rank(node+1, c);
+    if(r1 == r2) return -1; // No edge found. TODO: could save one rank query if we had direct access to the SBWT sets
+
+    return C[get_char_idx(c)] + r1;
+}
+
+template <typename subset_rank_t>
 int64_t SBWT<subset_rank_t>::search(const string& kmer) const{
     assert(kmer.size() == k);
     return search(kmer.c_str());
@@ -241,13 +280,9 @@ int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
     int64_t node_left = 0;
     int64_t node_right = n_nodes-1;
     for(int64_t i = 0; i < k; i++){
-        char c = kmer[i];
-        char char_idx = 0;
-        if(toupper(c) == 'A') char_idx = 0;
-        else if(toupper(c) == 'C') char_idx = 1;
-        else if(toupper(c) == 'G') char_idx = 2;
-        else if(toupper(c) == 'T') char_idx = 3;
-        else return -1; // Invalid character
+        char c = toupper(kmer[i]);
+        int64_t char_idx = get_char_idx(kmer[i]);
+        if(char_idx == -1) return -1; // Invalid character
 
         node_left = C[char_idx] + subset_rank.rank(node_left, c);
         node_right = C[char_idx] + subset_rank.rank(node_right+1, c) - 1;
@@ -360,11 +395,7 @@ vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t
             while(suffix_group_starts[column] == 0) column--; // can not go negative because the first column is always marked
 
             char c = toupper(input[i+k-1]);
-            char char_idx = -1;
-            if(c == 'A') char_idx = 0;
-            else if(c == 'C') char_idx = 1;
-            else if(c == 'G') char_idx = 2;
-            else if(c == 'T') char_idx = 3;
+            int64_t char_idx = get_char_idx(c);
         
             if(char_idx == -1) ans.push_back(-1); // Not found
             else{
@@ -384,6 +415,34 @@ vector<int64_t> SBWT<subset_rank_t>::streaming_search(const char* input, int64_t
 template <typename subset_rank_t>
 vector<int64_t> SBWT<subset_rank_t>::streaming_search(const string& input) const{
     return streaming_search(input.c_str(), input.size());
+}
+
+template <typename subset_rank_t>
+sdsl::bit_vector SBWT<subset_rank_t>::compute_dummy_node_marks() const{
+    int64_t count = 0;
+    vector<pair<int64_t,int64_t>> dfs_stack; // pairs (node, depth)
+    dfs_stack.push_back({0, 0}); // Root node
+    // dfs to depth k-1
+    // the dummy part is a tree so no visited-list is required
+
+    string ACGT = "ACGT";
+    sdsl::bit_vector marks(n_nodes, 0);
+    int64_t v,d; // node,depth
+    while(!dfs_stack.empty()){
+        tie(v,d) = dfs_stack.back();
+        dfs_stack.pop_back();
+        if(d < k){
+            count++;
+            marks[v] = 1;
+        }
+        if(d < k-1){ // Push children
+            for(char c : ACGT){
+                int64_t u = forward(v, c);
+                if(u != -1) dfs_stack.push_back({u,d+1});
+            }
+        }
+    }
+    return marks;
 }
 
 } // namespace sbwt
