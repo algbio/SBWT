@@ -24,6 +24,8 @@ using namespace std;
 
 namespace sbwt{
 
+const std::string SBWT_VERSION = "v0.0"; // Update this after breaking changes. This is serialized with the index and checked when loading.
+
 // Assumes that a root node always exists
 template <typename subset_rank_t>
 class SBWT{
@@ -284,6 +286,9 @@ vector<T> load_std_vector(istream& is){
 template <typename subset_rank_t>
 int64_t SBWT<subset_rank_t>::serialize(ostream& os) const{
     int64_t written = 0;
+
+    written += serialize_string(SBWT_VERSION, os);
+
     written += subset_rank.serialize(os);
     written += suffix_group_starts.serialize(os);
 
@@ -313,6 +318,11 @@ int64_t SBWT<subset_rank_t>::serialize(const string& filename) const{
 
 template <typename subset_rank_t>
 void SBWT<subset_rank_t>::load(istream& is){
+    string version = load_string(is);
+    if(version != SBWT_VERSION){
+        throw std::runtime_error("Error: Corrupt index file, or the index was constructed with an incompatible version of SBWT.");
+    }
+
     subset_rank.load(is);
     suffix_group_starts.load(is);
     C = load_std_vector<int64_t>(is);
