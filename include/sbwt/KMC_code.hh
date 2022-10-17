@@ -626,7 +626,7 @@ public:
 		else
 			tools = nullptr;
 	}
-	~CApplication<1>()
+	~CApplication()
 	{
 		if (tools)
 			delete tools;

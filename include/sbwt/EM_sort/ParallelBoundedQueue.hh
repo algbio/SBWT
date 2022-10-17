@@ -103,7 +103,7 @@ class ParallelBoundedQueue
 
  public:
  
-  ParallelBoundedQueue<T>(int64_t max_load) : current_load(0), max_load(max_load)  {
+  ParallelBoundedQueue(int64_t max_load) : current_load(0), max_load(max_load)  {
       assert(max_load > 0);
   }
 
