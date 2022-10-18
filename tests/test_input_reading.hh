@@ -36,6 +36,28 @@ TEST(INPUT_PARSING, fasta_basic){
     check_buffered_sequence_reader_output(seqs, SeqIO::FASTA, filename);
 }
 
+TEST(INPUT_PARSING, fasta_reverse_complements){
+    vector<string> seqs = {"AAGTGCTGTANAYA","ACGTURYKMSWBDHVN-"};
+    string fasta = ">\n" + seqs[0] + "\n>\n" + seqs[1] + "\n";
+    logger << fasta << endl << seqs << endl;
+    string filename = string_to_temp_file(fasta, ".fna");
+    SeqIO::Reader reader(filename);
+    reader.enable_reverse_complements();
+    vector<string> seqs_read;
+    while(true){
+        int64_t len = reader.get_next_read_to_buffer();
+        if(len == 0) break;
+        ASSERT_EQ(len, strlen(reader.read_buf));
+        seqs_read.push_back(string(reader.read_buf));
+    }
+
+    ASSERT_EQ(seqs_read[0], "AAGTGCTGTANAYA");
+    ASSERT_EQ(seqs_read[1], "TYTNTACAGCACTT");
+    ASSERT_EQ(seqs_read[2], "ACGTURYKMSWBDHVN-");
+    ASSERT_EQ(seqs_read[3], "-NVHDBWSMKYRUACGT");
+
+}
+
 TEST(INPUT_PARSING, fasta_multiple_lines){
     vector<string> seqs = {"AAGTGCTGTANAYA","ACGTURYKMSWBDHVN-"};
     string fasta;
@@ -144,6 +166,29 @@ TEST(INPUT_PARSING, fastq_basic){
     logger << fastq << endl << seqs << " " << quals << endl;
     string filename = string_to_temp_file(fastq);
     check_buffered_sequence_reader_output(seqs, SeqIO::FASTQ, filename);
+}
+
+TEST(INPUT_PARSING, fastq_reverse_complements){
+    vector<string> seqs =  {"AAGTGCTGTANAYA","ACGTURYKMSWBDHVN-"};
+    vector<string> quals = {"IIIIIIIIIIIIII","IIIIIIIIIIIIIIIII"};
+    string fastq = "@\n" + seqs[0] + "\n+\n" + quals[0] + "\n"
+                 + "@\n" + seqs[1] + "\n+\n" + quals[1] + "\n";
+    logger << fastq << endl << seqs << endl;
+    string filename = string_to_temp_file(fastq, ".fq");
+    SeqIO::Reader reader(filename);
+    reader.enable_reverse_complements();
+    vector<string> seqs_read;
+    while(true){
+        int64_t len = reader.get_next_read_to_buffer();
+        if(len == 0) break;
+        ASSERT_EQ(len, strlen(reader.read_buf));
+        seqs_read.push_back(string(reader.read_buf));
+    }
+
+    ASSERT_EQ(seqs_read[0], "AAGTGCTGTANAYA");
+    ASSERT_EQ(seqs_read[1], "TYTNTACAGCACTT");
+    ASSERT_EQ(seqs_read[2], "ACGTURYKMSWBDHVN-");
+    ASSERT_EQ(seqs_read[3], "-NVHDBWSMKYRUACGT");
 
 }
 

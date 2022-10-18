@@ -41,6 +41,8 @@ const NullStream &operator<<(NullStream &&os, const T &value) {
   return os;
 }
 
+void reverse_complement_c_string(char* S, int64_t len);
+
 // Creates a reverse-complement version of each file and return the filenames of the new files
 template<typename reader_t, typename writer_t>
 vector<string> create_reverse_complement_files(const vector<string>& files){
@@ -96,8 +98,14 @@ LL mode;
 LL read_buf_cap;
 LL header_buf_cap;
 
+bool reverse_complements = false; // Whether reverse complements are enabled
+bool return_rc_next = false; // If reverse complements are enabled, this flag is used internally to manage the process
+
+vector<char> rc_buf; // Internal buffer for reverse complements
+
 public:
 
+    // These buffers are intended to be read from outside the class
     char* read_buf; // Stores a sequence read
     char* header_buf; // Stores the header of a read (without the '>' or '@')
 
@@ -145,6 +153,11 @@ public:
         read_first_char_and_sanity_check();
     }
 
+    void enable_reverse_complements(){
+        reverse_complements = true;
+        return_rc_next = false;
+    }
+
 
     ~Reader(){
         free(read_buf);
@@ -164,10 +177,19 @@ public:
     // The header is stored in the member pointer `header buffer`
     // When called, the read that is currently in the buffer is overwritten
     LL get_next_read_to_buffer() {
-        
-        if(stream.eof()){
-            return 0;
+
+        if(reverse_complements){
+            if(return_rc_next){
+                strcpy(read_buf, rc_buf.data());
+                rc_buf.clear();
+                return_rc_next = false;
+                return strlen(read_buf);
+            } else {
+                if(!stream.eof()) return_rc_next = true;
+            }
         }
+        
+        if(stream.eof()) return 0;
 
         int64_t header_length = 0;
         if(mode == FASTA){
@@ -203,6 +225,12 @@ public:
             }
             if(buf_pos == 0) throw std::runtime_error("Error: empty sequence in FASTA file.");
             read_buf[buf_pos] = '\0';
+            if(reverse_complements){
+                // Store the reverse complement for later
+                for(int64_t i = 0; i < buf_pos+1; i++) // +1: also copy the null
+                    rc_buf.push_back(read_buf[i]);
+                reverse_complement_c_string(rc_buf.data(), buf_pos);
+            }
             return buf_pos;
         } else if(mode == FASTQ){
             char c = 0;
@@ -238,8 +266,15 @@ public:
             while(c != '\n') stream.get(&c); // Skip quality line
 
             stream.get(&c); // Consume the '@' of the next read. If no more reads left, sets the eof flag.
-
             if(buf_pos == 0) throw std::runtime_error("Error: empty sequence in FASTQ file.");
+
+            if(reverse_complements){
+                // Store the reverse complement for later
+                for(int64_t i = 0; i < buf_pos+1; i++) // +1: also copy the null
+                    rc_buf.push_back(read_buf[i]);
+                reverse_complement_c_string(rc_buf.data(), buf_pos);
+            }
+
             return buf_pos;
         } else{
             throw std::runtime_error("Should not come to this else-branch");

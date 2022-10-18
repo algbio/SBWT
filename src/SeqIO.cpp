@@ -10,6 +10,12 @@ using namespace sbwt::SeqIO;
 const vector<string> fasta_suffixes = {".fasta", ".fna", ".ffn", ".faa", ".frn", ".fa"};
 const vector<string> fastq_suffixes = {".fastq", ".fq"};
 
+void reverse_complement_c_string(char* S, int64_t len){
+    std::reverse(S, S + len);
+    for(int64_t i = 0; i < len; i++)
+        S[i] = sbwt::get_rc(S[i]);
+}
+
 FileFormat figure_out_file_format(string filename){
     Format fasta_or_fastq;
     bool gzipped = false;
