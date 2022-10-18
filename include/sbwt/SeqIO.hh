@@ -94,10 +94,12 @@ Reader& operator=(const Reader& temp_obj) = delete;  // No copying
 ifstream_t stream;
 LL mode;
 LL read_buf_cap;
+LL header_buf_cap;
 
 public:
 
-    char* read_buf;
+    char* read_buf; // Stores a sequence read
+    char* header_buf; // Stores the header of a read (without the '>' or '@')
 
     void read_first_char_and_sanity_check(){
         
@@ -120,6 +122,9 @@ public:
         read_buf_cap = 256;
         read_buf = (char*)malloc(read_buf_cap);
 
+        header_buf_cap = 256;
+        header_buf = (char*)malloc(header_buf_cap);
+
         read_first_char_and_sanity_check();
     }
 
@@ -134,12 +139,16 @@ public:
         read_buf_cap = 256;
         read_buf = (char*)malloc(read_buf_cap);
 
+        header_buf_cap = 256;
+        header_buf = (char*)malloc(header_buf_cap);
+
         read_first_char_and_sanity_check();
     }
 
 
     ~Reader(){
         free(read_buf);
+        free(header_buf);
     }
 
     void rewind_to_start(){
@@ -152,6 +161,7 @@ public:
     // Returns length of read, or zero if no more reads.
     // The read is null-terminated.
     // The read is stored in the member pointer `read_buffer`
+    // The header is stored in the member pointer `header buffer`
     // When called, the read that is currently in the buffer is overwritten
     LL get_next_read_to_buffer() {
         
@@ -159,9 +169,22 @@ public:
             return 0;
         }
 
+        int64_t header_length = 0;
         if(mode == FASTA){
             char c = 0;
-            while(c != '\n') stream.get(&c); // Skip fasta header line
+
+            while(c != '\n'){
+                // Make space if needed
+                if(header_length >= header_buf_cap) {
+                    header_buf_cap *= 2;
+                    header_buf = (char*)realloc(header_buf, header_buf_cap);
+                }
+
+                // Read next character to buffer
+                stream.get(&c); 
+                header_buf[header_length++] = c;
+            }
+            header_buf[header_length-1] = '\0'; // Overwrite the newline with a null terminator
 
             LL buf_pos = 0;
             while(true){
@@ -182,12 +205,20 @@ public:
             read_buf[buf_pos] = '\0';
             return buf_pos;
         } else if(mode == FASTQ){
-            char c = 0; stream.get(&c);
-            if(stream.eof()){
-                read_buf = nullptr;
-                return 0;
+            char c = 0;
+            while(c != '\n'){
+                // Make space if needed
+                if(header_length >= header_buf_cap) {
+                    header_buf_cap *= 2;
+                    header_buf = (char*)realloc(header_buf, header_buf_cap);
+                }
+
+                // Read next character to buffer
+                stream.get(&c); 
+                header_buf[header_length++] = c;
             }
-            while(c != '\n') stream.get(&c); // Skip header line
+            header_buf[header_length-1] = '\0'; // Overwrite the newline with a null terminator
+
             LL buf_pos = 0;
             while(true){
                 stream.get(&c);
@@ -205,6 +236,8 @@ public:
 
             c = 0;
             while(c != '\n') stream.get(&c); // Skip quality line
+
+            stream.get(&c); // Consume the '@' of the next read. If no more reads left, sets the eof flag.
 
             if(buf_pos == 0) throw std::runtime_error("Error: empty sequence in FASTQ file.");
             return buf_pos;

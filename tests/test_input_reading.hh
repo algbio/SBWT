@@ -81,7 +81,7 @@ TEST(INPUT_PARSING, fasta_super_long_line){
 }
 
 
-TEST(INPUT_PARSING, fasta_headers){
+TEST(INPUT_PARSING, fasta_headers_legacy){
     // Using the legacy SeqIO::Unbuffered_Reader because SeqIO::Reader does not parse SeqIO::Unbuffered_Read_stream
     vector<string> seqs;
     seqs.push_back(string(3e6, 'A'));
@@ -101,6 +101,38 @@ TEST(INPUT_PARSING, fasta_headers){
     rs = sr.get_next_query_stream();
     ASSERT_EQ(rs.header, headers[1]);
     rs.get_all();
+}
+
+TEST(INPUT_PARSING, fasta_headers){
+    // Using the legacy SeqIO::Unbuffered_Reader because SeqIO::Reader does not parse SeqIO::Unbuffered_Read_stream
+    vector<string> seqs;
+    seqs.push_back(string(3e6, 'A'));
+    seqs.push_back(string(4e5, 'G'));
+    seqs.push_back(string(512, 'T')); // Power of two special case?
+
+    vector<string> headers;
+    headers.push_back(string(1e5, 'h'));
+    headers.push_back(string(1e6, 'H'));
+    headers.push_back(string(512, 't')); // Power of two special case?
+
+    string fasta;
+    for(LL i = 0; i < seqs.size(); i++) fasta += ">" + headers[i] + "\n" + seqs[i] + "\n";
+    string filename = string_to_temp_file(fasta, ".fna");
+    SeqIO::Reader sr(filename);
+
+    string header;
+
+    sr.get_next_read_to_buffer();
+    header = sr.header_buf;
+    ASSERT_EQ(headers[0], header);
+    
+    sr.get_next_read_to_buffer();
+    header = sr.header_buf;
+    ASSERT_EQ(headers[1], header);
+
+    sr.get_next_read_to_buffer();
+    header = sr.header_buf;
+    ASSERT_EQ(headers[2], header);
 }
 
 
@@ -144,7 +176,7 @@ TEST(INPUT_PARSING, fastq_super_long_line){
 
 
 // Headers are not stored anymore
-TEST(INPUT_PARSING, fastq_headers){
+TEST(INPUT_PARSING, fastq_headers_legacy){
     // Using the legacy SeqIO::Unbuffered_Reader because SeqIO::Reader does not parse SeqIO::Unbuffered_Read_stream
     vector<string> seqs;
     seqs.push_back(string(1e6, 'A'));
@@ -168,6 +200,44 @@ TEST(INPUT_PARSING, fastq_headers){
     rs = sr.get_next_query_stream();
     ASSERT_EQ(rs.header, headers[1]);
     rs.get_all();
+}
+
+TEST(INPUT_PARSING, fastq_headers){
+    vector<string> seqs;
+    seqs.push_back(string(3e6, 'A'));
+    seqs.push_back(string(4e5, 'G'));
+    seqs.push_back(string(512, 'T')); // Power of two special case?
+
+    vector<string> quals;
+    quals.push_back(string(1e6, 'I'));
+    quals.push_back(string(1e5, 'I'));
+    quals.push_back(string(512, 'I')); // Power of two special case?
+
+    vector<string> headers;
+    headers.push_back(string(1e5, 'h'));
+    headers.push_back(string(1e6, 'H'));
+    headers.push_back(string(512, 't')); // Power of two special case?
+
+    string fastq = "@" + headers[0] + "\n" + seqs[0] + "\n+\n" + quals[0] + "\n" +
+                   "@" + headers[1] + "\n" + seqs[1] + "\n+\n" + quals[1] + "\n" +
+                   "@" + headers[2] + "\n" + seqs[2] + "\n+\n" + quals[2] + "\n";
+    string filename = string_to_temp_file(fastq, ".fq");
+
+    SeqIO::Reader sr(filename);
+    string header;
+
+    sr.get_next_read_to_buffer();
+    header = sr.header_buf;
+    cout << header.size() << endl;
+    ASSERT_EQ(headers[0], header);
+    
+    sr.get_next_read_to_buffer();
+    header = sr.header_buf;
+    ASSERT_EQ(headers[1], header);
+
+    sr.get_next_read_to_buffer();
+    header = sr.header_buf;
+    ASSERT_EQ(headers[2], header);
 }
 
 TEST(INPUT_PARSING, fastq_things_after_plus){
@@ -235,11 +305,3 @@ TEST(INPUT_PARSING, first_char_sanity_check_fasta){
         return;
     }
 }
-
-
-
-/*
-TEST(INPUT_PARSING, fastq_multiple_lines){
-    // We don't support multi-line sequences in FASTQ
-}
-*/
