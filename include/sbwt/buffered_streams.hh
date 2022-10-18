@@ -111,6 +111,14 @@ public:
         buf.resize(buf_cap);
     }
 
+    void rewind_to_start(){
+        stream->clear();
+        stream->seekg(0);
+        buf_pos = 0;
+        buf_size = 0;
+        is_eof = false;
+    }
+
 };
 
 template<class ofstream_t = std::ofstream> // The underlying ifstream

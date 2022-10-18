@@ -114,7 +114,6 @@ public:
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
     Reader(string filename, LL mode) : stream(filename, ios::binary), mode(mode) {
-        // todo: check that fasta files start with > and fastq files start with @
         if(mode != FASTA && mode != FASTQ)
             throw std::invalid_argument("Unkown sequence format");
         
@@ -132,7 +131,6 @@ public:
         else if(fileformat.format == FASTQ) mode = FASTQ;
         else throw(runtime_error("Unknown file format: " + filename));
 
-        // todo: check that fasta files start with > and fastq files start with @
         read_buf_cap = 256;
         read_buf = (char*)malloc(read_buf_cap);
 
@@ -144,6 +142,11 @@ public:
         free(read_buf);
     }
 
+    void rewind_to_start(){
+        stream.rewind_to_start();
+        read_first_char_and_sanity_check();
+    }
+
     LL get_mode() const {return mode;}
 
     // Returns length of read, or zero if no more reads.
@@ -153,7 +156,6 @@ public:
     LL get_next_read_to_buffer() {
         
         if(stream.eof()){
-            read_buf = nullptr;
             return 0;
         }
 
