@@ -167,6 +167,7 @@ public:
     void rewind_to_start(){
         stream.rewind_to_start();
         read_first_char_and_sanity_check();
+        return_rc_next = false;
     }
 
     LL get_mode() const {return mode;}
