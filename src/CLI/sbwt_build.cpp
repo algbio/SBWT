@@ -116,7 +116,6 @@ int build_main(int argc, char** argv){
     sbwt::plain_matrix_sbwt_t::BuildConfig config;
     config.input_files = input_files;
     config.k = k;
-    config.add_reverse_complements = revcomps;
     config.build_streaming_support = streaming_support;
     config.n_threads = n_threads;
     config.min_abundance = min_abundance;

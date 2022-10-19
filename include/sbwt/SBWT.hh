@@ -54,7 +54,6 @@ public:
     struct BuildConfig{
         vector<string> input_files; /**< List of paths to input filenames. */
         int k = 30; /**< Length of the k-mers. */
-        bool add_reverse_complements = false; /**< Whether we should also add the reverse complemented k-mers to the index. */
         bool build_streaming_support = true; /**< Whether we should build the streaming query support. */
         int n_threads = 1; /**< Number of parallel threads in construction. */
         int min_abundance = 1; /**< k-mers occurring fewer than this many times are discarded. */
