@@ -35,6 +35,9 @@ Temp_File_Manager& get_temp_file_manager();
 int64_t serialize_string(const string& S, ostream& out); // Returns the number of bytes written
 string load_string(istream& in); // Loads string serialized by serialize_string
 
+int64_t DNA_to_char_idx(char c); // ACGT -> 0123
+char char_idx_to_DNA(int64_t i); // 0123 -> ACGT
+
 class Progress_printer{
 
     public:

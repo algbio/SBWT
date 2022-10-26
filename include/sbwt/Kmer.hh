@@ -25,9 +25,9 @@ friend class kmer_colex_compare<max_len>;
 private:
 
     // Two bits per character.
-    // The righmost character of the whole k-mer is at the most significant bits of block 0.
+    // The rightmost character of the whole k-mer is at the most significant bits of block 0.
     // See the function `get` for a precise definition of the data layout.
-    static const int64_t DATA_ARRAY_SIZE = max_len /  32 + (max_len % 32 > 0);
+    static constexpr int64_t DATA_ARRAY_SIZE = max_len /  32 + (max_len % 32 > 0);
     uint64_t data[DATA_ARRAY_SIZE]; 
     uint8_t k;
     
@@ -60,6 +60,7 @@ public:
     Kmer() : k(0) {
         clear();
     }
+    
     Kmer(uint8_t k) : k(k) {
         assert(k <= min(max_len, (int64_t)255));
         clear();

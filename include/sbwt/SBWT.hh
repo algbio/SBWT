@@ -24,7 +24,7 @@ using namespace std;
 
 namespace sbwt{
 
-const std::string SBWT_VERSION = "v0.0"; // Update this after breaking changes. This is serialized with the index and checked when loading.
+const std::string SBWT_VERSION = "v0.1"; // Update this after breaking changes. This is serialized with the index and checked when loading.
 
 // Assumes that a root node always exists
 template <typename subset_rank_t>
@@ -35,6 +35,10 @@ private:
     subset_rank_t subset_rank; // The subset rank query implementation
     sdsl::bit_vector suffix_group_starts; // Marks the first column of every suffix group (see paper)
     vector<int64_t> C; // The array of cumulative character counts
+
+    vector<pair<int64_t,int64_t> > kmer_prefix_precalc; // SBWT intervals for all p-mers with p = precalc_k.
+    int64_t precalc_k = 0;
+
     int64_t n_nodes; // Number of nodes (= columns) in the data structure
     int64_t n_kmers; // Number of k-mers indexed in the data structure
     int64_t k; // The k-mer k
@@ -117,6 +121,11 @@ public:
     const vector<int64_t>& get_C_array() const {return C;}
 
     /**
+     * @brief Precalculate all SBWT intervals of all strings of length prefix_length. These will be used in search.
+     */
+    void do_kmer_prefix_precalc(int64_t prefix_length);
+
+    /**
      * @brief Get the number of subsets in the SBWT (= number of columns in the plain matrix representation).
      */
     int64_t number_of_subsets() const {return n_nodes;}
@@ -157,6 +166,23 @@ public:
      * @see streaming_search()
      */
     int64_t search(const char* kmer) const;
+
+    /**
+     * @brief Get the sbwt interval of the search string.
+     * 
+     * @param S The string to search for. Can be of any length.
+     * @return The SBWT interval of the string, or {-1,-1} if it was not found.
+     */
+    std::pair<int64_t,int64_t> get_sbwt_interval(const string& S) const;
+
+    /**
+     * @brief Get the sbwt interval of the search string.
+     * 
+     * @param S The string to search for.
+     * @param S_length The length of S.
+     * @return The SBWT interval of the string, or {-1,-1} if it was not found.
+     */
+    std::pair<int64_t,int64_t> get_sbwt_interval(const string& S, int64_t S_length) const;
 
     /**
      * @brief Query all k-mers of the input std::string. Requires that the streaming support had been built.
@@ -276,24 +302,37 @@ int64_t SBWT<subset_rank_t>::search(const string& kmer) const{
 
 template <typename subset_rank_t>
 int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
+    pair<int64_t, int64_t> I = get_sbwt_interval(kmer, k);
+    if(I.first != I.second){
+        cerr << "Bug: k-mer search did not give a singleton interval: " << I.first << " " << I.second << endl;
+        exit(1);
+    }
+    return I.first;
+}
+
+template<typename subset_rank_t>
+std::pair<int64_t,int64_t> SBWT<subset_rank_t>::get_sbwt_interval(const string& S) const{
+    return get_sbwt_interval(S.c_str(), S.size());
+}
+
+template<typename subset_rank_t>
+std::pair<int64_t,int64_t> SBWT<subset_rank_t>::get_sbwt_interval(const string& S, int64_t S_length) const{
     int64_t node_left = 0;
     int64_t node_right = n_nodes-1;
-    for(int64_t i = 0; i < k; i++){
-        char c = toupper(kmer[i]);
-        int64_t char_idx = get_char_idx(kmer[i]);
-        if(char_idx == -1) return -1; // Invalid character
+    for(int64_t i = 0; i < S_length; i++){
+        char c = toupper(S[i]);
+        int64_t char_idx = get_char_idx(S[i]);
+        if(char_idx == -1) return {-1,-1}; // Invalid character
 
         node_left = C[char_idx] + subset_rank.rank(node_left, c);
         node_right = C[char_idx] + subset_rank.rank(node_right+1, c) - 1;
 
-        if(node_left > node_right) return -1; // Not found
+        if(node_left > node_right) return {-1,-1}; // Not found
     }
-    if(node_left != node_right){
-        cerr << "Bug: node_left != node_right" << endl;
-        exit(1);
-    }
-    return node_left;
+
+    return {node_left, node_right};
 }
+
 
 // Utility function: Serialization for a std::vector
 // Returns number of bytes written
@@ -328,6 +367,11 @@ int64_t SBWT<subset_rank_t>::serialize(ostream& os) const{
 
     written += serialize_std_vector(C, os);
 
+    // Write precalc
+    written += serialize_std_vector(kmer_prefix_precalc, os);
+    os.write((char*)&precalc_k, sizeof(precalc_k));
+    written += sizeof(precalc_k);
+
     // Write number of nodes
     os.write((char*)&n_nodes, sizeof(n_nodes));
     written += sizeof(n_nodes);
@@ -360,6 +404,8 @@ void SBWT<subset_rank_t>::load(istream& is){
     subset_rank.load(is);
     suffix_group_starts.load(is);
     C = load_std_vector<int64_t>(is);
+    kmer_prefix_precalc = load_std_vector<pair<int64_t, int64_t>>(is);
+    is.read((char*)&precalc_k, sizeof(precalc_k));
     is.read((char*)&n_nodes, sizeof(n_nodes));
     is.read((char*)&n_kmers, sizeof(n_kmers));
     is.read((char*)&k, sizeof(k));
@@ -442,6 +488,32 @@ sdsl::bit_vector SBWT<subset_rank_t>::compute_dummy_node_marks() const{
         }
     }
     return marks;
+}
+
+template <typename subset_rank_t>
+void SBWT<subset_rank_t>::do_kmer_prefix_precalc(int64_t prefix_length){
+    if(prefix_length > 20){
+        throw std::runtime_error("Can't precalc longer than 20-mers (would take over 4^20 = 2^40 bytes");
+    }
+    
+    uint64_t n_kmers_to_precalc = 1 << (2*prefix_length); // Four to the power prefix_length
+
+    // Initialize member variables
+    kmer_prefix_precalc.resize(n_kmers_to_precalc);
+    this->precalc_k = prefix_length;
+
+    uint64_t data = 0; // K-mer packed 2 bits per nucleotide
+    string prefix(prefix_length, '\0');
+
+    while(n_kmers_to_precalc--){
+        for(int64_t i = 0; i < prefix_length; i++){
+            char c = char_idx_to_DNA((data >> (2*i)) & 0x3); // Decode the i-th character
+            prefix[i] = c;
+        }
+        kmer_prefix_precalc[data] = get_sbwt_interval(prefix);
+        data++;
+    }
+
 }
 
 } // namespace sbwt
