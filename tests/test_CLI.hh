@@ -40,7 +40,7 @@ TEST(CLI, end_to_end_build_and_query){
     string indexfile = get_temp_file_manager().create_filename("",".sbwt");
     plain_matrix_sbwt_t sbwt;
     string tempdir = get_temp_file_manager().get_dir();
-    vector<string> build_args = {"build","-i",seqfile_list_file,"-o",indexfile,"-k","6","--add-reverse-complements","--temp-dir",tempdir};
+    vector<string> build_args = {"build","-i",seqfile_list_file,"-o",indexfile,"-k","6","--add-reverse-complements","--temp-dir",tempdir,"--precalc-length","4"};
     Argv build_argv(build_args);
     build_main(build_argv.size, build_argv.array);
 

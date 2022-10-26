@@ -92,10 +92,16 @@ int build_main(int argc, char** argv){
     LL max_abundance = opts["max-abundance"].as<LL>();
     LL precalc_length = opts["precalc-length"].as<LL>();
     string temp_dir = opts["temp-dir"].as<string>();
-    sbwt::get_temp_file_manager().set_dir(temp_dir);    
+    sbwt::get_temp_file_manager().set_dir(temp_dir);
 
     if(verbose){
         sbwt::set_log_level(sbwt::LogLevel::MINOR);
+    }
+
+    if(precalc_length > k){
+        write_log("Warning: precalc length " + to_string(precalc_length) + " is longer than k = " + to_string(k), sbwt::LogLevel::MAJOR);
+        write_log("Setting precalc length to " + to_string(k), sbwt::LogLevel::MAJOR);
+        precalc_length = k;
     }
 
     sbwt::SeqIO::FileFormat fileformat = check_that_all_files_have_the_same_format(input_files);
@@ -124,6 +130,7 @@ int build_main(int argc, char** argv){
     config.max_abundance = max_abundance;
     config.ram_gigas = ram_gigas;
     config.temp_dir = temp_dir;
+    config.precalc_k = 0; // No precalc yet at this point to avoid doing it twice
 
     sbwt::plain_matrix_sbwt_t matrixboss_plain(config);
 
@@ -144,51 +151,43 @@ int build_main(int argc, char** argv){
     LL n_kmers = matrixboss_plain.number_of_kmers();
 
     if (variant == "plain-matrix"){
+        matrixboss_plain.do_kmer_prefix_precalc(precalc_length);
         bytes_written = matrixboss_plain.serialize(out.stream);
     }
     if (variant == "rrr-matrix"){
-        sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-matrix"){
-        sbwt::mef_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::mef_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-split"){
-        sbwt::plain_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::plain_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-split"){
-        sbwt::rrr_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::rrr_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-split"){
-        sbwt::mef_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::mef_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-concat"){
-        sbwt::plain_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::plain_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-concat"){
-        sbwt::mef_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::mef_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-subsetwt"){
-        sbwt::plain_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::plain_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-subsetwt"){
-        sbwt::rrr_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
-        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
+        sbwt::rrr_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
 

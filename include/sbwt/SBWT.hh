@@ -63,6 +63,7 @@ public:
         int min_abundance = 1; /**< k-mers occurring fewer than this many times are discarded. */
         int max_abundance = 1e9; /**< k-mers occurring more than this many times are discarded */
         int ram_gigas = 2; /**< RAM budget in gigabytes. Not strictly enforced. */
+        int precalc_k = 0; /**< We will precalculate and store the SBWT intervals of all DNA-strings of this length */
         string temp_dir = "."; /**< Path to the directory for the temporary files. */
     };
 
@@ -73,7 +74,7 @@ public:
     SBWT() : n_nodes(0), n_kmers(0), k(0){}
 
     /**
-     * @brief Construct SBWT from precomputed data.
+     * @brief Construct SBWT from plain matrix SBWT bit vectors.
      * 
      * @param A_bits Row of character A in the plain matrix SBWT.
      * @param C_bits Row of character C in the plain matrix SBWT.
@@ -89,7 +90,8 @@ public:
          const sdsl::bit_vector& T_bits, 
          const sdsl::bit_vector& streaming_support, // Streaming support may be empty
          int64_t k, 
-         int64_t number_of_kmers);
+         int64_t number_of_kmers,
+         int64_t precalc_k);
 
     /**
      * @brief Construct SBWT using the KMC-based construction algorithm.
@@ -119,6 +121,17 @@ public:
      * @brief Get a const reference to the cumulative character count array.
      */
     const vector<int64_t>& get_C_array() const {return C;}
+
+    /**
+     * @brief Get a const reference to the k-mer prefix precalc
+     */
+    const vector<pair<int64_t, int64_t>>& get_precalc() const {return kmer_prefix_precalc;}
+
+    /**
+     * @brief Get the precalc k-mer prefix length
+     */
+    int64_t get_precalc_k() const {return precalc_k;}
+
 
     /**
      * @brief Precalculate all SBWT intervals of all strings of length prefix_length. These will be used in search.
@@ -253,7 +266,7 @@ public:
 
 
 template <typename subset_rank_t>
-SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, const sdsl::bit_vector& streaming_support, int64_t k, int64_t n_kmers){
+SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits, const sdsl::bit_vector& streaming_support, int64_t k, int64_t n_kmers, int64_t precalc_k){
     subset_rank = subset_rank_t(A_bits, C_bits, G_bits, T_bits);
 
     this->n_nodes = A_bits.size();
@@ -268,6 +281,8 @@ SBWT<subset_rank_t>::SBWT(const sdsl::bit_vector& A_bits, const sdsl::bit_vector
     C[2] = C[1] + subset_rank.rank(n_nodes, 'C');
     C[3] = C[2] + subset_rank.rank(n_nodes, 'G');
 
+    do_kmer_prefix_precalc(precalc_k);
+
 }
 
 template <typename subset_rank_t>
@@ -276,9 +291,11 @@ SBWT<subset_rank_t>::SBWT(const BuildConfig& config){
     get_temp_file_manager().set_dir(config.temp_dir);
 
     NodeBOSSKMCConstructor<SBWT<subset_rank_t>> builder;
-    builder.build(config.input_files, *this, config.k, config.n_threads, config.ram_gigas, config.build_streaming_support, config.min_abundance, config.max_abundance);
+    builder.build(config.input_files, *this, config.k, config.n_threads, config.ram_gigas, config.build_streaming_support, config.min_abundance, config.max_abundance, config.precalc_k);
 
     get_temp_file_manager().set_dir(old_temp_dir); // Return the old temporary directory
+
+    // Precalc will be done in the other constructor which is called by the builder
 }
 
 template <typename subset_rank_t>
@@ -511,6 +528,7 @@ sdsl::bit_vector SBWT<subset_rank_t>::compute_dummy_node_marks() const{
 
 template <typename subset_rank_t>
 void SBWT<subset_rank_t>::do_kmer_prefix_precalc(int64_t prefix_length){
+    if(prefix_length == 0) return;
     if(prefix_length > 20){
         throw std::runtime_error("Error: Can't precalc longer than 20-mers (would take over 4^20 = 2^40 bytes");
     }

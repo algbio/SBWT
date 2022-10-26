@@ -208,7 +208,7 @@ class NodeBOSSInMemoryConstructor{
 
         sdsl::bit_vector ssupport;
         if(streaming_support) ssupport = build_streaming_support(nodes, k);
-        nodeboss_t constructed(A_bits, C_bits, G_bits, T_bits, ssupport, k, kmers.size());
+        nodeboss_t constructed(A_bits, C_bits, G_bits, T_bits, ssupport, k, kmers.size(), 0); // No precalc
         nodeboss = constructed;
     }
 };

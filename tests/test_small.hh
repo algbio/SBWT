@@ -106,8 +106,8 @@ TEST(TEST_KMC_CONSTRUCT, multiple_input_files){
 
     NodeBOSSKMCConstructor<plain_matrix_sbwt_t> X;
     plain_matrix_sbwt_t index1, index2;
-    X.build({f123}, index1, k, 1, 2, true, 1, 1e9);
-    X.build({f1, f2, f3}, index2, k, 1, 2, true, 1, 1e9);
+    X.build({f123}, index1, k, 1, 2, true, 1, 1e9, 2);
+    X.build({f1, f2, f3}, index2, k, 1, 2, true, 1, 1e9, 2);
 
     ASSERT_EQ(index1.get_subset_rank_structure().A_bits, index2.get_subset_rank_structure().A_bits);
     ASSERT_EQ(index1.get_subset_rank_structure().C_bits, index2.get_subset_rank_structure().C_bits);

@@ -284,7 +284,7 @@ public:
     }
 
     // Construct the given nodeboss from the given input strings
-    void build(const vector<string>& input_files, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance, int64_t max_abundance){
+    void build(const vector<string>& input_files, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance, int64_t max_abundance, LL precalc_k){
 
         string KMC_db_path; int64_t n_kmers;
         std::tie(KMC_db_path, n_kmers) = run_kmc(input_files, k, n_threads, ram_gigas, min_abundance, max_abundance);
@@ -315,10 +315,10 @@ public:
         
         write_log("Building SBWT structure", LogLevel::MAJOR);
         if(streaming_support){
-            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k, n_kmers);
+            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, suffix_group_starts, k, n_kmers, precalc_k);
         } else{
             sdsl::bit_vector empty;
-            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, empty, k, n_kmers);
+            nodeboss = nodeboss_t(A_bits, C_bits, G_bits, T_bits, empty, k, n_kmers, precalc_k);
         }
             
     }
