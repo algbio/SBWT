@@ -184,7 +184,7 @@ public:
      * @param I The SBWT interval to start from.
      * @return The updated interval, or {-1,-1} if it was not found.
      */
-    std::pair<int64_t,int64_t> update_sbwt_interval(const string& S, int64_t S_length, std::pair<int64_t,int64_t> I) const;
+    std::pair<int64_t,int64_t> update_sbwt_interval(const char* S, int64_t S_length, std::pair<int64_t,int64_t> I) const;
 
     /**
      * @brief Query all k-mers of the input std::string. Requires that the streaming support had been built.
@@ -308,12 +308,16 @@ int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
     
     if(precalc_k > 0){ // Precalc is available
         // Find the index of the k-mer prefix in the precalc table (see do_kmer_prefix_precalc).
+        // Todo: do this in a more bit-parallel way
         uint64_t precalc_idx = 0;
-        for(int64_t i = 0; i < precalc_k; i++)
-            precalc_idx = (precalc_idx << (2*i)) | DNA_to_char_idx(kmer[i]); // Todo: do this 64 bits at a time
+        for(int64_t i = 0; i < precalc_k; i++){
+            int64_t char_idx = DNA_to_char_idx(kmer[k-1-i]);
+            if(char_idx == -1) return -1; // non-ACGT character
+            precalc_idx = (precalc_idx << 2) | char_idx; // Add the character
+        }
 
         // Continue search from precalculated interval
-        I = update_sbwt_interval(kmer, k - precalc_k, kmer_prefix_precalc[precalc_idx]);
+        I = update_sbwt_interval(kmer + precalc_k, k - precalc_k, kmer_prefix_precalc[precalc_idx]);
     }
 
     else // No precalc
@@ -332,7 +336,7 @@ std::pair<int64_t,int64_t> SBWT<subset_rank_t>::update_sbwt_interval(const strin
 }
 
 template<typename subset_rank_t>
-std::pair<int64_t,int64_t> SBWT<subset_rank_t>::update_sbwt_interval(const string& S, int64_t S_length, pair<int64_t,int64_t> I) const{
+std::pair<int64_t,int64_t> SBWT<subset_rank_t>::update_sbwt_interval(const char* S, int64_t S_length, pair<int64_t,int64_t> I) const{
     if(I.first == -1) return I;
     for(int64_t i = 0; i < S_length; i++){
         char c = toupper(S[i]);
@@ -529,7 +533,6 @@ void SBWT<subset_rank_t>::do_kmer_prefix_precalc(int64_t prefix_length){
             prefix[i] = c;
         }
 
-        cout << prefix << endl;
         kmer_prefix_precalc[data] = update_sbwt_interval(prefix, {0, n_nodes-1});
         data++;
     }
