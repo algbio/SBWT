@@ -41,7 +41,7 @@ int build_main(int argc, char** argv){
         ("i,in-file", "The input sequences as a FASTA or FASTQ file, possibly gzipped. If the file extension is .txt, the file is interpreted as a list of input files, one file on each line. All input files must be in the same format.", cxxopts::value<string>())
         ("o,out-file", "Output file for the constructed index.", cxxopts::value<string>())
         ("k,kmer-length", "The k-mer length.", cxxopts::value<LL>())
-        //("p,precalc_length", "Precalculate SBWT intervals of strings of this length. Speeds up query, but takes 4^(p+2) bytes of memory.", cxxopts::value<LL>()->default_value("8"))
+        ("p,precalc-length", "Precalculate SBWT intervals of strings of this length. Speeds up query, but takes 4^(p+2) bytes of memory.", cxxopts::value<LL>()->default_value("8"))
         ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>()->default_value("plain-matrix"))
         ("add-reverse-complements", "Also add the reverse complement of every k-mer to the index. Warning: this creates a temporary reverse-complemented duplicate of each input file before construction. Make sure that the directory at --temp-dir can handle this amount of data. If the input is gzipped, the duplicate will also be compressed, which might take a while.", cxxopts::value<bool>()->default_value("false"))
         ("no-streaming-support", "Save space by not building the streaming query support bit vector. This leads to slower queries.", cxxopts::value<bool>()->default_value("false"))
@@ -90,6 +90,7 @@ int build_main(int argc, char** argv){
     LL k = opts["k"].as<LL>();
     LL min_abundance = opts["min-abundance"].as<LL>();
     LL max_abundance = opts["max-abundance"].as<LL>();
+    LL precalc_length = opts["precalc-length"].as<LL>();
     string temp_dir = opts["temp-dir"].as<string>();
     sbwt::get_temp_file_manager().set_dir(temp_dir);    
 
@@ -147,38 +148,47 @@ int build_main(int argc, char** argv){
     }
     if (variant == "rrr-matrix"){
         sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-matrix"){
         sbwt::mef_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-split"){
         sbwt::plain_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-split"){
         sbwt::rrr_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-split"){
         sbwt::mef_split_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-concat"){
         sbwt::plain_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "mef-concat"){
         sbwt::mef_concat_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "plain-subsetwt"){
         sbwt::plain_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
     if (variant == "rrr-subsetwt"){
         sbwt::rrr_sswt_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers);
+        if(precalc_length > 0) sbwt.do_kmer_prefix_precalc(precalc_length);
         bytes_written = sbwt.serialize(out.stream);
     }
 

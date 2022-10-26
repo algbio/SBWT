@@ -311,7 +311,7 @@ int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
         // Todo: do this in a more bit-parallel way
         uint64_t precalc_idx = 0;
         for(int64_t i = 0; i < precalc_k; i++){
-            int64_t char_idx = DNA_to_char_idx(kmer[k-1-i]);
+            int64_t char_idx = DNA_to_char_idx(kmer[precalc_k-1-i]);
             if(char_idx == -1) return -1; // non-ACGT character
             precalc_idx = (precalc_idx << 2) | char_idx; // Add the character
         }
