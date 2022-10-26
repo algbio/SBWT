@@ -41,6 +41,7 @@ int build_main(int argc, char** argv){
         ("i,in-file", "The input sequences as a FASTA or FASTQ file, possibly gzipped. If the file extension is .txt, the file is interpreted as a list of input files, one file on each line. All input files must be in the same format.", cxxopts::value<string>())
         ("o,out-file", "Output file for the constructed index.", cxxopts::value<string>())
         ("k,kmer-length", "The k-mer length.", cxxopts::value<LL>())
+        //("p,precalc_length", "Precalculate SBWT intervals of this strings of this length", cxxopts::value<LL>())
         ("variant", "The SBWT variant to build. Available variants:" + all_variants_string, cxxopts::value<string>()->default_value("plain-matrix"))
         ("add-reverse-complements", "Also add the reverse complement of every k-mer to the index. Warning: this creates a temporary reverse-complemented duplicate of each input file before construction. Make sure that the directory at --temp-dir can handle this amount of data. If the input is gzipped, the duplicate will also be compressed, which might take a while.", cxxopts::value<bool>()->default_value("false"))
         ("no-streaming-support", "Save space by not building the streaming query support bit vector. This leads to slower queries.", cxxopts::value<bool>()->default_value("false"))

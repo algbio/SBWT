@@ -310,7 +310,7 @@ int64_t SBWT<subset_rank_t>::search(const char* kmer) const{
         // Find the index of the k-mer prefix in the precalc table (see do_kmer_prefix_precalc).
         uint64_t precalc_idx = 0;
         for(int64_t i = 0; i < precalc_k; i++)
-            precalc_idx = (precalc_idx << 2) | DNA_to_char_idx(kmer[i]); // Todo: do this 64 bits at a time
+            precalc_idx = (precalc_idx << (2*i)) | DNA_to_char_idx(kmer[i]); // Todo: do this 64 bits at a time
 
         // Continue search from precalculated interval
         I = update_sbwt_interval(kmer, k - precalc_k, kmer_prefix_precalc[precalc_idx]);
@@ -528,6 +528,8 @@ void SBWT<subset_rank_t>::do_kmer_prefix_precalc(int64_t prefix_length){
             char c = char_idx_to_DNA((data >> (2*i)) & 0x3); // Decode the i-th character
             prefix[i] = c;
         }
+
+        cout << prefix << endl;
         kmer_prefix_precalc[data] = update_sbwt_interval(prefix, {0, n_nodes-1});
         data++;
     }
