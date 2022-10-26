@@ -192,12 +192,11 @@ int search_main(int argc, char** argv){
     vector<string> variants = get_available_variants();
 
     throwing_ifstream in(indexfile, ios::binary);
-    /*string variant = load_string(in.stream); // read variant type
+    string variant = load_string(in.stream); // read variant type
     if(std::find(variants.begin(), variants.end(), variant) == variants.end()){
         cerr << "Error loading index from file: unrecognized variant specified in the file" << endl;
         return 1;
-    }*/
-    string variant = "plain-matrix"; // DEBUG
+    }
 
     write_log("Loading the index variant " + variant, LogLevel::MAJOR);
     LL number_of_queries = 0;
