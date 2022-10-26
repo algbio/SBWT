@@ -136,7 +136,7 @@ void sbwt::check_true(bool condition, string error_message){
     }
 }
 
-int64_t DNA_to_char_idx(char c){
+int64_t sbwt::DNA_to_char_idx(char c){
     switch(c){
         case 'A': return 0;
         case 'C': return 1;
@@ -146,7 +146,7 @@ int64_t DNA_to_char_idx(char c){
     }
 }
 
-char char_idx_to_DNA(int64_t i){
+char sbwt::char_idx_to_DNA(int64_t i){
     assert(i >= 0 && i < 4);   
     static string ACGT = "ACGT";
     return ACGT[i];
