@@ -34,6 +34,7 @@ class TEST_LARGE : public ::testing::Test {
         string filename = "example_data/coli3.fna";
 
         k = 30;
+        int64_t precalc_k = 5;
 
         SeqIO::Unbuffered_Reader sr(filename);
         logger << "Reading sequences and hashing all k-mers" << endl;
@@ -62,6 +63,10 @@ class TEST_LARGE : public ::testing::Test {
         config.n_threads = 2;
         config.min_abundance = 1;
         matrixboss = plain_matrix_sbwt_t(config);
+
+        // Add precalc
+        matrixboss.do_kmer_prefix_precalc(precalc_k);
+        matrixboss_reference.do_kmer_prefix_precalc(precalc_k);
 
     }
 
