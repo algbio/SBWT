@@ -106,7 +106,7 @@ public:
 
         // These streams are assumed to give k-mers in colex order
         Kmer_stream_from_KMC_DB all_stream(KMC_db_path, false); // No reverse complements
-        map<char, Kmer_stream_from_KMC_DB*> char_streams; // A KMC databse stream for each character
+        vector<Kmer_stream_from_KMC_DB*> char_streams(255); // A KMC database stream for each character ACGT
 
         string ACGT = "ACGT";
         for(char c : ACGT)
