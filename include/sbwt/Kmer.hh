@@ -13,6 +13,10 @@ namespace sbwt{
 
 using namespace std;
 
+static constexpr uint8_t from_ACGT_to_0123_lookup_table[256] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+static constexpr char from_0123_to_ACGT_lookup_table[4] = {'A','C','G','T'};
+
 template<int64_t max_len> class kmer_colex_compare; // Compiler needs this forward declaration to make it a friend class
 
 // A bit-packed k-mer class containing at most max_len characters
@@ -32,27 +36,12 @@ private:
     uint8_t k;
     
     char constexpr to_char(uint8_t x) const{
-        // Don't mess with these values because the bit parallelism depends on these
-        switch(x){
-            case 0x00: return 'A';
-            case 0x01: return 'C';
-            case 0x02: return 'G';
-            case 0x03: return 'T';
-        }
-        assert(false);
-        return 0;
+        assert(x < 4);
+        return from_0123_to_ACGT_lookup_table[x];
     }
 
     char constexpr to_bitpair(char c) const{
-        // Don't mess with these values because the bit parallelism depends on these
-        switch(c){
-            case 'A': return 0x00;
-            case 'C': return 0x01;
-            case 'G': return 0x02;
-            case 'T': return 0x03;
-        }
-        assert(false);
-        return 0;
+        return from_ACGT_to_0123_lookup_table[(uint8_t)c];
     }
 
 public:
