@@ -8,6 +8,9 @@
 #include <unordered_map>
 #include <stdexcept>
 
+class CKMCFile; // Defined in KMC
+class CKmerAPI; // Defined in KMC
+
 namespace sbwt{
 
 namespace KMC_construction_helper_classes{
@@ -60,17 +63,17 @@ class Kmer_stream_from_KMC_DB{
 
 private:
 
-    CKMCFile kmer_database;
-    CKmerAPI kmer_object;
+    CKMCFile* kmer_database;
+    CKmerAPI* kmer_object;
 
-    uint32 _kmer_length;
-    uint32 _mode;
-    uint32 _counter_size;
-    uint32 _lut_prefix_length;
-    uint32 _signature_len;
-    uint32 _min_count;
-    uint64 _max_count;
-    uint64 _total_kmers;
+    uint32_t _kmer_length;
+    uint32_t _mode;
+    uint32_t _counter_size;
+    uint32_t _lut_prefix_length;
+    uint32_t _signature_len;
+    uint32_t _min_count;
+    uint64_t _max_count;
+    uint64_t _total_kmers;
 
     bool add_revcomps;
     std::string str;
@@ -88,6 +91,8 @@ public:
     bool done();
     
     Kmer<MAX_KMER_LENGTH> next();
+
+    ~Kmer_stream_from_KMC_DB();
 };
 
 // This stream will always start with an empty k-mer with an empty edge label set

@@ -106,18 +106,22 @@ void Kmer_stream_from_KMC_DB::reverse_complement(string& S){
 
 
 Kmer_stream_from_KMC_DB::Kmer_stream_from_KMC_DB(string KMC_db_path, bool add_revcomps) : add_revcomps(add_revcomps) {
-    if (!kmer_database.OpenForListing(KMC_db_path)){
+    kmer_database = new CKMCFile();
+    if (!kmer_database->OpenForListing(KMC_db_path)){
         throw std::runtime_error("Error opening KMC database " + KMC_db_path);
     }
 
-    kmer_database.Info(_kmer_length, _mode, _counter_size, _lut_prefix_length, _signature_len, _min_count, _max_count, _total_kmers);
+    kmer_database->Info(_kmer_length, _mode, _counter_size, _lut_prefix_length, _signature_len, _min_count, _max_count, _total_kmers);
+    kmer_object = new CKmerAPI(_kmer_length);
+}
 
-    kmer_object = CKmerAPI(_kmer_length);
-
+Kmer_stream_from_KMC_DB::~Kmer_stream_from_KMC_DB(){
+    delete kmer_database;
+    delete kmer_object;
 }
 
 bool Kmer_stream_from_KMC_DB::done(){
-    return (!add_revcomps || !revcomp_next) && kmer_database.Eof();
+    return (!add_revcomps || !revcomp_next) && kmer_database->Eof();
 }
 
 Kmer<MAX_KMER_LENGTH> Kmer_stream_from_KMC_DB::next(){
@@ -132,10 +136,10 @@ Kmer<MAX_KMER_LENGTH> Kmer_stream_from_KMC_DB::next(){
         kmer_database.ReadNextKmer(kmer_object, counter_f);
     }
     else {			*/
-        kmer_database.ReadNextKmer(kmer_object, counter_i);
+        kmer_database->ReadNextKmer(*kmer_object, counter_i);
     //}
 
-    kmer_object.to_string(str);
+    kmer_object->to_string(str);
     if(add_revcomps){
         str_revcomp = str;
         reverse_complement(str_revcomp);
