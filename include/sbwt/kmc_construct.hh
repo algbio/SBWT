@@ -2,7 +2,6 @@
 
 #include "Kmer.hh"
 #include <sdsl/bit_vectors.hpp>
-#include "KMC_code.hh"
 #include "SeqIO.hh"
 #include "buffered_streams.hh"
 #include "EM_sort/EM_sort.hh"
