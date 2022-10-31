@@ -2,13 +2,12 @@
 
 #include "Kmer.hh"
 #include <sdsl/bit_vectors.hpp>
-#include "KMC/kmc_api/kmc_file.h"
-#include "KMC/include/kmc_runner.h"
 #include "KMC_code.hh"
 #include "SeqIO.hh"
 #include "buffered_streams.hh"
 #include "EM_sort/EM_sort.hh"
 #include "kmc_construct_helper_classes.hh"
+#include "run_kmc.hh"
 #include <set>
 #include <unordered_map>
 #include <stdexcept>
@@ -98,89 +97,6 @@ public:
             T_bits_sdsl[i] = T_bits[i];
             suffix_group_starts_sdsl[i] = suffix_group_starts[i];
         }        
-    }
-
-    void sort_kmc_db(const string& input_db_file, const string& output_db_file){
-        vector<string> args = {"kmc_tools", "transform", input_db_file, "sort", output_db_file};
-        Argv argv(args);
-
-        CParametersParser params_parser(argv.size, argv.array);
-        params_parser.Parse();
-        if (params_parser.validate_input_dbs())
-        {
-            params_parser.SetThreads();
-            CApplication<KMER_WORDS> app(params_parser);
-            app.Process();
-        }
-    }
-
-    // Returns the KMC database prefix and the number of distinct k-mers that had abundance within the given bounds
-    pair<string, int64_t> run_kmc(const vector<string>& input_files, LL k, LL n_threads, LL ram_gigas, int64_t min_abundance, int64_t max_abundance){
-
-        write_log("Running KMC counter", LogLevel::MAJOR);
-
-        string KMC_db_file_prefix = get_temp_file_manager().create_filename("kmers");
-
-        KMC::Stage1Params stage1Params;
-
-        string f = input_files[0]; // First input file
-        SeqIO::FileFormat format = SeqIO::figure_out_file_format(f);
-
-        for(string f2 : input_files){
-            SeqIO::FileFormat format2 = SeqIO::figure_out_file_format(f2);
-            if(format.format != format2.format || format.gzipped != format2.gzipped){
-                throw std::runtime_error("Error: all input files must have the same format");
-            }
-        }
-
-        stage1Params.SetInputFiles(input_files)
-            .SetKmerLen(k)
-            .SetNThreads(n_threads)
-            .SetMaxRamGB(ram_gigas)
-            .SetInputFileType(format.format == SeqIO::FASTA ? KMC::InputFileType::MULTILINE_FASTA : KMC::InputFileType::FASTQ)
-            .SetCanonicalKmers(false)
-            .SetTmpPath(get_temp_file_manager().get_dir());
-
-        KMC::Runner kmc;
-
-        auto stage1Results = kmc.RunStage1(stage1Params);
-
-        uint32_t ramForStage2 = ram_gigas;
-        KMC::Stage2Params stage2Params;
-        stage2Params.SetNThreads(n_threads)
-            .SetMaxRamGB(ramForStage2)
-            .SetCutoffMin(min_abundance)
-            .SetCutoffMax(max_abundance)
-            .SetOutputFileName(KMC_db_file_prefix)
-            .SetStrictMemoryMode(true);
-
-        auto stage2Results = kmc.RunStage2(stage2Params);
-
-        int64_t n_kmers = stage2Results.nUniqueKmers - stage2Results.nBelowCutoffMin - stage2Results.nAboveCutoffMax;
-
-        write_log("Sorting KMC database", LogLevel::MAJOR);
-
-        try{
-            sort_kmc_db(KMC_db_file_prefix, KMC_db_file_prefix + "-sorted");
-        } catch(KMCAlreadySortedException& e){
-            // Just copy the database
-            std::filesystem::copy(KMC_db_file_prefix + ".kmc_pre", KMC_db_file_prefix + "-sorted.kmc_pre");
-            std::filesystem::copy(KMC_db_file_prefix + ".kmc_suf", KMC_db_file_prefix + "-sorted.kmc_suf");
-        }
-
-        // Delete the unsorted KMC database files. The temp file manager can not do this because
-        // KMC appends suffixes to the filename and the manager does not know about that.
-        std::filesystem::remove(KMC_db_file_prefix + ".kmc_pre");
-        std::filesystem::remove(KMC_db_file_prefix + ".kmc_suf");
-
-        // Clean up the KMC global singleton config state because it seems that it's left
-        // in a partial state sometimes, which messes up our code if we call KMC again later.
-        CConfig::GetInstance().input_desc.clear();
-        CConfig::GetInstance().headers.clear();
-        CConfig::GetInstance().simple_output_desc.clear();
-        CConfig::GetInstance().transform_output_desc.clear();
-
-        return {KMC_db_file_prefix + "-sorted", n_kmers};
     }
 
     void write_nodes_and_dummies(const string& KMC_db_path, const string& nodes_outfile, const string& dummies_outfile, LL n_kmers){
