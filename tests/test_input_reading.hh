@@ -350,3 +350,74 @@ TEST(INPUT_PARSING, first_char_sanity_check_fasta){
         return;
     }
 }
+
+TEST(INPUT_PARSING, multi_file){
+    vector<string> seqs;
+    vector<string> headers;
+    for(int64_t i = 0; i < 20; i++){
+        seqs.push_back(generate_random_kmer(30));
+        headers.push_back(to_string(i));
+    }
+
+    vector<string> filenames;
+    // Put the sequences into files, 3 sequences per file
+    for(int64_t i = 0; i < seqs.size(); i += 3){
+        string filename = get_temp_file_manager().create_filename("",".fna");
+        filenames.push_back(filename);
+
+        // Add up to 3 sequences
+        vector<string> file_seqs;
+        vector<string> file_headers;
+        for(int64_t j = i; j < i + 3; j++){
+            if(j >= seqs.size()) break;
+            file_seqs.push_back(seqs[j]);
+            file_headers.push_back(headers[j]);
+        }
+
+        write_seqs_to_fasta_file(file_seqs, file_headers, filename);
+    }
+
+    SeqIO::Multi_File_Reader<> reader(filenames);
+
+    // Test that we can get the sequences and headers back
+    int64_t seq_idx = 0;
+    while(true){
+        int64_t len = reader.get_next_read_to_buffer();
+        if(len == 0) break;
+        logger << reader.header_buf << endl << reader.read_buf << endl;
+        ASSERT_EQ(string(reader.header_buf), headers[seq_idx]);
+        ASSERT_EQ(string(reader.read_buf), seqs[seq_idx]);
+        seq_idx++;
+    }
+
+    // Test rewind
+    reader.rewind_to_start();
+    seq_idx = 0;
+    while(true){
+        int64_t len = reader.get_next_read_to_buffer();
+        if(len == 0) break;
+        logger << reader.header_buf << endl << reader.read_buf << endl;
+        ASSERT_EQ(string(reader.header_buf), headers[seq_idx]);
+        ASSERT_EQ(string(reader.read_buf), seqs[seq_idx]);
+        seq_idx++;
+    }
+
+    // Test reverse complements
+    reader.enable_reverse_complements();
+    reader.rewind_to_start();
+    seq_idx = 0;
+    while(true){
+        int64_t len = reader.get_next_read_to_buffer();
+        if(len == 0) break;
+        logger << reader.header_buf << endl << reader.read_buf << endl;
+        
+        string true_read = (seq_idx % 2 == 0) ? seqs[seq_idx/2] : get_rc(seqs[seq_idx/2]);
+        string true_header = headers[seq_idx/2];
+        ASSERT_EQ(string(reader.header_buf), true_header);
+        ASSERT_EQ(string(reader.read_buf), true_read);
+        seq_idx++;
+    }
+
+
+
+}

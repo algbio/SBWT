@@ -293,6 +293,58 @@ public:
 
 };
 
+// Produces reads from multiple files like it was a single file
+template<typename reader_t = SeqIO::Reader<>>
+class Multi_File_Reader{
+
+    public:
+
+    char* read_buf; // Does not own this memory
+    char* header_buf; // Does not own this memory
+
+    vector<string> filenames;
+    int64_t current_file_idx;
+    std::unique_ptr<reader_t> reader;
+    bool reverse_complements = false;
+
+    Multi_File_Reader(const vector<string>& filenames) : filenames(filenames), current_file_idx(0){
+        if(filenames.size() > 0){
+            reader = make_unique<reader_t>(filenames[0]);
+        }
+    }
+
+    int64_t get_next_read_to_buffer(){
+        if(current_file_idx == filenames.size()) return 0; // All files processed
+
+        int64_t len = reader->get_next_read_to_buffer();
+        while(len == 0){ // End of file
+            current_file_idx++;
+            if(current_file_idx == filenames.size()) return 0; // All files processed
+            reader = make_unique<reader_t>(filenames[current_file_idx]);
+            if(reverse_complements) reader->enable_reverse_complements();
+            len = reader->get_next_read_to_buffer();
+        }
+
+        this->read_buf = reader->read_buf; // Update pointer in case there was a realloc
+        this->header_buf = reader->header_buf; // Update pointer in case there was a realloc
+        return len;
+    }
+
+    void enable_reverse_complements(){
+        reverse_complements = true;
+        if(filenames.size() > 0) reader->enable_reverse_complements();
+    }
+
+    void rewind_to_start(){
+        current_file_idx = 0;
+        if(filenames.size() > 0){
+            reader = make_unique<reader_t>(filenames[0]);
+            if(reverse_complements) reader->enable_reverse_complements();
+        }
+    }
+};
+
+
 template<typename ofstream_t = Buffered_ofstream<std::ofstream>> // The underlying file stream.
 class Writer{
 

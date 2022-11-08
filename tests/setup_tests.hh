@@ -62,6 +62,13 @@ void write_seqs_to_fasta_file(const vector<string>& v, const string& filename){
     for(string S : v) out.stream << ">\n" << S << "\n";
 }
 
+void write_seqs_to_fasta_file(const vector<string>& seqs, const vector<string>& headers, const string& filename){
+    throwing_ofstream out(filename);
+    assert(seqs.size() == headers.size());
+    for(int64_t i = 0; i < seqs.size(); i++)
+        out.stream << ">" << headers[i] << "\n" << seqs[i] << "\n";
+}
+
 // Null-terminator not written
 void write_to_file(const string& S, const string& filename){
     throwing_ofstream out(filename);
