@@ -28,7 +28,7 @@ TEST(TEST_BUFFERED_IO, getline){
     while(our_in.getline(line)) our_lines.push_back(line);
 
     ASSERT_EQ(correct_lines.size(), our_lines.size());
-    for(LL i = 0; i < correct_lines.size(); i++){
+    for(int64_t i = 0; i < correct_lines.size(); i++){
         cout << "'" << our_lines[i] << "' '" << correct_lines[i] << "'" << endl;
         ASSERT_EQ(our_lines[i], correct_lines[i]);
     }
@@ -37,16 +37,16 @@ TEST(TEST_BUFFERED_IO, getline){
 TEST(TEST_BUFFERED_IO, write_and_read){
     string filename = get_temp_file_manager().create_filename();
 
-    LL n = 1e6 * 5; // Code below assumes that this is a multiple of ten
+    int64_t n = 1e6 * 5; // Code below assumes that this is a multiple of ten
     vector<char> data(n);
-    for(LL i = 0; i < n; i++) data[i] = rand() % 256;
+    for(int64_t i = 0; i < n; i++) data[i] = rand() % 256;
 
     {
         Buffered_ofstream<> out(filename, ios::binary);
         
         out.set_buffer_capacity(123);
         
-        for(LL i = 0; i < n; i += 10)
+        for(int64_t i = 0; i < n; i += 10)
             out.write(data.data() + i, 10);
     } // End of scope should flush and close the stream
 
@@ -55,7 +55,7 @@ TEST(TEST_BUFFERED_IO, write_and_read){
     Buffered_ifstream<> in(filename, ios::binary);
     in.set_buffer_capacity(114);
 
-    for(LL i = 0; i < n; i += 10)
+    for(int64_t i = 0; i < n; i += 10)
         in.read(data2.data() + i, 10);
 
     ASSERT_EQ(data, data2);

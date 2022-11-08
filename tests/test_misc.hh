@@ -46,7 +46,7 @@ void create_rc_file_test(const string& file_extension){
     ASSERT_EQ(newfiles.size(), oldfiles.size());
 
     // Check
-    for(LL i = 0; i < newfiles.size(); i++){
+    for(int64_t i = 0; i < newfiles.size(); i++){
         SeqIO::Unbuffered_Reader sr1(oldfiles[i]);
         SeqIO::Unbuffered_Reader sr2(newfiles[i]);
         while(!sr1.done()){

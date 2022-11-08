@@ -57,13 +57,13 @@ vector<string> create_reverse_complement_files(const vector<string>& files){
         writer_t sw(f_rev);
 
         while(true) {
-            LL len = sr.get_next_read_to_buffer();
+            int64_t len = sr.get_next_read_to_buffer();
             if(len == 0) break;
 
             // Reverse complement
             char* buf = sr.read_buf;
             std::reverse(buf, buf + len);
-            for(LL i = 0; i < len; i++) buf[i] = get_rc(buf[i]);
+            for(int64_t i = 0; i < len; i++) buf[i] = get_rc(buf[i]);
 
             sw.write_sequence(buf, len);
         }
@@ -77,7 +77,7 @@ class Reader {
 // The class is used like this:
 // Sequence_Reader_Buffered sr;
 // while(true) { 
-//   LL len = sr.get_next_read_to_buffer();
+//   int64_t len = sr.get_next_read_to_buffer();
 //   if(len == 0) break;
 //   do something with sr.read_buf
 //}
@@ -94,9 +94,9 @@ Reader(const Reader& temp_obj) = delete; // No copying
 Reader& operator=(const Reader& temp_obj) = delete;  // No copying
 
 ifstream_t stream;
-LL mode;
-LL read_buf_cap;
-LL header_buf_cap;
+int64_t mode;
+int64_t read_buf_cap;
+int64_t header_buf_cap;
 
 bool reverse_complements = false; // Whether reverse complements are enabled
 bool return_rc_next = false; // If reverse complements are enabled, this flag is used internally to manage the process
@@ -123,7 +123,7 @@ public:
 
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
-    Reader(string filename, LL mode) : stream(filename, ios::binary), mode(mode) {
+    Reader(string filename, int64_t mode) : stream(filename, ios::binary), mode(mode) {
         if(mode != FASTA && mode != FASTQ)
             throw std::invalid_argument("Unkown sequence format");
         
@@ -170,14 +170,14 @@ public:
         return_rc_next = false;
     }
 
-    LL get_mode() const {return mode;}
+    int64_t get_mode() const {return mode;}
 
     // Returns length of read, or zero if no more reads.
     // The read is null-terminated.
     // The read is stored in the member pointer `read_buffer`
     // The header is stored in the member pointer `header buffer`
     // When called, the read that is currently in the buffer is overwritten
-    LL get_next_read_to_buffer() {
+    int64_t get_next_read_to_buffer() {
 
         if(reverse_complements){
             if(return_rc_next){
@@ -209,7 +209,7 @@ public:
             }
             header_buf[header_length-1] = '\0'; // Overwrite the newline with a null terminator
 
-            LL buf_pos = 0;
+            int64_t buf_pos = 0;
             while(true){
                 if(!stream.get(&c)) break; // Last read end
                 else {
@@ -248,7 +248,7 @@ public:
             }
             header_buf[header_length-1] = '\0'; // Overwrite the newline with a null terminator
 
-            LL buf_pos = 0;
+            int64_t buf_pos = 0;
             while(true){
                 stream.get(&c);
                 if(c == '\n') break; // End of read
@@ -284,7 +284,7 @@ public:
 
     // Slow
     string get_next_read(){
-        LL len = get_next_read_to_buffer();
+        int64_t len = get_next_read_to_buffer();
         string read = (len > 0 ? string(read_buf) : "");
         return read;
     }
@@ -302,7 +302,7 @@ class Writer{
     public:
 
     ofstream_t out;
-    LL mode;
+    int64_t mode;
 
     // Tries to figure out the format based on the file extension.
     Writer(string filename) : out(filename) {
@@ -312,7 +312,7 @@ class Writer{
         else throw(runtime_error("Unknown file format: " + filename));
     }
 
-    void write_sequence(const char* seq, LL len){
+    void write_sequence(const char* seq, int64_t len){
         if(mode == FASTA){
             // FASTA format
             out.write(fasta_header.c_str(), 2);

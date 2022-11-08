@@ -13,7 +13,7 @@ namespace sbwt{
 // These classes take as template parameter the underlying ifstream or ofstream, so you can use any
 // stream that has the same interface as the std streams.
 
-typedef long long LL;
+
 
 template<class ifstream_t = std::ifstream> // The underlying ifstream
 class Buffered_ifstream{
@@ -25,10 +25,10 @@ private:
 
     
     vector<char> buf;
-    LL buf_cap = 1 << 20;
+    int64_t buf_cap = 1 << 20;
 
-    LL buf_pos = 0;
-    LL buf_size = 0;
+    int64_t buf_pos = 0;
+    int64_t buf_size = 0;
     bool is_eof = false;
     ifstream_t* stream = nullptr;
 
@@ -66,9 +66,9 @@ public:
     }
 
     // Read up to n bytes to dest and returns the number of bytes read
-    LL read(char* dest, LL n){
+    int64_t read(char* dest, int64_t n){
         char* ptr = dest;
-        for(LL i = 0; i < n; i++){
+        for(int64_t i = 0; i < n; i++){
             if(!get(ptr)) break;
             ptr++;
         }
@@ -106,7 +106,7 @@ public:
     }
 
 
-    void set_buffer_capacity(LL cap){
+    void set_buffer_capacity(int64_t cap){
         this->buf_cap = cap;
         buf.resize(buf_cap);
     }
@@ -130,8 +130,8 @@ private:
     Buffered_ofstream& operator=(const Buffered_ofstream& temp_obj) = delete;  // No copying
 
     vector<char> buf;
-    LL buf_size = 0;
-    LL buf_cap = 1 << 20;
+    int64_t buf_size = 0;
+    int64_t buf_cap = 1 << 20;
     ofstream_t* stream = nullptr;
 
     void empty_internal_buffer_to_stream(){
@@ -154,13 +154,13 @@ public:
         buf.resize(buf_cap);
     }
 
-    void set_buffer_capacity(LL cap){
+    void set_buffer_capacity(int64_t cap){
         this->buf_cap = cap;
         buf.resize(buf_cap);
     }
 
     void write(const char* data, int64_t n){
-        for(LL i = 0; i < n; i++){
+        for(int64_t i = 0; i < n; i++){
             if(buf_cap == buf_size) empty_internal_buffer_to_stream();
             buf[buf_size++] = data[i];
         }

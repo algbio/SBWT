@@ -15,7 +15,7 @@
 
 using namespace sbwt;
 
-typedef long long LL;
+
 typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 
 // Queries all 4^k k-mers and checks that the membership queries give the right answers
@@ -42,7 +42,7 @@ void check_streaming_queries(const nodeboss_t& nodeboss, const set<string>& true
     vector<int64_t> result = nodeboss.streaming_search(input.c_str(), input.size());
 
     // Check
-    for(int64_t i = 0; i < (LL)result.size(); i++){
+    for(int64_t i = 0; i < (int64_t)result.size(); i++){
         string kmer = input.substr(i, nodeboss.get_k());
         bool is_found = true_kmers.count(kmer); // Truth
         if(is_found) ASSERT_GE(result[i], 0); else ASSERT_EQ(result[i], -1);
@@ -50,7 +50,7 @@ void check_streaming_queries(const nodeboss_t& nodeboss, const set<string>& true
     }
 }
 
-void run_small_testcase(const vector<string>& strings, LL k){
+void run_small_testcase(const vector<string>& strings, int64_t k){
     plain_matrix_sbwt_t index_im;
     build_nodeboss_in_memory(strings, index_im, k, false); 
 
@@ -88,13 +88,13 @@ void run_small_testcase(const vector<string>& strings, LL k){
 
 TEST(TEST_KMC_CONSTRUCT, not_all_dummies_needed){
     vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
-    LL k = 4;
+    int64_t k = 4;
     run_small_testcase(strings, k);
 }
 
 TEST(TEST_KMC_CONSTRUCT, multiple_input_files){
     vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
-    LL k = 4;
+    int64_t k = 4;
     string f1 = get_temp_file_manager().create_filename("",".fna");
     string f2 = get_temp_file_manager().create_filename("",".fna");
     string f3 = get_temp_file_manager().create_filename("",".fna");
@@ -162,11 +162,11 @@ TEST(TEST_IM_CONSTRUCTION, cyclic){
 
 TEST(TEST_IM_CONSTRUCTION, test_serialization){
     vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
-    LL k = 4;
+    int64_t k = 4;
     set<string> true_kmers = get_all_kmers(strings, k);
 
     vector<string> filenames;
-    for(LL i = 0; i < 10; i++){ // Create temp file for each of the 10 variants
+    for(int64_t i = 0; i < 10; i++){ // Create temp file for each of the 10 variants
         filenames.push_back(get_temp_file_manager().create_filename());
     }
 

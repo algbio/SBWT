@@ -20,7 +20,6 @@ typedef KMC_construction_helper_classes::Disk_Instream Disk_Instream;
 typedef KMC_construction_helper_classes::Argv Argv;
 typedef KMC_construction_helper_classes::Kmer_stream_from_KMC_DB Kmer_stream_from_KMC_DB;
 typedef KMC_construction_helper_classes::kmer_t kmer_t;
-typedef KMC_construction_helper_classes::LL LL;
 typedef KMC_construction_helper_classes::Node Node;
 typedef KMC_construction_helper_classes::Node_stream_merger Node_stream_merger;
 
@@ -41,7 +40,7 @@ public:
 
     // The result is written to the given sdsl bit vectors. The bits vectors will be resized to fit all the bits.
     void build_bit_vectors_from_sorted_streams(const string& nodefile, const string& dummyfile,
-            sdsl::bit_vector& A_bits_sdsl, sdsl::bit_vector& C_bits_sdsl, sdsl::bit_vector& G_bits_sdsl, sdsl::bit_vector& T_bits_sdsl, sdsl::bit_vector& suffix_group_starts_sdsl, LL k){
+            sdsl::bit_vector& A_bits_sdsl, sdsl::bit_vector& C_bits_sdsl, sdsl::bit_vector& G_bits_sdsl, sdsl::bit_vector& T_bits_sdsl, sdsl::bit_vector& suffix_group_starts_sdsl, int64_t k){
         vector<bool> A_bits, C_bits, G_bits, T_bits, suffix_group_starts;
 
         // These streams are such that the always start with an empty k-mer and an empty edge set.
@@ -89,7 +88,7 @@ public:
         G_bits_sdsl.resize(G_bits.size());
         T_bits_sdsl.resize(T_bits.size());
         suffix_group_starts_sdsl.resize(suffix_group_starts.size());
-        for(LL i = 0; i < A_bits.size(); i++){
+        for(int64_t i = 0; i < A_bits.size(); i++){
             A_bits_sdsl[i] = A_bits[i];
             C_bits_sdsl[i] = C_bits[i];
             G_bits_sdsl[i] = G_bits[i];
@@ -98,7 +97,7 @@ public:
         }        
     }
 
-    void write_nodes_and_dummies(const string& KMC_db_path, const string& nodes_outfile, const string& dummies_outfile, LL n_kmers){
+    void write_nodes_and_dummies(const string& KMC_db_path, const string& nodes_outfile, const string& dummies_outfile, int64_t n_kmers){
         char node_serialize_buffer[Node::size_in_bytes()];
         
         Buffered_ofstream nodes_out(nodes_outfile, ios::binary);
@@ -135,7 +134,7 @@ public:
         }
         
         kmer_t prev_x;
-        LL x_idx = 0;
+        int64_t x_idx = 0;
 
         write_log("Streaming",LogLevel::MAJOR);
         Progress_printer pp2(n_kmers, 100);
@@ -199,7 +198,7 @@ public:
     }
 
     // Construct the given nodeboss from the given input strings
-    void build(const vector<string>& input_files, nodeboss_t& nodeboss, LL k, LL n_threads, LL ram_gigas, bool streaming_support, int64_t min_abundance, int64_t max_abundance, LL precalc_k){
+    void build(const vector<string>& input_files, nodeboss_t& nodeboss, int64_t k, int64_t n_threads, int64_t ram_gigas, bool streaming_support, int64_t min_abundance, int64_t max_abundance, int64_t precalc_k){
 
         string KMC_db_path; int64_t n_kmers;
         std::tie(KMC_db_path, n_kmers) = run_kmc(input_files, k, n_threads, ram_gigas, min_abundance, max_abundance);
@@ -222,7 +221,7 @@ public:
                 Node Ax; Ax.load(A);
                 Node Bx; Bx.load(B);
                 return Ax < Bx;
-            }, ram_gigas * ((LL)1 <<30), Node::size_in_bytes(), n_threads);
+            }, ram_gigas * ((int64_t)1 <<30), Node::size_in_bytes(), n_threads);
         
         write_log("Merging sorted streams", LogLevel::MAJOR);
         sdsl::bit_vector A_bits, C_bits, G_bits, T_bits, suffix_group_starts;

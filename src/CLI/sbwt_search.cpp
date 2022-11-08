@@ -14,7 +14,7 @@
 #include <cstdio>
 
 using namespace std;
-typedef long long LL;
+
 using namespace sbwt;
 
 // Assumes values of v are -1 or larger
@@ -24,7 +24,7 @@ inline void print_vector(const vector<int64_t>& v, writer_t& out){
     char buffer[32];
     char newline = '\n';
     for(int64_t x : v){
-        LL i = 0;
+        int64_t i = 0;
         if(x == -1){
             buffer[0] = '1';
             buffer[1] = '-';
@@ -43,15 +43,15 @@ inline void print_vector(const vector<int64_t>& v, writer_t& out){
 }
 
 template<typename sbwt_t, typename reader_t, typename writer_t>
-LL run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt){
+int64_t run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt){
 
-    LL total_micros = 0;
-    LL number_of_queries = 0;
+    int64_t total_micros = 0;
+    int64_t number_of_queries = 0;
     while(true){
-        LL len = reader.get_next_read_to_buffer();
+        int64_t len = reader.get_next_read_to_buffer();
         if(len == 0) break;
 
-        LL t0 = cur_time_micros();
+        int64_t t0 = cur_time_micros();
         vector<int64_t> out_buffer = sbwt.streaming_search(reader.read_buf, len);
         total_micros += cur_time_micros() - t0;
 
@@ -65,19 +65,19 @@ LL run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt)
 }
 
 template<typename sbwt_t, typename reader_t, typename writer_t>
-LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt){
+int64_t run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt){
 
-    LL total_micros = 0;
-    LL number_of_queries = 0;
-    LL k = sbwt.get_k();
+    int64_t total_micros = 0;
+    int64_t number_of_queries = 0;
+    int64_t k = sbwt.get_k();
     vector<int64_t> out_buffer;
     while(true){
-        LL len = reader.get_next_read_to_buffer();
+        int64_t len = reader.get_next_read_to_buffer();
         if(len == 0) break;
 
-        for(LL i = 0; i < len - k + 1; i++){
-            LL t0 = cur_time_micros();
-            LL ans = sbwt.search(reader.read_buf + i);
+        for(int64_t i = 0; i < len - k + 1; i++){
+            int64_t t0 = cur_time_micros();
+            int64_t ans = sbwt.search(reader.read_buf + i);
             total_micros += cur_time_micros() - t0;
             number_of_queries++;
             out_buffer.push_back(ans);
@@ -91,7 +91,7 @@ LL run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& s
 }
 
 template<typename sbwt_t, typename reader_t, typename writer_t>
-LL run_file(const string& infile, const string& outfile, const sbwt_t& sbwt){
+int64_t run_file(const string& infile, const string& outfile, const sbwt_t& sbwt){
     reader_t reader(infile);
     writer_t writer(outfile);
     if(sbwt.has_streaming_query_support()){
@@ -106,7 +106,7 @@ LL run_file(const string& infile, const string& outfile, const sbwt_t& sbwt){
 
 // Returns number of queries executed
 template<typename sbwt_t>
-LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, const sbwt_t& sbwt, bool gzip_output){
+int64_t run_queries(const vector<string>& infiles, const vector<string>& outfiles, const sbwt_t& sbwt, bool gzip_output){
 
     if(infiles.size() != outfiles.size()){
         string count1 = to_string(infiles.size());
@@ -120,7 +120,7 @@ LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, co
     typedef Buffered_ofstream<zstr::ofstream> out_gzip;
     typedef Buffered_ofstream<std::ofstream> out_no_gzip;
 
-    LL n_queries_run = 0;
+    int64_t n_queries_run = 0;
     for(int64_t i = 0; i < infiles.size(); i++){
         bool gzip_input = SeqIO::figure_out_file_format(infiles[i]).gzipped;
         if(gzip_input && gzip_output){
@@ -142,7 +142,7 @@ LL run_queries(const vector<string>& infiles, const vector<string>& outfiles, co
 
 int search_main(int argc, char** argv){
 
-    LL micros_start = cur_time_micros();
+    int64_t micros_start = cur_time_micros();
 
     set_log_level(LogLevel::MINOR);
 
@@ -156,7 +156,7 @@ int search_main(int argc, char** argv){
         ("h,help", "Print usage")
     ;
 
-    LL old_argc = argc; // Must store this because the parser modifies it
+    int64_t old_argc = argc; // Must store this because the parser modifies it
     auto opts = options.parse(argc, argv);
 
     if (old_argc == 1 || opts.count("help")){
@@ -199,7 +199,7 @@ int search_main(int argc, char** argv){
     }
 
     write_log("Loading the index variant " + variant, LogLevel::MAJOR);
-    LL number_of_queries = 0;
+    int64_t number_of_queries = 0;
 
     if (variant == "plain-matrix"){
         plain_matrix_sbwt_t sbwt;
@@ -252,7 +252,7 @@ int search_main(int argc, char** argv){
         number_of_queries += run_queries(input_files, output_files, sbwt, gzip_output);
     }
 
-    LL total_micros = cur_time_micros() - micros_start;
+    int64_t total_micros = cur_time_micros() - micros_start;
     write_log("us/query end-to-end: " + to_string((double)total_micros / number_of_queries), LogLevel::MAJOR);
 
     return 0;

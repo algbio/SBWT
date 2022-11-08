@@ -17,7 +17,7 @@ template <typename nodeboss_t>
 class NodeBOSSInMemoryConstructor{
 
     typedef Kmer<MAX_KMER_LENGTH> kmer_t;
-    typedef long long LL;
+    
 
     public:
 
@@ -59,8 +59,8 @@ class NodeBOSSInMemoryConstructor{
 
     };
 
-    LL get_char_ptr(const vector<kmer_t>& kmers, char c){
-        for(LL i = 0; i < kmers.size(); i++){
+    int64_t get_char_ptr(const vector<kmer_t>& kmers, char c){
+        for(int64_t i = 0; i < kmers.size(); i++){
             if(kmers[i].last() == c) return i;
         }
         return kmers.size(); // Not found -> return one-past-the-end
@@ -104,7 +104,7 @@ class NodeBOSSInMemoryConstructor{
         Node empty;
         nodes.push_back(empty); // Always have a root node.
 
-        for(LL i = 0; i < kmers.size(); i++){
+        for(int64_t i = 0; i < kmers.size(); i++){
             bool suffix_group_start = false;
             if(i == 0 || kmers[i].copy().dropleft() != kmers[i-1].copy().dropleft())
                 suffix_group_start = true;
@@ -158,7 +158,7 @@ class NodeBOSSInMemoryConstructor{
         return true;
     }
 
-    vector<kmer_t> get_distinct_kmers(const vector<string>& input, LL k){
+    vector<kmer_t> get_distinct_kmers(const vector<string>& input, int64_t k){
         write_log("Hashing distinct k-mers", LogLevel::MAJOR);
         unordered_set<kmer_t> kmer_ht; // k-mer hash table
         for(const string& S : input){
@@ -171,10 +171,10 @@ class NodeBOSSInMemoryConstructor{
         return kmers;
     }
 
-    sdsl::bit_vector build_streaming_support(vector<Node>& nodes, LL k){
+    sdsl::bit_vector build_streaming_support(vector<Node>& nodes, int64_t k){
         sdsl::bit_vector bv(nodes.size(), 0);
         bv[0] = 1;
-        for(LL i = 1; i < nodes.size(); i++){
+        for(int64_t i = 1; i < nodes.size(); i++){
             kmer_t A = nodes[i-1].kmer;
             kmer_t B = nodes[i].kmer;
             if(A.get_k() == k) A.dropleft();
@@ -185,7 +185,7 @@ class NodeBOSSInMemoryConstructor{
     }
 
     // Construct the given nodeboss from the given input strings
-    void build(const vector<string>& input, nodeboss_t& nodeboss, LL k, bool streaming_support){
+    void build(const vector<string>& input, nodeboss_t& nodeboss, int64_t k, bool streaming_support){
 
         vector<kmer_t> kmers = get_distinct_kmers(input, k);
         std::sort(kmers.begin(), kmers.end());
@@ -199,7 +199,7 @@ class NodeBOSSInMemoryConstructor{
         sdsl::bit_vector C_bits(nodes.size(), 0);
         sdsl::bit_vector G_bits(nodes.size(), 0);
         sdsl::bit_vector T_bits(nodes.size(), 0);
-        for(LL i = 0; i < nodes.size(); i++){
+        for(int64_t i = 0; i < nodes.size(); i++){
             if(nodes[i].has('A')) A_bits[i] = 1;
             if(nodes[i].has('C')) C_bits[i] = 1;
             if(nodes[i].has('G')) G_bits[i] = 1;

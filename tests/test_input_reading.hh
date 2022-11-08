@@ -7,9 +7,9 @@
 
 using namespace sbwt;
 
-void check_sequence_reader_output(const vector<string>& seqs, LL mode, string fastafile){
+void check_sequence_reader_output(const vector<string>& seqs, int64_t mode, string fastafile){
     SeqIO::Reader sr(fastafile, mode);
-    LL n_seqs_read = 0;
+    int64_t n_seqs_read = 0;
     for(string seq : seqs){
         ASSERT_EQ(sr.get_next_read(), seq);
         n_seqs_read++;
@@ -18,7 +18,7 @@ void check_sequence_reader_output(const vector<string>& seqs, LL mode, string fa
     ASSERT_EQ(sr.get_next_read().size(), 0);
 }
 
-void check_buffered_sequence_reader_output(const vector<string>& seqs, LL mode, string filename){
+void check_buffered_sequence_reader_output(const vector<string>& seqs, int64_t mode, string filename){
     SeqIO::Reader sr(filename, mode);
     for(string seq : seqs){
         string next = sr.get_next_read();
@@ -65,7 +65,7 @@ TEST(INPUT_PARSING, fasta_multiple_lines){
     // Write 3 chars per line
     for(string seq : seqs){
         fasta += ">\n";
-        for(LL i = 0; i < (LL)seq.size(); i += 3){
+        for(int64_t i = 0; i < (int64_t)seq.size(); i += 3){
             fasta += seq.substr(i,3) + "\n";
         }
     }
@@ -114,7 +114,7 @@ TEST(INPUT_PARSING, fasta_headers_legacy){
     headers.push_back(string(1e6, 'H'));
 
     string fasta;
-    for(LL i = 0; i < seqs.size(); i++) fasta += ">" + headers[i] + "\n" + seqs[i] + "\n";
+    for(int64_t i = 0; i < seqs.size(); i++) fasta += ">" + headers[i] + "\n" + seqs[i] + "\n";
     string filename = string_to_temp_file(fasta);
     SeqIO::Unbuffered_Reader sr(filename, SeqIO::FASTA);
     SeqIO::Unbuffered_Read_stream rs = sr.get_next_query_stream();
@@ -138,7 +138,7 @@ TEST(INPUT_PARSING, fasta_headers){
     headers.push_back(string(512, 't')); // Power of two special case?
 
     string fasta;
-    for(LL i = 0; i < seqs.size(); i++) fasta += ">" + headers[i] + "\n" + seqs[i] + "\n";
+    for(int64_t i = 0; i < seqs.size(); i++) fasta += ">" + headers[i] + "\n" + seqs[i] + "\n";
     string filename = string_to_temp_file(fasta, ".fna");
     SeqIO::Reader sr(filename);
 

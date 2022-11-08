@@ -41,7 +41,7 @@ inline char get_byte(int64_t x, int64_t byte_idx){
     return *reinterpret_cast<char*>(&c);
 }
 
-inline void write_big_endian_LL(Buffered_ofstream<>& out, LL x){
+inline void write_big_endian_LL(Buffered_ofstream<>& out, int64_t x){
     char c;
 
     c = get_byte(x,0); out.write(&c,1);
@@ -55,7 +55,7 @@ inline void write_big_endian_LL(Buffered_ofstream<>& out, LL x){
 }
 
 
-inline void write_big_endian_LL(char* buf, LL x){
+inline void write_big_endian_LL(char* buf, int64_t x){
     buf[0] = get_byte(x,0);
     buf[1] = get_byte(x,1);
     buf[2] = get_byte(x,2);

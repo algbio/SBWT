@@ -15,7 +15,7 @@ namespace sbwt{
 
 namespace KMC_construction_helper_classes{
 
-typedef long long LL;
+
 typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 
 struct Node{

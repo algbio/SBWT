@@ -7,7 +7,7 @@
 #include "variants.hh"
 #include "commands.hh"
 
-typedef long long LL;
+
 using namespace std;
 
 int build_from_plain_main(int argc, char** argv){
@@ -27,7 +27,7 @@ int build_from_plain_main(int argc, char** argv){
         ("h,help", "Print usage")
     ;
 
-    LL old_argc = argc; // Must store this because the parser modifies it
+    int64_t old_argc = argc; // Must store this because the parser modifies it
     auto opts = options.parse(argc, argv);
 
     if (old_argc == 1 || opts.count("help")){
@@ -66,11 +66,11 @@ int build_from_plain_main(int argc, char** argv){
     const sdsl::bit_vector& G_bits = matrixboss_plain.get_subset_rank_structure().G_bits;
     const sdsl::bit_vector& T_bits = matrixboss_plain.get_subset_rank_structure().T_bits;
     const sdsl::bit_vector& ssupport = matrixboss_plain.get_streaming_support();
-    LL n_kmers = matrixboss_plain.number_of_kmers();
-    LL k = matrixboss_plain.get_k();
-    LL precalc_k = matrixboss_plain.get_precalc_k();
+    int64_t n_kmers = matrixboss_plain.number_of_kmers();
+    int64_t k = matrixboss_plain.get_k();
+    int64_t precalc_k = matrixboss_plain.get_precalc_k();
 
-    LL bytes_written = 0;
+    int64_t bytes_written = 0;
     sbwt::throwing_ofstream out(out_file, ios::binary);
 
     sbwt::serialize_string(variant, out.stream);

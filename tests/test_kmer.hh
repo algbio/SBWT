@@ -6,32 +6,32 @@
 #include "Kmer.hh"
 
 using namespace sbwt;
-typedef long long LL;
+
 
 char get_random_DNA_char(){
-    LL r = rand() % 4;
+    int64_t r = rand() % 4;
     if(r == 0) return 'A';
     else if(r == 1) return 'C';
     else if(r == 2) return 'G';
     else return 'T';
 }
 
-string debug_test_get_random_DNA_string(LL len){
+string debug_test_get_random_DNA_string(int64_t len){
     string S;
-    for(LL i = 0; i < len; i++){
+    for(int64_t i = 0; i < len; i++){
         S += get_random_DNA_char();
     }
     return S;
 }
 
 TEST(KMER, basic){
-    for(LL len = 1; len <= 255; len++){
+    for(int64_t len = 1; len <= 255; len++){
         string S = debug_test_get_random_DNA_string(len);
         Kmer<255> kmer(S);
 
         // Check that the constructor worked right
         ASSERT_TRUE(kmer.get_k() == S.size());
-        for(LL i = 0; i < len; i++){
+        for(int64_t i = 0; i < len; i++){
             ASSERT_TRUE(kmer.get(i) == S[i]);
         }
 
@@ -40,8 +40,8 @@ TEST(KMER, basic){
         ASSERT_TRUE(kmer_copy == kmer);
 
         // Edit characters randomly
-        for(LL i = 0; i < 1000; i++){
-            LL idx = rand() % S.size();
+        for(int64_t i = 0; i < 1000; i++){
+            int64_t idx = rand() % S.size();
             char c = get_random_DNA_char();
             kmer.set(idx, c);
             S[idx] = c;
@@ -49,14 +49,14 @@ TEST(KMER, basic){
         }
 
         // Check that the edits worked out right
-        for(LL i = 0; i < len; i++){
+        for(int64_t i = 0; i < len; i++){
             ASSERT_TRUE(kmer.get(i) == S[i]);
         }
 
         // Test drop left
         Kmer<255> left = kmer.copy().dropleft();
         ASSERT_TRUE(left.get_k() == len-1);
-        for(LL i = 0; i < len-1; i++){
+        for(int64_t i = 0; i < len-1; i++){
             ASSERT_TRUE(left.get(i) == S[i+1]);
         }
 
@@ -68,7 +68,7 @@ TEST(KMER, basic){
         // Test drop right
         Kmer<255> right = kmer.copy().dropright();
         ASSERT_TRUE(right.get_k() == len-1);
-        for(LL i = 0; i < len-1; i++){
+        for(int64_t i = 0; i < len-1; i++){
             ASSERT_TRUE(right.get(i) == S[i]);
         }
 
@@ -125,12 +125,12 @@ TEST(KMER, colex){
     strings.push_back(""); // Another so we have empty vs empty comparison
 
     // Some max-length strings for good measure
-    for(LL i = 0; i < 10; i++){
+    for(int64_t i = 0; i < 10; i++){
         strings.push_back(debug_test_get_random_DNA_string(255));
     }
 
     // Add some strings that have a long shared suffix
-    for(LL i = 0; i < 40; i++){
+    for(int64_t i = 0; i < 40; i++){
         string suffix = debug_test_get_random_DNA_string(100 + i);
         strings.push_back(suffix); // Exact suffix of another
         strings.push_back(suffix); // Lets put in another so we have a long exact match

@@ -16,7 +16,7 @@
 
 using namespace sbwt;
 
-typedef long long LL;
+
 typedef Kmer<MAX_KMER_LENGTH> kmer_t;
 
 typedef SBWT<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> matrixboss_t;
@@ -26,7 +26,7 @@ class TEST_LARGE : public ::testing::Test {
 
     static matrixboss_t matrixboss;
     static matrixboss_t matrixboss_reference;
-    static LL k;
+    static int64_t k;
     static vector<string> seqs;
     static unordered_set<Kmer<MAX_KMER_LENGTH>> all_kmers;
 
@@ -41,7 +41,7 @@ class TEST_LARGE : public ::testing::Test {
         while(!sr.done()){
             string S = sr.get_next_query_stream().get_all();
             seqs.push_back(S);
-            for(LL i = 0; i < (LL)S.size()-k+1; i++){
+            for(int64_t i = 0; i < (int64_t)S.size()-k+1; i++){
                 string kmer = S.substr(i,k);
                 bool is_valid = true;
                 for(char c : kmer) if(c != 'A' && c != 'C' && c != 'G' && c != 'T') is_valid = false;
@@ -80,7 +80,7 @@ class TEST_LARGE : public ::testing::Test {
 
 matrixboss_t TEST_LARGE::matrixboss;
 matrixboss_t TEST_LARGE::matrixboss_reference;
-LL TEST_LARGE::k;
+int64_t TEST_LARGE::k;
 vector<string> TEST_LARGE::seqs;
 unordered_set<Kmer<MAX_KMER_LENGTH>> TEST_LARGE::all_kmers;
 
@@ -104,8 +104,8 @@ TEST_F(TEST_LARGE, streaming_queries){
     while(!sr.done()){
         string S = sr.get_next_query_stream().get_all();
         vector<int64_t> result = matrixboss.streaming_search(S);
-        for(LL i = 0; i < (LL)S.size()-k+1; i++){
-            LL x = matrixboss.search(S.c_str() + i);
+        for(int64_t i = 0; i < (int64_t)S.size()-k+1; i++){
+            int64_t x = matrixboss.search(S.c_str() + i);
             ASSERT_EQ(result[i], x);
         }
     }
@@ -121,17 +121,17 @@ TEST_F(TEST_LARGE, dummy_node_marks){
 }
 
 TEST_F(TEST_LARGE, query_lots_of_kmers){
-    LL search_count = 0;
+    int64_t search_count = 0;
 
     string ACGT = "ACGT";
     logger << "Querying all input k-mers..." << endl;
     for(const string& S : seqs){
-        for(LL i = 0; i < (LL)S.size() - k + 1; i++){
+        for(int64_t i = 0; i < (int64_t)S.size() - k + 1; i++){
             string kmer = S.substr(i,k);
             bool is_valid = true;
             for(char c : kmer) if(c != 'A' && c != 'C' && c != 'G' && c != 'T') is_valid = false;
             if(is_valid){
-                LL colex = matrixboss.search(kmer);
+                int64_t colex = matrixboss.search(kmer);
                 ASSERT_GE(colex, 0); // Should be found
                 search_count++;
 
@@ -153,10 +153,10 @@ TEST_F(TEST_LARGE, query_lots_of_kmers){
     }
     logger << "Querying random k-mers that are not in the input..." << endl;
     srand(12514);
-    for(LL rep = 0; rep < 1e6; rep++){
+    for(int64_t rep = 0; rep < 1e6; rep++){
         string S = generate_random_kmer(k);
         if(all_kmers.count(S) == 0){
-            LL colex = matrixboss.search(S);
+            int64_t colex = matrixboss.search(S);
             ASSERT_EQ(colex, -1); // Should not be found
 
             // Print verbose output
