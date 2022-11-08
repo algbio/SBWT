@@ -93,13 +93,14 @@ private:
 Reader(const Reader& temp_obj) = delete; // No copying
 Reader& operator=(const Reader& temp_obj) = delete;  // No copying
 
-ifstream_t stream;
+std::unique_ptr<ifstream_t> stream;
 int64_t mode;
 int64_t read_buf_cap;
 int64_t header_buf_cap;
 
 bool reverse_complements = false; // Whether reverse complements are enabled
 bool return_rc_next = false; // If reverse complements are enabled, this flag is used internally to manage the process
+string filename;
 
 vector<char> rc_buf; // Internal buffer for reverse complements
 
@@ -111,7 +112,7 @@ public:
 
     void read_first_char_and_sanity_check(){
         
-        char c = 0; stream.get(&c);
+        char c = 0; stream->get(&c);
         if(mode == FASTA && c != '>')
             throw runtime_error("ERROR: FASTA file does not start with '>'");
         if(mode == FASTQ && c != '@')
@@ -123,7 +124,8 @@ public:
 
     // mode should be FASTA_MODE or FASTQ_MODE
     // Note: FASTQ mode does not support multi-line FASTQ
-    Reader(string filename, int64_t mode) : stream(filename, ios::binary), mode(mode) {
+    Reader(string filename, int64_t mode) : mode(mode), filename(filename) {
+        stream = std::make_unique<ifstream_t>(filename, ios::binary);
         if(mode != FASTA && mode != FASTQ)
             throw std::invalid_argument("Unkown sequence format");
         
@@ -136,9 +138,8 @@ public:
         read_first_char_and_sanity_check();
     }
 
-    // mode should be FASTA_MODE or FASTQ_MODE
-    // Note: FASTQ mode does not support multi-line FASTQ
-    Reader(string filename) : stream(filename, ios::binary) {
+    Reader(string filename) : filename(filename) {
+        stream = std::make_unique<ifstream_t>(filename, ios::binary);
         SeqIO::FileFormat fileformat = figure_out_file_format(filename);
         if(fileformat.format == FASTA) mode = FASTA;
         else if(fileformat.format == FASTQ) mode = FASTQ;
@@ -165,7 +166,9 @@ public:
     }
 
     void rewind_to_start(){
-        stream.rewind_to_start();
+        // Create a new stream
+        stream = std::make_unique<ifstream_t>(filename, ios::binary);
+
         read_first_char_and_sanity_check();
         return_rc_next = false;
     }
@@ -178,7 +181,6 @@ public:
     // The header is stored in the member pointer `header buffer`
     // When called, the read that is currently in the buffer is overwritten
     int64_t get_next_read_to_buffer() {
-
         if(reverse_complements){
             if(return_rc_next){
                 strcpy(read_buf, rc_buf.data());
@@ -186,11 +188,11 @@ public:
                 return_rc_next = false;
                 return strlen(read_buf);
             } else {
-                if(!stream.eof()) return_rc_next = true;
+                if(!stream->eof()) return_rc_next = true;
             }
         }
         
-        if(stream.eof()) return 0;
+        if(stream->eof()) return 0;
 
         int64_t header_length = 0;
         if(mode == FASTA){
@@ -204,14 +206,14 @@ public:
                 }
 
                 // Read next character to buffer
-                stream.get(&c); 
+                stream->get(&c); 
                 header_buf[header_length++] = c;
             }
             header_buf[header_length-1] = '\0'; // Overwrite the newline with a null terminator
 
             int64_t buf_pos = 0;
             while(true){
-                if(!stream.get(&c)) break; // Last read end
+                if(!stream->get(&c)) break; // Last read end
                 else {
                     if(c == '\n') continue;
                     else if(c == '>') break;
@@ -243,14 +245,14 @@ public:
                 }
 
                 // Read next character to buffer
-                stream.get(&c); 
+                stream->get(&c); 
                 header_buf[header_length++] = c;
             }
             header_buf[header_length-1] = '\0'; // Overwrite the newline with a null terminator
 
             int64_t buf_pos = 0;
             while(true){
-                stream.get(&c);
+                stream->get(&c);
                 if(c == '\n') break; // End of read
                 if(buf_pos + 1 >= read_buf_cap) { // +1: space for null terminator
                     read_buf_cap *= 2;
@@ -261,12 +263,12 @@ public:
             read_buf[buf_pos] = '\0';
 
             c = 0;
-            while(c != '\n') stream.get(&c); // Skip '+'-line
+            while(c != '\n') stream->get(&c); // Skip '+'-line
 
             c = 0;
-            while(c != '\n') stream.get(&c); // Skip quality line
+            while(c != '\n') stream->get(&c); // Skip quality line
 
-            stream.get(&c); // Consume the '@' of the next read. If no more reads left, sets the eof flag.
+            stream->get(&c); // Consume the '@' of the next read. If no more reads left, sets the eof flag.
             if(buf_pos == 0) throw std::runtime_error("Error: empty sequence in FASTQ file.");
 
             if(reverse_complements){
