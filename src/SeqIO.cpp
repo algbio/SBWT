@@ -49,5 +49,17 @@ FileFormat figure_out_file_format(string filename){
     throw(runtime_error("Unknown file format: " + filename + (gzipped ? ".gz" : "")));
 }
 
+int64_t count_sequences(const string& filename){
+    int64_t count = 0;
+    if(figure_out_file_format(filename).gzipped){
+        sbwt::SeqIO::Reader<Buffered_ifstream<zstr::ifstream>> reader(filename);
+        while(reader.get_next_read_to_buffer()) count++;
+    } else{
+        sbwt::SeqIO::Reader<Buffered_ifstream<std::ifstream>> reader(filename);
+        while(reader.get_next_read_to_buffer()) count++;
+    }
+    return count;
+}
+
 } // namespace SeqIO
 } // namespace sbwt

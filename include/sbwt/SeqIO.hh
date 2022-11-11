@@ -390,6 +390,8 @@ class Writer{
     }
 };
 
+int64_t count_sequences(const string& filename);
+
 /*
 
 LEGACY UNBUFFERED INPUT READING BELOW.
