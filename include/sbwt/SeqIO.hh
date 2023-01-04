@@ -43,30 +43,37 @@ const NullStream &operator<<(NullStream &&os, const T &value) {
 
 void reverse_complement_c_string(char* S, int64_t len);
 
+// Return the filename of the reverse-complemented file
+template<typename reader_t, typename writer_t>
+string create_reverse_complement_file(const string& file){
+    SeqIO::FileFormat fileformat = SeqIO::figure_out_file_format(file);
+
+    string file_rev = get_temp_file_manager().create_filename("", fileformat.extension);
+
+    reader_t sr(file);
+    writer_t sw(file_rev);
+
+    while(true) {
+        int64_t len = sr.get_next_read_to_buffer();
+        if(len == 0) break;
+
+        // Reverse complement
+        char* buf = sr.read_buf;
+        std::reverse(buf, buf + len);
+        for(int64_t i = 0; i < len; i++) buf[i] = get_rc(buf[i]);
+
+        sw.write_sequence(buf, len);
+    }
+
+    return file_rev;
+}
+
 // Creates a reverse-complement version of each file and return the filenames of the new files
 template<typename reader_t, typename writer_t>
 vector<string> create_reverse_complement_files(const vector<string>& files){
     vector<string> newfiles;
     for(string f : files){
-        SeqIO::FileFormat fileformat = SeqIO::figure_out_file_format(f);
-
-        string f_rev = get_temp_file_manager().create_filename("", fileformat.extension);
-        newfiles.push_back(f_rev);
-
-        reader_t sr(f);
-        writer_t sw(f_rev);
-
-        while(true) {
-            int64_t len = sr.get_next_read_to_buffer();
-            if(len == 0) break;
-
-            // Reverse complement
-            char* buf = sr.read_buf;
-            std::reverse(buf, buf + len);
-            for(int64_t i = 0; i < len; i++) buf[i] = get_rc(buf[i]);
-
-            sw.write_sequence(buf, len);
-        }
+        newfiles.push_back(create_reverse_complement_file<reader_t, writer_t>(f));
     }
     return newfiles;
 }
