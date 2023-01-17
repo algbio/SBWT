@@ -29,6 +29,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 # Our sources, excluding the file with the main function
 set(SBWT_SOURCES src/globals.cpp src/suffix_group_optimization.cpp src/EM_sort/Block.cpp src/EM_sort/EM_sort.cpp src/SeqIO.cpp src/run_kmc.cpp src/kmc_construct_helper_classes.cpp)
 
+
+
 ## Require c++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,6 +41,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 find_package(Threads REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(BZip2 REQUIRED)
 
 ## Get version number from git tags
 find_package(Git)
@@ -74,13 +78,22 @@ configure_file(${PROJECT_SOURCE_DIR}/version.h.in ${PROJECT_BINARY_DIR}/include/
 add_subdirectory(${PROJECT_SOURCE_DIR}/sdsl-lite
   ${PROJECT_BINARY_DIR}/external/sdsl-lite/build)
 
-add_subdirectory(${PROJECT_SOURCE_DIR}/KMC
-  ${PROJECT_BINARY_DIR}/external/KMC/build)
+if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL arm64)
+  set(SBWT_SEARCH_SOURCES src/globals.cpp src/SeqIO.cpp)
+  add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_search.cpp  ${SBWT_SEARCH_SOURCES})
+  target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt/ ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR})
+  # target_link_libraries(sbwt_search PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
+  target_link_libraries(sbwt PRIVATE sdsl  BZip2::BZip2 ZLIB::ZLIB Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
+  target_compile_options(sbwt PRIVATE -march=native)
+else()
+  add_subdirectory(${PROJECT_SOURCE_DIR}/KMC
+    ${PROJECT_BINARY_DIR}/external/KMC/build)
 
-add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
-target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt/ ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
-target_link_libraries(sbwt PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
-target_compile_options(sbwt PRIVATE -march=native)
+  add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SOURCES})
+  target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt/ ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
+  target_link_libraries(sbwt PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
+  target_compile_options(sbwt PRIVATE -march=native)
+endif()
 
 ## Build tests if doing a Debug build
 if (BUILD_TESTS)
@@ -99,7 +112,7 @@ else()
 #  set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL 1)
 endif()
 
-add_library(sbwt_static STATIC ${SBWT_SOURCES})
-target_include_directories(sbwt_static PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt/ ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
-target_link_libraries(sbwt_static PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
-target_compile_options(sbwt_static PRIVATE -march=native)
+# add_library(sbwt_static STATIC ${SBWT_SOURCES})
+# target_include_directories(sbwt_static PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt/ ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/KMC/include)
+# target_link_libraries(sbwt_static PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES} kmc_tools kmc_core)
+# target_compile_options(sbwt_static PRIVATE -march=native)

@@ -40,9 +40,10 @@ int main(int argc, char** argv){
     argc--;
 
     try{
-        if(command == "build") return build_main(argc, argv);
-        else if(command == "search") return search_main(argc, argv);
-        else if(command == "build-variant") return build_from_plain_main(argc, argv);
+        if(command == "search") return search_main(argc, argv);
+        // if(command == "build") return build_main(argc, argv);
+        // else if(command == "search") return search_main(argc, argv);
+        // else if(command == "build-variant") return build_from_plain_main(argc, argv);
         else{
             throw std::runtime_error("Invalid command: " + command);
             return 1;
