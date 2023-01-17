@@ -120,19 +120,30 @@ int build_main(int argc, char** argv){
         for(string f : new_files) input_files.push_back(f);
     }
 
-    write_log("Building SBWT subset sequence using KMC", sbwt::LogLevel::MAJOR);
-    sbwt::plain_matrix_sbwt_t::BuildConfig config;
-    config.input_files = input_files;
-    config.k = k;
-    config.build_streaming_support = streaming_support;
-    config.n_threads = n_threads;
-    config.min_abundance = min_abundance;
-    config.max_abundance = max_abundance;
-    config.ram_gigas = ram_gigas;
-    config.temp_dir = temp_dir;
-    config.precalc_k = 0; // No precalc yet at this point to avoid doing it twice
+    // write_log("Building SBWT subset sequence using KMC", sbwt::LogLevel::MAJOR);
+    // sbwt::plain_matrix_sbwt_t::BuildConfig config;
+    // config.input_files = input_files;
+    // config.k = k;
+    // config.build_streaming_support = streaming_support;
+    // config.n_threads = n_threads;
+    // config.min_abundance = min_abundance;
+    // config.max_abundance = max_abundance;
+    // config.ram_gigas = ram_gigas;
+    // config.temp_dir = temp_dir;
+    // config.precalc_k = 0; // No precalc yet at this point to avoid doing it twice
 
-    sbwt::plain_matrix_sbwt_t matrixboss_plain(config);
+    // sbwt::plain_matrix_sbwt_t matrixboss_plain(config);
+
+    write_log("Building SBWT subset sequence in memory", sbwt::LogLevel::MAJOR);
+    vector<string> input_seqs;
+
+    sbwt::SeqIO::Multi_File_Reader mfr(input_files);
+    while(mfr.get_next_read_to_buffer() > 0) {
+        input_seqs.push_back(string(mfr.read_buf));
+    }
+
+    sbwt::plain_matrix_sbwt_t matrixboss_plain;
+    build_nodeboss_in_memory(input_seqs, matrixboss_plain, k, streaming_support);
 
     sbwt::throwing_ofstream out(out_file, ios::binary);
     int64_t bytes_written = 0;
@@ -142,7 +153,7 @@ int build_main(int argc, char** argv){
     write_log("SBWT has " + to_string(matrixboss_plain.number_of_subsets()) + " subsets", sbwt::LogLevel::MAJOR);
 
     sbwt::write_log("Building subset rank support", sbwt::LogLevel::MAJOR);
-    
+
     const sdsl::bit_vector& A_bits = matrixboss_plain.get_subset_rank_structure().A_bits;
     const sdsl::bit_vector& C_bits = matrixboss_plain.get_subset_rank_structure().C_bits;
     const sdsl::bit_vector& G_bits = matrixboss_plain.get_subset_rank_structure().G_bits;
@@ -192,9 +203,9 @@ int build_main(int argc, char** argv){
     }
 
     sbwt::write_log("Built variant " + variant + " to file " + out_file, sbwt::LogLevel::MAJOR);
-    sbwt::write_log("Space on disk: " + 
+    sbwt::write_log("Space on disk: " +
                     to_string(bytes_written * 8.0 / matrixboss_plain.number_of_subsets()) + " bits per column, " +
-                    to_string(bytes_written * 8.0 / matrixboss_plain.number_of_kmers()) + " bits per k-mer" , 
+                    to_string(bytes_written * 8.0 / matrixboss_plain.number_of_kmers()) + " bits per k-mer" ,
                     sbwt::LogLevel::MAJOR);
 
     return 0;

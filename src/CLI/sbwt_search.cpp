@@ -17,10 +17,6 @@ using namespace std;
 
 using namespace sbwt;
 
-std::vector<std::string> get_available_variants(){
-    return {"plain-matrix", "rrr-matrix", "mef-matrix", "plain-split", "rrr-split", "mef-split", "plain-concat", "mef-concat", "plain-subsetwt", "rrr-subsetwt"};
-}
-
 // Assumes values of v are -1 or larger
 template <typename writer_t>
 inline void print_vector(const vector<int64_t>& v, writer_t& out){

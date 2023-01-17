@@ -80,7 +80,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/sdsl-lite
 
 if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL arm64)
   set(SBWT_SEARCH_SOURCES src/globals.cpp src/SeqIO.cpp)
-  add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_search.cpp  ${SBWT_SEARCH_SOURCES})
+  add_executable(sbwt src/CLI/sbwt.cpp src/CLI/sbwt_build.cpp src/CLI/sbwt_search.cpp src/CLI/sbwt_build_from_plain_matrix.cpp ${SBWT_SEARCH_SOURCES})
   target_include_directories(sbwt PRIVATE ${PROJECT_SOURCE_DIR}/include/sbwt/ ${PROJECT_SOURCE_DIR}/sdsl-lite/include ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include ${PROJECT_BINARY_DIR}/include ${PROJECT_SOURCE_DIR})
   # target_link_libraries(sbwt_search PRIVATE sdsl ${BZIP2} ${ZLIB} Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
   target_link_libraries(sbwt PRIVATE sdsl  BZip2::BZip2 ZLIB::ZLIB Threads::Threads ${CXX_FILESYSTEM_LIBRARIES})
