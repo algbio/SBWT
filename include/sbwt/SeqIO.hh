@@ -121,9 +121,9 @@ public:
         
         char c = 0; stream->get(&c);
         if(mode == FASTA && c != '>')
-            throw runtime_error("ERROR: FASTA file does not start with '>'");
+            throw runtime_error("ERROR: FASTA file " + filename + " does not start with '>'");
         if(mode == FASTQ && c != '@')
-            throw runtime_error("ERROR: FASTQ file does not start with '@'");
+            throw runtime_error("ERROR: FASTQ file " + filename + " does not start with '@'");
 
         // This leaves the input stream pointer after the first character, but
         // get_next_read_to_buffer is written such that it's ok.
