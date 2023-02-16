@@ -1,14 +1,18 @@
 #pragma once
 
-#include "globals.hh"
 #include <fstream>
+#include <stdexcept>
+
 #include "zstr/zstr.hpp"
+
+#include "globals.hh"
+
 
 namespace sbwt{
 
 // The c++ ifstream and ofstream classes are buffered. But each read involves a virtual function
 // call, which can be slow if the reads or writes are in small chunks. The buffer is also pretty
-// small by default. These classes store the input/output in a large buffer and call the stream 
+// small by default. These classes store the input/output in a large buffer and call the stream
 // only when the buffer is full, which results in far less virtual function calls and better performance.
 // These classes take as template parameter the underlying ifstream or ofstream, so you can use any
 // stream that has the same interface as the std streams.
@@ -23,7 +27,7 @@ private:
     Buffered_ifstream(const Buffered_ifstream& temp_obj) = delete; // No copying
     Buffered_ifstream& operator=(const Buffered_ifstream& temp_obj) = delete;  // No copying
 
-    
+
     vector<char> buf;
     int64_t buf_cap = 1 << 20;
 
@@ -138,6 +142,9 @@ private:
         if(stream){
             stream->write(buf.data(), buf_size);
             buf_size = 0;
+            if (!stream->good()) {
+                throw std::runtime_error("Error writing to file");
+            }
         }
     }
 
