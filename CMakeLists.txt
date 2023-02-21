@@ -30,7 +30,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(SBWT_SOURCES src/globals.cpp src/suffix_group_optimization.cpp src/EM_sort/Block.cpp src/EM_sort/EM_sort.cpp src/SeqIO.cpp src/run_kmc.cpp src/kmc_construct_helper_classes.cpp)
 
 ## Require c++17
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Fix for GCC (see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90050 )
