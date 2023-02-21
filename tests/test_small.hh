@@ -11,6 +11,7 @@
 #include "SubsetConcatRank.hh"
 #include "SubsetWT.hh"
 #include "suffix_group_optimization.hh"
+#include "Backward_Traversal_Support.hh"
 #include <gtest/gtest.h>
 
 using namespace sbwt;
@@ -48,6 +49,40 @@ void check_streaming_queries(const nodeboss_t& nodeboss, const set<string>& true
         if(is_found) ASSERT_GE(result[i], 0); else ASSERT_EQ(result[i], -1);
         //logger << kmer << " " << result[i] << endl;
     }
+}
+
+int64_t longest_common_suffix(string A, string B){
+    std::reverse(A.begin(), A.end());
+    std::reverse(B.begin(), B.end());
+    int64_t ans = 0;
+    int64_t n = min(A.size(), B.size());
+    for(int64_t i = 0; i < n; i++){
+        if(A[i] == B[i]) ans++;
+        else break;
+    }
+    return ans;
+}
+
+TEST(TEST_KMER_LCS, small_testcase){
+    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGCAAT", "TGGCTCGTGTAGTCGA"};
+    int64_t k = 3;
+
+    plain_matrix_sbwt_t sbwt;
+    NodeBOSSInMemoryConstructor<plain_matrix_sbwt_t> builder;
+    builder.build(strings, sbwt, k, true);
+
+    sdsl::int_vector<> LCS = get_kmer_lcs(sbwt.get_subset_rank_structure().A_bits, sbwt.get_subset_rank_structure().C_bits, sbwt.get_subset_rank_structure().G_bits, sbwt.get_subset_rank_structure().T_bits, k);
+    
+    // Compare to the true LCS
+    Backward_Traversal_Support bts(&sbwt);
+    string prev = "";
+    for(int64_t i = 0;  i < sbwt.number_of_subsets(); i++){
+        string x = bts.get_node_label(i);
+        int64_t lcs = longest_common_suffix(prev,x);
+        ASSERT_EQ(lcs, LCS[i]);
+        prev = x;
+    }
+    
 }
 
 void run_small_testcase(const vector<string>& strings, int64_t k){

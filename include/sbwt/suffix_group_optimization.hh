@@ -35,4 +35,10 @@ double compute_column_entropy(const sdsl::bit_vector& A_bits,
                               const sdsl::bit_vector& G_bits, 
                               const sdsl::bit_vector& T_bits);
 
+sdsl::int_vector<> get_kmer_lcs(const sdsl::bit_vector& A_bits,
+                                const sdsl::bit_vector& C_bits, 
+                                const sdsl::bit_vector& G_bits, 
+                                const sdsl::bit_vector& T_bits,
+                                int64_t k);
+
 }
