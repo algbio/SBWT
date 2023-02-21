@@ -8,6 +8,7 @@
 #include "SeqIO.hh"
 #include "SubsetMatrixRank.hh"
 #include "buffered_streams.hh"
+#include "NewStreamingSearch.hh"
 #include "variants.hh"
 #include "commands.hh"
 #include <filesystem>
