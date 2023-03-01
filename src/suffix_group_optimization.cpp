@@ -156,7 +156,7 @@ std::vector<std::string> dump_all_kmers(const sdsl::bit_vector& A_bits,
 
     for(int64_t round = 0; round < k; round++){
         for(int64_t i = 0; i < n_nodes; i++){
-            all_kmers[k-1-i] = last[i];
+            all_kmers[i][k-1-round] = last[i];
         }
 
         // Propagate the labels one step forward in the graph

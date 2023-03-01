@@ -153,6 +153,9 @@ int build_main(int argc, char** argv){
     if (variant == "plain-matrix"){
         matrixboss_plain.do_kmer_prefix_precalc(precalc_length);
         bytes_written = matrixboss_plain.serialize(out.stream);
+
+        vector<string> kmers = sbwt::dump_all_kmers(A_bits, C_bits, G_bits, T_bits, k);
+        for(const string& S : kmers) cout << S << endl;
     }
     if (variant == "rrr-matrix"){
         sbwt::rrr_matrix_sbwt_t sbwt(A_bits, C_bits, G_bits, T_bits, ssupport, k, n_kmers, precalc_length);
