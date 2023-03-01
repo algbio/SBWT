@@ -121,6 +121,62 @@ sdsl::bit_vector mark_suffix_groups(const sdsl::bit_vector& A_bits,
     return suffix_group_starts;
 }
 
+
+vector<string> dump_all_kmers(const sdsl::bit_vector& A_bits,
+                          const sdsl::bit_vector& C_bits, 
+                          const sdsl::bit_vector& G_bits, 
+                          const sdsl::bit_vector& T_bits,
+                          int64_t k){
+
+    int64_t n_nodes = A_bits.size();
+    vector<int64_t> C_array(4);
+
+    vector<char> last; // last[i] = incoming character to node i
+    last.push_back('$');
+
+    C_array[0] = last.size();
+    for(int64_t i = 0; i < n_nodes; i++) if(A_bits[i]) last.push_back('A');
+
+    C_array[1] = last.size();
+    for(int64_t i = 0; i < n_nodes; i++) if(C_bits[i]) last.push_back('C');
+
+    C_array[2] = last.size();
+    for(int64_t i = 0; i < n_nodes; i++) if(G_bits[i]) last.push_back('G');
+    
+    C_array[3] = last.size();
+    for(int64_t i = 0; i < n_nodes; i++) if(T_bits[i]) last.push_back('T');
+
+    if(last.size() != n_nodes){
+        cerr << "BUG " << last.size() << " " << n_nodes << endl;
+        exit(1);
+    }
+
+    vector<string> all_kmers(n_nodes);
+    for(string& S : all_kmers) S.resize(k);
+
+    for(int64_t round = 0; round < k; round++){
+        for(int64_t i = 0; i < n_nodes; i++){
+            all_kmers[k-1-i] = last[i];
+        }
+
+        // Propagate the labels one step forward in the graph
+        vector<char> propagated(n_nodes, '$');
+        int64_t A_ptr = C_array[0];
+        int64_t C_ptr = C_array[1];
+        int64_t G_ptr = C_array[2];
+        int64_t T_ptr = C_array[3];
+        for(int64_t i = 0; i < n_nodes; i++){
+            if(A_bits[i]) propagated[A_ptr++] = last[i];
+            if(C_bits[i]) propagated[C_ptr++] = last[i];
+            if(G_bits[i]) propagated[G_ptr++] = last[i];
+            if(T_bits[i]) propagated[T_ptr++] = last[i];
+        }
+        last = propagated;
+    }
+
+    return all_kmers;
+}
+
 sdsl::int_vector<> get_kmer_lcs(const sdsl::bit_vector& A_bits,
                                 const sdsl::bit_vector& C_bits, 
                                 const sdsl::bit_vector& G_bits, 
@@ -149,7 +205,6 @@ sdsl::int_vector<> get_kmer_lcs(const sdsl::bit_vector& A_bits,
         exit(1);
     }
 
-    // Mark suffix group starts
     sdsl::bit_vector mismatch_found_marks(n_nodes, 0);
     sdsl::int_vector<> lcs(n_nodes, 0, 64 - __builtin_clzll(k-1)); // Enough bits per element to store values from 0 to k-1
 

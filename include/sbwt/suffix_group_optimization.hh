@@ -42,3 +42,10 @@ sdsl::int_vector<> get_kmer_lcs(const sdsl::bit_vector& A_bits,
                                 int64_t k);
 
 }
+
+// Include the ones with dollars
+std::vector<std::string> dump_all_kmers(const sdsl::bit_vector& A_bits,
+                          const sdsl::bit_vector& C_bits, 
+                          const sdsl::bit_vector& G_bits, 
+                          const sdsl::bit_vector& T_bits,
+                          int64_t k);
