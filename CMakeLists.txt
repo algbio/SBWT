@@ -178,7 +178,6 @@ target_link_libraries(sbwt PRIVATE
   ${CXX_FILESYSTEM_LIBRARIES}
   kmc_tools
   kmc_core)
-target_compile_options(sbwt PRIVATE -march=native)
 
 ## Build tests if doing a Debug build
 if (BUILD_TESTS)
@@ -213,7 +212,6 @@ if (BUILD_TESTS)
     ${CXX_FILESYSTEM_LIBRARIES}
     kmc_tools
     kmc_core)
-  target_compile_options(sbwt_tests PRIVATE -march=native)
 else()
 #  set_target_properties(gtest PROPERTIES EXCLUDE_FROM_ALL 1)
 #  set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL 1)
@@ -236,4 +234,3 @@ target_link_libraries(sbwt_static PRIVATE
   ${CXX_FILESYSTEM_LIBRARIES}
   kmc_tools
   kmc_core)
-target_compile_options(sbwt_static PRIVATE -march=native)
