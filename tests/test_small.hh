@@ -12,6 +12,7 @@
 #include "SubsetWT.hh"
 #include "suffix_group_optimization.hh"
 #include <gtest/gtest.h>
+#include <set>
 
 using namespace sbwt;
 
@@ -34,6 +35,10 @@ void check_all_queries(const nodeboss_t& nodeboss, const set<string>& true_kmers
         if(is_found) ASSERT_GE(column, 0); else ASSERT_EQ(column, -1);
         //logger << kmer << " " << colex << endl;
     }
+
+    // Check NN...N
+    string NNN(nodeboss.get_k(), 'N');
+    ASSERT_EQ(nodeboss.search(NNN), -1);
 }
 
 // Queries all 4^k k-mers and checks that the membership queries give the right answers
@@ -47,6 +52,12 @@ void check_streaming_queries(const nodeboss_t& nodeboss, const set<string>& true
         bool is_found = true_kmers.count(kmer); // Truth
         if(is_found) ASSERT_GE(result[i], 0); else ASSERT_EQ(result[i], -1);
         //logger << kmer << " " << result[i] << endl;
+    }
+
+    // Check NN...N
+    string NNN(100, 'N');
+    for(int64_t x : nodeboss.streaming_search(NNN)){
+        ASSERT_EQ(x, -1);
     }
 }
 
@@ -161,9 +172,15 @@ TEST(TEST_IM_CONSTRUCTION, cyclic){
 
 
 TEST(TEST_IM_CONSTRUCTION, test_serialization){
-    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
+    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA", "NNAAAAAAAAAAAA"}; // The last string tests N's with k-mer precalc of length 2
     int64_t k = 4;
     set<string> true_kmers = get_all_kmers(strings, k);
+    set<string> true_kmers2; // Remove k-mers with N's
+    for(const string& S : true_kmers){
+        if(S.find('N',0) == string::npos)
+            true_kmers2.insert(S);
+    }
+    true_kmers = true_kmers2;
 
     vector<string> filenames;
     for(int64_t i = 0; i < 10; i++){ // Create temp file for each of the 10 variants
@@ -193,6 +210,8 @@ TEST(TEST_IM_CONSTRUCTION, test_serialization){
         build_nodeboss_in_memory(strings, v8, k, true);
         build_nodeboss_in_memory(strings, v9, k, true);
         build_nodeboss_in_memory(strings, v10, k, true);
+
+        v1.do_kmer_prefix_precalc(2);
 
         v1.serialize(filenames[0]);
         v2.serialize(filenames[1]);
