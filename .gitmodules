@@ -6,4 +6,4 @@
 	url = https://github.com/iosfwd/googletest
 [submodule "KMC"]
 	path = KMC
-	url = https://github.com/iosfwd/KMC
+	url = https://github.com/algbio/KMC
