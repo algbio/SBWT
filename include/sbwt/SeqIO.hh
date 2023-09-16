@@ -111,6 +111,9 @@ string filename;
 
 vector<char> rc_buf; // Internal buffer for reverse complements
 
+string new_read_buf, new_header_buf, new_plus_buf, new_quality_buf;
+string fasta_read_concat_buf;
+
 public:
 
     // These buffers are intended to be read from outside the class
@@ -180,14 +183,17 @@ public:
         return_rc_next = false;
     }
 
+    void grow_buf_if_needed(char** buf, int64_t* cap, int64_t required_size){
+        while(*cap < required_size){
+            *cap *= 2;
+            *buf = (char*)realloc(*buf, *cap);
+        }
+    }
+
     int64_t get_mode() const {return mode;}
 
-    // Returns length of read, or zero if no more reads.
-    // The read is null-terminated.
-    // The read is stored in the member pointer `read_buffer`
-    // The header is stored in the member pointer `header buffer`
-    // When called, the read that is currently in the buffer is overwritten
-    int64_t get_next_read_to_buffer() {
+    int64_t get_next_read_to_buffer_rewrite() {
+
         if(reverse_complements){
             if(return_rc_next){
                 strcpy(read_buf, rc_buf.data());
@@ -198,97 +204,96 @@ public:
                 if(!stream->eof()) return_rc_next = true;
             }
         }
-        
+
         if(stream->eof()) return 0;
 
-        int64_t header_length = 0;
         if(mode == FASTA){
             char c = 0;
+            stream->getline(new_header_buf);
+            if (stream->eof()) throw std::runtime_error("FASTA file " + filename + " ended unexpectedly.");
 
-            while(c != '\n'){
-                // Make space if needed
-                if(header_length >= header_buf_cap) {
-                    header_buf_cap *= 2;
-                    header_buf = (char*)realloc(header_buf, header_buf_cap);
-                }
+            // Read the sequence
 
-                // Read next character to buffer
-                stream->get(&c); 
-                header_buf[header_length++] = c;
+            stream->get(&c);
+            if(c == '\n') 
+                throw std::runtime_error("Empty line in FASTA file " + filename + ".");
+            else if(c == '>')
+                throw std::runtime_error("Empty sequence in FASTA file " + filename + ".");
+
+            while(c != '>'){
+                fasta_read_concat_buf.push_back(c);
+                stream->getline(new_read_buf);
+                if (stream->eof()) throw std::runtime_error("FASTA file " + filename + " ended unexpectedly.");
+                fasta_read_concat_buf.append(new_read_buf);
+                stream->get(&c); // Start of the next line
+                if(stream->eof()) break;
             }
-            header_buf[header_length-1] = '\0'; // Overwrite the newline with a null terminator
 
-            int64_t buf_pos = 0;
-            while(true){
-                if(!stream->get(&c)) break; // Last read end
-                else {
-                    if(c == '\n') continue;
-                    else if(c == '>') break;
-                    else {
-                        if(buf_pos + 1 >= read_buf_cap) { // +1: space for null terminator
-                            read_buf_cap *= 2;
-                            read_buf = (char*)realloc(read_buf, read_buf_cap);
-                        }
-                        read_buf[buf_pos++] = toupper(c);
-                    }
-                }
-            }
-            if(buf_pos == 0) throw std::runtime_error("Error: empty sequence in FASTA file.");
-            read_buf[buf_pos] = '\0';
+            for(char& c : fasta_read_concat_buf) c = toupper(c);
+
+            int64_t read_len = fasta_read_concat_buf.size();
+
+            grow_buf_if_needed(&header_buf, &header_buf_cap, new_header_buf.size() + 1);
+            memcpy(header_buf, new_header_buf.data(), new_header_buf.size() + 1); // +1: null terminator
+
+            grow_buf_if_needed(&read_buf, &read_buf_cap, new_read_buf.size() + 1);
+            memcpy(read_buf, fasta_read_concat_buf.data(), fasta_read_concat_buf.size() + 1); // +1: null terminator.
+
             if(reverse_complements){
                 // Store the reverse complement for later
-                for(int64_t i = 0; i < buf_pos+1; i++) // +1: also copy the null
+                for(int64_t i = 0; i < read_len+1; i++) // +1: also copy the null
                     rc_buf.push_back(read_buf[i]);
-                reverse_complement_c_string(rc_buf.data(), buf_pos);
+                reverse_complement_c_string(rc_buf.data(), read_len);
             }
-            return buf_pos;
+
+            return read_len;
         } else if(mode == FASTQ){
-            char c = 0;
-            while(c != '\n'){
-                // Make space if needed
-                if(header_length >= header_buf_cap) {
-                    header_buf_cap *= 2;
-                    header_buf = (char*)realloc(header_buf, header_buf_cap);
-                }
+            stream->getline(new_header_buf);
+            if (stream->eof()) throw std::runtime_error("FASTQ file " + filename + " ended unexpectedly.");
 
-                // Read next character to buffer
-                stream->get(&c); 
-                header_buf[header_length++] = c;
-            }
-            header_buf[header_length-1] = '\0'; // Overwrite the newline with a null terminator
+            stream->getline(new_read_buf);
+            if (stream->eof()) throw std::runtime_error("FASTQ file " + filename + " ended unexpectedly.");
 
-            int64_t buf_pos = 0;
-            while(true){
-                stream->get(&c);
-                if(c == '\n') break; // End of read
-                if(buf_pos + 1 >= read_buf_cap) { // +1: space for null terminator
-                    read_buf_cap *= 2;
-                    read_buf = (char*)realloc(read_buf, read_buf_cap);
-                }
-                read_buf[buf_pos++] = toupper(c);
-            }
-            read_buf[buf_pos] = '\0';
+            stream->getline(new_plus_buf);
+            if (stream->eof()) throw std::runtime_error("FASTQ file " + filename + " ended unexpectedly.");
 
-            c = 0;
-            while(c != '\n') stream->get(&c); // Skip '+'-line
+            stream->getline(new_quality_buf);
+            if (stream->eof()) throw std::runtime_error("FASTQ file " + filename + " ended unexpectedly.");
 
-            c = 0;
-            while(c != '\n') stream->get(&c); // Skip quality line
+            for(char& c : new_read_buf) c = toupper(c);
 
+            grow_buf_if_needed(&header_buf, &header_buf_cap, new_header_buf.size() + 1);
+            memcpy(header_buf, new_header_buf.data(), new_header_buf.size() + 1); // +1: null terminator
+
+            grow_buf_if_needed(&read_buf, &read_buf_cap, new_read_buf.size() + 1);
+            memcpy(read_buf, new_read_buf.data(), new_read_buf.size() + 1); // +1: null terminator.
+
+            int64_t read_len = new_read_buf.size();
+
+            char c;
             stream->get(&c); // Consume the '@' of the next read. If no more reads left, sets the eof flag.
-            if(buf_pos == 0) throw std::runtime_error("Error: empty sequence in FASTQ file.");
+            if(read_len == 0) throw std::runtime_error("Error: empty sequence in FASTQ file.");
 
             if(reverse_complements){
                 // Store the reverse complement for later
-                for(int64_t i = 0; i < buf_pos+1; i++) // +1: also copy the null
+                for(int64_t i = 0; i < read_len+1; i++) // +1: also copy the null
                     rc_buf.push_back(read_buf[i]);
-                reverse_complement_c_string(rc_buf.data(), buf_pos);
+                reverse_complement_c_string(rc_buf.data(), read_len);
             }
 
-            return buf_pos;
+            return read_len;
         } else{
             throw std::runtime_error("Should not come to this else-branch");
         }
+    }
+
+    // Returns length of read, or zero if no more reads.
+    // The read is null-terminated.
+    // The read is stored in the member pointer `read_buffer`
+    // The header is stored in the member pointer `header buffer`
+    // When called, the read that is currently in the buffer is overwritten
+    int64_t get_next_read_to_buffer() {
+        return get_next_read_to_buffer_rewrite();
     }
 
     // Slow
