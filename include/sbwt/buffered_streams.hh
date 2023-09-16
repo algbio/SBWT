@@ -123,15 +123,6 @@ public:
         is_eof = false;
     }
 
-    void seekg(int64_t pos){
-        buf_pos = 0;
-        buf_size = 0;
-        is_eof = false;
-
-        stream->clear();
-        stream->seekg(pos);
-    }
-
 };
 
 template<class ofstream_t = std::ofstream> // The underlying ifstream
