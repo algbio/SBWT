@@ -208,6 +208,7 @@ public:
         if(stream->eof()) return 0;
 
         if(mode == FASTA){
+            fasta_read_concat_buf.clear();
             char c = 0;
             stream->getline(new_header_buf);
             if (stream->eof()) throw std::runtime_error("FASTA file " + filename + " ended unexpectedly.");
