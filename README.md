@@ -10,7 +10,7 @@ The following commands have been tested to successfully build SBWT on a clean Ub
 
 ```
 apt-get update
-apt-get install -y g++ gcc cmake git python3-dev g++-8 libz-dev libbz2-dev
+apt-get install -y g++ gcc cmake git python3-dev g++-8 libz-dev
 git clone https://github.com/algbio/SBWT
 cd SBWT/build
 cmake .. -DCMAKE_CXX_COMPILER=g++-8 -DMAX_KMER_LENGTH=32
@@ -19,7 +19,7 @@ make -j8
 
 Change the parameter `-DMAX_KMER_LENGTH=32` to increase the maximum allowed k-mer length, up to 255. Larger values lead to slower construction and higher disk usage during construction.
 
-**Troubleshooting**: If you run into problems involving the `<filesystem>` header, you probably need to update your compiler. The compiler `g++-8` should be sufficient. Install a new compiler and direct CMake to use it with the `-DCMAKE_CXX_COMPILER` option. For example, to set the compiler to `g++-8`, run CMake with the option `-DCMAKE_CXX_COMPILER=g++-8`. 
+**Troubleshooting**: If you run into problems involving the `<filesystem>` header, you probably need to update your compiler. The compiler `g++-8` should be sufficient. Install a new compiler and direct CMake to use it with the `-DCMAKE_CXX_COMPILER` option. For example, to set the compiler to `g++-8`, run CMake with the option `-DCMAKE_CXX_COMPILER=g++-8`.
 
 Note: the Elias-Fano variants make use of the `_pext_u64` instruction in the BMI2 instruction set. Older CPUs might not support this instruction. In that case, we fall back to a simple software implementation, which will ruin the performance of the Elias-Fano variants (those whose variant name starts with "mef").
 
@@ -39,41 +39,41 @@ Construct an SBWT variant.
 Usage:
   build [OPTION...]
 
-  -i, --in-file arg             The input sequences as a FASTA or FASTQ 
-                                file, possibly gzipped. If the file 
-                                extension is .txt, the file is interpreted 
-                                as a list of input files, one file on each 
-                                line. All input files must be in the same 
-                                format.
+  -i, --in-file arg             The input sequences as a FASTA or FASTQ
+				file, possibly gzipped. If the file
+				extension is .txt, the file is interpreted
+				as a list of input files, one file on each
+				line. All input files must be in the same
+				format.
   -o, --out-file arg            Output file for the constructed index.
   -k, --kmer-length arg         The k-mer length.
-      --variant arg             The SBWT variant to build. Available 
-                                variants: plain-matrix rrr-matrix 
-                                mef-matrix plain-split rrr-split mef-split 
-                                plain-concat mef-concat plain-subsetwt 
-                                rrr-subsetwt (default: plain-matrix)
+      --variant arg             The SBWT variant to build. Available
+				variants: plain-matrix rrr-matrix
+				mef-matrix plain-split rrr-split mef-split
+				plain-concat mef-concat plain-subsetwt
+				rrr-subsetwt (default: plain-matrix)
       --add-reverse-complements
-                                Also add the reverse complement of every 
-                                k-mer to the index. Warning: this creates a 
-                                temporary reverse-complemented duplicate of 
-                                each input file before construction. Make 
-                                sure that the directory at --temp-dir can 
-                                handle this amount of data. If the input is 
-                                gzipped, the duplicate will also be 
-                                compressed, which might take a while.
-      --no-streaming-support    Save space by not building the streaming 
-                                query support bit vector. This leads to 
-                                slower queries.
+				Also add the reverse complement of every
+				k-mer to the index. Warning: this creates a
+				temporary reverse-complemented duplicate of
+				each input file before construction. Make
+				sure that the directory at --temp-dir can
+				handle this amount of data. If the input is
+				gzipped, the duplicate will also be
+				compressed, which might take a while.
+      --no-streaming-support    Save space by not building the streaming
+				query support bit vector. This leads to
+				slower queries.
   -t, --n-threads arg           Number of parallel threads. (default: 1)
-  -a, --min-abundance arg       Discard all k-mers occurring fewer than 
-                                this many times. By default we keep all 
-                                k-mers. Note that we consider a k-mer 
-                                distinct from its reverse complement. 
-                                (default: 1)
-  -b, --max-abundance arg       Discard all k-mers occurring more than this 
-                                many times. (default: 1000000000)
-  -m, --ram-gigas arg           RAM budget in gigabytes (not strictly 
-                                enforced). Must be at least 2. (default: 2)
+  -a, --min-abundance arg       Discard all k-mers occurring fewer than
+				this many times. By default we keep all
+				k-mers. Note that we consider a k-mer
+				distinct from its reverse complement.
+				(default: 1)
+  -b, --max-abundance arg       Discard all k-mers occurring more than this
+				many times. (default: 1000000000)
+  -m, --ram-gigas arg           RAM budget in gigabytes (not strictly
+				enforced). Must be at least 2. (default: 2)
   -d, --temp-dir arg            Location for temporary files. (default: .)
   -h, --help                    Print usage
 ```
@@ -95,15 +95,15 @@ Usage:
 
   -o, --out-file arg    Output filename.
   -i, --index-file arg  Index input file.
-  -q, --query-file arg  The query in FASTA or FASTQ format, possibly 
-                        gzipped. Multi-line FASTQ is not supported. If the 
-                        file extension is .txt, this is interpreted as a 
-                        list of query files, one per line. In this case, 
-                        --out-file is also interpreted as a list of output 
-                        files in the same manner, one line for each input 
-                        file.
-  -z, --gzip-output     Writes output in gzipped form. This can shrink the 
-                        output files by an order of magnitude.
+  -q, --query-file arg  The query in FASTA or FASTQ format, possibly
+			gzipped. Multi-line FASTQ is not supported. If the
+			file extension is .txt, this is interpreted as a
+			list of query files, one per line. In this case,
+			--out-file is also interpreted as a list of output
+			files in the same manner, one line for each input
+			file.
+  -z, --gzip-output     Writes output in gzipped form. This can shrink the
+			output files by an order of magnitude.
   -h, --help            Print usage
 ```
 
@@ -113,7 +113,7 @@ The API for the SBWT is still in the works. Do not expect a stable API at this p
 
 The SBWT can be constructed and queried using the [SBWT class](https://htmlpreview.github.io/?https://github.com/algbio/SBWT/blob/master/doc/html/classsbwt_1_1SBWT.html). The class is templatized by the underlying subset rank support structure. See [here](https://htmlpreview.github.io/?https://github.com/algbio/SBWT/blob/master/doc/html/variants_8hh_source.html) for types of subset rank query data structures are suitable for the template parameter.
 
-# For developers: building and running the tests 
+# For developers: building and running the tests
 
 ```
 git submodule init

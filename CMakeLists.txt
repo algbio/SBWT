@@ -67,40 +67,6 @@ if(NOT ZLIB)
   endif()
 endif()
 
-## Require bzip2
-if(NOT BZIP2)
-  if(NOT CMAKE_BUILD_BZIP2)
-    find_library(BZIP2 NAMES bz2 REQUIRED)
-  endif()
-
-  if(CMAKE_BUILD_BZIP2 OR BZIP2 MATCHES NOTFOUND)
-    configure_file(CMakeLists_bzip2.txt.in ${CMAKE_CURRENT_BINARY_DIR}/external/bzip2-download/CMakeLists.txt)
-    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/external/bzip2-download )
-    if(result)
-      message(FATAL_ERROR "CMake step for bzip2 failed: ${result}")
-    endif()
-    execute_process(COMMAND ${CMAKE_COMMAND} --build .
-      RESULT_VARIABLE result
-      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/external/bzip2-download )
-    if(result)
-      message(FATAL_ERROR "Build step for bzip2 failed: ${result}")
-    endif()
-    set(BZIP2 ${CMAKE_CURRENT_BINARY_DIR}/external/bzip2/libbz2.a)
-    ExternalProject_Add(bzip2
-      SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/external/bzip2"
-      BUILD_IN_SOURCE   1
-      BUILD_COMMAND     $(MAKE) -f ${CMAKE_CURRENT_BINARY_DIR}/external/bzip2/Makefile CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
-      CONFIGURE_COMMAND ""
-      INSTALL_COMMAND   ""
-      TEST_COMMAND      ""
-      UPDATE_COMMAND    ""
-      )
-    include_directories(${CMAKE_CURRENT_BINARY_DIR}/external/bzip2)
-  endif()
-endif()
-
 ## Set maximum k-mer length
 if(NOT MAX_KMER_LENGTH)
   set(MAX_KMER_LENGTH 32)
@@ -172,7 +138,6 @@ target_include_directories(sbwt PRIVATE
   ${PROJECT_SOURCE_DIR}/KMC/include)
 target_link_libraries(sbwt PRIVATE
   sdsl
-  ${BZIP2}
   ${ZLIB}
   Threads::Threads
   ${CXX_FILESYSTEM_LIBRARIES}
@@ -204,7 +169,6 @@ if (BUILD_TESTS)
     ${PROJECT_SOURCE_DIR}/KMC/include)
   target_link_libraries(sbwt_tests PRIVATE
     gtest
-    ${BZIP2}
     ${ZLIB}
     sdsl
     Threads::Threads
@@ -228,7 +192,6 @@ target_include_directories(sbwt_static PRIVATE
   ${PROJECT_SOURCE_DIR}/KMC/include)
 target_link_libraries(sbwt_static PRIVATE
   sdsl
-  ${BZIP2}
   ${ZLIB}
   Threads::Threads
   ${CXX_FILESYSTEM_LIBRARIES}
