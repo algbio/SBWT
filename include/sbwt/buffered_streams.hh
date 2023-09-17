@@ -17,8 +17,6 @@ namespace sbwt{
 // These classes take as template parameter the underlying ifstream or ofstream, so you can use any
 // stream that has the same interface as the std streams.
 
-
-
 template<class ifstream_t = std::ifstream> // The underlying ifstream
 class Buffered_ifstream{
 
@@ -34,7 +32,7 @@ private:
     int64_t buf_pos = 0;
     int64_t buf_size = 0;
     bool is_eof = false;
-    ifstream_t* stream = nullptr;
+    ifstream_t* inner = nullptr;
 
 public:
 
@@ -43,29 +41,39 @@ public:
 
     Buffered_ifstream() {}
     ~Buffered_ifstream() {
-        delete stream;
+        delete inner;
     }
 
     Buffered_ifstream(string filename, ios_base::openmode mode = ios_base::in) {
-        stream = new ifstream_t(filename, mode);
-        if(!stream->good()) throw std::runtime_error("Error opening file " + filename);
+        inner = new ifstream_t(filename, mode);
+        if(!inner->good()) throw std::runtime_error("Error opening file " + filename);
         buf.resize(buf_cap);
     }
 
     // Reads one byte to the given location.
-    // Returns true if read was succesful
+    // Returns true if read was succesful (no eof)
     bool get(char* c){
         if(is_eof) return false;
-        if(buf_pos == buf_size){
-            stream->read(buf.data(), buf_cap);
-            buf_size = stream->gcount();
-            buf_pos = 0;
+
+        if(buf_pos < buf_size){
+            *c = buf[buf_pos++];
+        } else{
+            // Try to refill buffer
+            if (inner->eof()) {
+                is_eof = true;
+                return false;
+            }
+            inner->read(buf.data(), buf_cap);
+            buf_size = inner->gcount();
             if(buf_size == 0){
                 is_eof = true;
                 return false;
             }
+
+            buf_pos = 0;
+            *c = buf[buf_pos++];
+            return true;
         }
-        *c = buf[buf_pos++];
         return true;
     }
 
@@ -79,12 +87,13 @@ public:
         return ptr - dest;
     }
 
+    // Should work exactly like std::ifstream::getline
     bool getline(string& line){
         line.clear();
         while(true){
             char c; get(&c);
-            if(eof()) return line.size() > 0;
-            if(c == '\n') return true;
+            if(eof()) return line.size() > 0; // Last line can end without a newline
+            if(c == '\n') return true; // Do not push the newline but just return
             line.push_back(c);
         }
     }
@@ -95,18 +104,18 @@ public:
     }
 
     void open(string filename, ios_base::openmode mode = ios_base::in){
-        delete stream;
-        stream = new ifstream_t(filename, mode);
+        delete inner;
+        inner = new ifstream_t(filename, mode);
         buf.resize(buf_cap);
-        if(!stream->good()) throw std::runtime_error("Error opening file " + filename);
+        if(!inner->good()) throw std::runtime_error("Error opening file " + filename);
         buf_size = 0;
         buf_pos = 0;
         is_eof = false;
     }
 
     void close(){
-        delete stream;
-        stream = nullptr;
+        delete inner;
+        inner = nullptr;
     }
 
 
@@ -116,8 +125,8 @@ public:
     }
 
     void rewind_to_start(){
-        stream->clear();
-        stream->seekg(0);
+        inner->clear();
+        inner->seekg(0);
         buf_pos = 0;
         buf_size = 0;
         is_eof = false;
@@ -128,9 +137,10 @@ public:
         buf_size = 0;
         is_eof = false;
 
-        stream->clear();
-        stream->seekg(pos);
+        inner->clear();
+        inner->seekg(pos);
     }
+
 
 };
 
