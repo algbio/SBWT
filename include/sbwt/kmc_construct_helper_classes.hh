@@ -89,10 +89,80 @@ public:
     Kmer_stream_from_KMC_DB(string KMC_db_path, bool add_revcomps);
 
     bool done();
-    
     Kmer<MAX_KMER_LENGTH> next();
 
     ~Kmer_stream_from_KMC_DB();
+};
+
+class SimpleSortedKmerDB{
+
+    private:
+
+    string filename;
+    int64_t cursor = 0;
+    int64_t n_kmers = 0;
+    Buffered_ifstream<> in;
+    vector<int64_t> char_block_starts;
+
+    public:
+
+    // From KMC database. KMC database must be sorted!!
+    SimpleSortedKmerDB(Kmer_stream_from_KMC_DB& sorted_kmc_db, string filename) : filename(filename), char_block_starts(256, INT64_MAX) {
+        Buffered_ofstream<> out(filename);
+        char kmer_write_buf[Kmer<MAX_KMER_LENGTH>::size_in_bytes()];
+
+        while(!sorted_kmc_db.done()){
+            Kmer<MAX_KMER_LENGTH> kmer = sorted_kmc_db.next();
+            kmer.serialize(kmer_write_buf);
+            out.write(kmer_write_buf, Kmer<MAX_KMER_LENGTH>::size_in_bytes());
+
+            char_block_starts[kmer.last()] = min(char_block_starts[kmer.last()], n_kmers);
+
+            n_kmers++;
+        }
+
+        for(char c : "ACGT"){
+            char_block_starts[c] = min(char_block_starts[c], n_kmers); // One past end
+        }
+
+        out.flush();
+        in.open(filename, ios::binary);
+    }
+
+    // Clones the object
+    SimpleSortedKmerDB(const SimpleSortedKmerDB& other){
+        filename = other.filename;
+        cursor = other.cursor;
+        n_kmers = other.n_kmers;
+        in.open(filename, ios::binary);
+        char_block_starts = other.char_block_starts;
+    }
+
+    int64_t get_char_block_start(char c){
+        return char_block_starts[c];
+    }
+
+    bool done(){
+        return cursor >= n_kmers;
+    }
+
+    void seek_to_char_block(char c){
+        cursor = char_block_starts[c];
+        in.open(filename, ios::binary);
+        in.seekg(cursor * Kmer<MAX_KMER_LENGTH>::size_in_bytes());
+    }
+
+    Kmer<MAX_KMER_LENGTH> next(){
+        char kmer_load_buf[Kmer<MAX_KMER_LENGTH>::size_in_bytes()];
+        in.read(kmer_load_buf, Kmer<MAX_KMER_LENGTH>::size_in_bytes());
+
+        Kmer<MAX_KMER_LENGTH> x;
+        x.load(kmer_load_buf);
+
+        cursor++;
+        return x;
+    }
+
 };
 
 // This stream will always start with an empty k-mer with an empty edge label set

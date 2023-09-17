@@ -198,7 +198,7 @@ public:
         return get(0);
     }
 
-    static int64_t size_in_bytes(){
+    static constexpr int64_t size_in_bytes(){
         return sizeof(data) + sizeof(k);
     }
 
