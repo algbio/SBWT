@@ -101,14 +101,14 @@ class SimpleSortedKmerDB{
     string filename;
     int64_t cursor = 0;
     int64_t n_kmers = 0;
-    SeqIO::Buffered_ifstream<> in;
+    seq_io::Buffered_ifstream<> in;
     vector<int64_t> char_block_starts;
 
     public:
 
     // From KMC database. KMC database must be sorted!!
     SimpleSortedKmerDB(Kmer_stream_from_KMC_DB& sorted_kmc_db, string filename) : filename(filename), char_block_starts(256, INT64_MAX) {
-        SeqIO::Buffered_ofstream<> out(filename);
+        seq_io::Buffered_ofstream<> out(filename);
         char kmer_write_buf[Kmer<MAX_KMER_LENGTH>::size_in_bytes()];
 
         while(!sorted_kmc_db.done()){
@@ -175,7 +175,7 @@ private:
     Disk_Instream& operator=(Disk_Instream const&) = delete;
 
     bool all_read = false;
-    SeqIO::Buffered_ifstream<> in;
+    seq_io::Buffered_ifstream<> in;
     char* in_buffer;
 
     Node top; // Default-initialized to an empty k-mer and an empty edge set

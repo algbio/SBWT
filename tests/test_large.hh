@@ -36,7 +36,7 @@ class TEST_LARGE : public ::testing::Test {
         k = 30;
         int64_t precalc_k = 5;
 
-        SeqIO::Reader sr(filename);
+        seq_io::Reader sr(filename);
         string S;
         logger << "Reading sequences and hashing all k-mers" << endl;
         while(true){
@@ -102,7 +102,7 @@ TEST_F(TEST_LARGE, check_bit_vectors){
 }
 
 TEST_F(TEST_LARGE, streaming_queries){
-    SeqIO::Reader sr("example_data/queries.fastq");
+    seq_io::Reader sr("example_data/queries.fastq");
     while(true){
         string S = sr.get_next_read();
         if(S == "") break;

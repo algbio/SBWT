@@ -15,11 +15,11 @@ std::vector<std::string> get_available_variants(){
 }
 
 // Return the format, or throws if not all files have the same format
-SeqIO::FileFormat check_that_all_files_have_the_same_format(const vector<string>& filenames){
+seq_io::FileFormat check_that_all_files_have_the_same_format(const vector<string>& filenames){
     if(filenames.size() == 0) runtime_error("Error: empty input file list");
-    SeqIO::FileFormat f1 = SeqIO::figure_out_file_format(filenames[0]);
+    seq_io::FileFormat f1 = seq_io::figure_out_file_format(filenames[0]);
     for(int64_t i = 1; i < filenames.size(); i++){
-        SeqIO::FileFormat f2 = SeqIO::figure_out_file_format(filenames[i]);
+        seq_io::FileFormat f2 = seq_io::figure_out_file_format(filenames[i]);
         if(f1.format != f2.format || f1.gzipped != f2.gzipped){
             throw runtime_error("Error: not all input files have the same format (" + filenames[0] + " vs " + filenames[i] + ")");
         }
@@ -104,7 +104,7 @@ int build_main(int argc, char** argv){
         precalc_length = k;
     }
 
-    SeqIO::FileFormat fileformat = check_that_all_files_have_the_same_format(input_files);
+    seq_io::FileFormat fileformat = check_that_all_files_have_the_same_format(input_files);
     if(revcomps){
         sbwt::write_log("Creating a reverse-complemented version of each input file to " + temp_dir, sbwt::LogLevel::MAJOR);
         vector<string> new_files;
@@ -112,13 +112,13 @@ int build_main(int argc, char** argv){
             new_files.push_back(sbwt::get_temp_file_manager().create_filename() + fileformat.extension);
         }
         if(fileformat.gzipped){
-            SeqIO::create_reverse_complement_files<
-                SeqIO::Reader<SeqIO::Buffered_ifstream<SeqIO::zstr::ifstream>>,
-                SeqIO::Writer<SeqIO::Buffered_ofstream<SeqIO::zstr::ofstream>>>(input_files, new_files);
+            seq_io::create_reverse_complement_files<
+                seq_io::Reader<seq_io::Buffered_ifstream<seq_io::zstr::ifstream>>,
+                seq_io::Writer<seq_io::Buffered_ofstream<seq_io::zstr::ofstream>>>(input_files, new_files);
         } else{
-            SeqIO::create_reverse_complement_files<
-                SeqIO::Reader<SeqIO::Buffered_ifstream<std::ifstream>>,
-                SeqIO::Writer<SeqIO::Buffered_ofstream<std::ofstream>>>(input_files, new_files);
+            seq_io::create_reverse_complement_files<
+                seq_io::Reader<seq_io::Buffered_ifstream<std::ifstream>>,
+                seq_io::Writer<seq_io::Buffered_ofstream<std::ofstream>>>(input_files, new_files);
         }
         for(string f : new_files) input_files.push_back(f);
     }

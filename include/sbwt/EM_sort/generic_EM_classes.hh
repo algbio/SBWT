@@ -68,7 +68,7 @@ public:
 class Constant_Block_Producer : public Generic_Block_Producer{
     public:
 
-    SeqIO::Buffered_ifstream<> in;
+    seq_io::Buffered_ifstream<> in;
     int64_t record_size;
 
     Constant_Block_Producer(string infile, int64_t record_size) : in(infile, ios::binary), record_size(record_size) {}
@@ -88,7 +88,7 @@ class Constant_Block_Producer : public Generic_Block_Producer{
 class Constant_Record_Reader{
 public:
 
-    vector<SeqIO::Buffered_ifstream<>> inputs;
+    vector<seq_io::Buffered_ifstream<>> inputs;
     int64_t record_size;
 
     Constant_Record_Reader(int64_t record_size) : record_size(record_size){}
@@ -102,7 +102,7 @@ public:
     }
 
     void close_files(){
-        for(SeqIO::Buffered_ifstream<>& in : inputs) in.close();
+        for(seq_io::Buffered_ifstream<>& in : inputs) in.close();
     }
 
     int64_t get_num_files(){
@@ -121,7 +121,7 @@ public:
 
 class Constant_Record_Writer{
 public:
-    SeqIO::Buffered_ofstream<> out;
+    seq_io::Buffered_ofstream<> out;
     int64_t record_size;
 
     Constant_Record_Writer(int64_t record_size) : record_size(record_size){}
@@ -147,7 +147,7 @@ public:
 class Variable_Block_Producer : public Generic_Block_Producer{
     public:
 
-    SeqIO::Buffered_ifstream<> in;
+    seq_io::Buffered_ifstream<> in;
 
     Variable_Block_Producer(string infile) : in(infile, ios::binary) {}
 
@@ -166,7 +166,7 @@ class Variable_Block_Producer : public Generic_Block_Producer{
 class Variable_Record_Reader{
 public:
 
-    vector<SeqIO::Buffered_ifstream<>> inputs;
+    vector<seq_io::Buffered_ifstream<>> inputs;
 
     Variable_Record_Reader() {}
 
@@ -179,7 +179,7 @@ public:
     }
 
     void close_files(){
-        for(SeqIO::Buffered_ifstream<>& in : inputs) in.close();
+        for(seq_io::Buffered_ifstream<>& in : inputs) in.close();
     }
 
     int64_t get_num_files(){
@@ -194,7 +194,7 @@ public:
 
 class Variable_Record_Writer{
 public:
-    SeqIO::Buffered_ofstream<> out;
+    seq_io::Buffered_ofstream<> out;
 
     Variable_Record_Writer() {}
 

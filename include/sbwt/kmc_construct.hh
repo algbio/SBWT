@@ -27,7 +27,7 @@ typedef KMC_construction_helper_classes::SimpleSortedKmerDB SimpleSortedKmerDB;
 public:
 
     // Appends the prefixes of x to nodes
-    void add_prefixes(kmer_t z, SeqIO::Buffered_ofstream<>& out, char* buf){
+    void add_prefixes(kmer_t z, seq_io::Buffered_ofstream<>& out, char* buf){
         kmer_t prefix = z.copy();
         while(prefix.get_k() > 0){
             char edge_char = prefix.last();
@@ -102,8 +102,8 @@ public:
     void write_nodes_and_dummies(const string& KMC_db_path, const string& nodes_outfile, const string& dummies_outfile, int64_t n_kmers){
         char node_serialize_buffer[Node::size_in_bytes()];
         
-        SeqIO::Buffered_ofstream nodes_out(nodes_outfile, ios::binary);
-        SeqIO::Buffered_ofstream dummies_out(dummies_outfile, ios::binary);
+        seq_io::Buffered_ofstream nodes_out(nodes_outfile, ios::binary);
+        seq_io::Buffered_ofstream dummies_out(dummies_outfile, ios::binary);
 
         // These streams are assumed to give k-mers in colex order
         Kmer_stream_from_KMC_DB kmc_db(KMC_db_path, false); // No reverse complements

@@ -22,10 +22,10 @@ pair<string, int64_t> run_kmc(const vector<string>& input_files, int64_t k, int6
     KMC::Stage1Params stage1Params;
 
     string f = input_files[0]; // First input file
-    SeqIO::FileFormat format = SeqIO::figure_out_file_format(f);
+    seq_io::FileFormat format = seq_io::figure_out_file_format(f);
 
     for(string f2 : input_files){
-        SeqIO::FileFormat format2 = SeqIO::figure_out_file_format(f2);
+        seq_io::FileFormat format2 = seq_io::figure_out_file_format(f2);
         if(format.format != format2.format || format.gzipped != format2.gzipped){
             throw std::runtime_error("Error: all input files must have the same format");
         }
@@ -35,7 +35,7 @@ pair<string, int64_t> run_kmc(const vector<string>& input_files, int64_t k, int6
         .SetKmerLen(k)
         .SetNThreads(n_threads)
         .SetMaxRamGB(ram_gigas)
-        .SetInputFileType(format.format == SeqIO::FASTA ? KMC::InputFileType::MULTILINE_FASTA : KMC::InputFileType::FASTQ)
+        .SetInputFileType(format.format == seq_io::FASTA ? KMC::InputFileType::MULTILINE_FASTA : KMC::InputFileType::FASTQ)
         .SetCanonicalKmers(false)
         .SetTmpPath(get_temp_file_manager().get_dir());
 

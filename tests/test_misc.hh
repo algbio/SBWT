@@ -26,8 +26,8 @@ void create_rc_file_test(const string& file_extension){
     vector<string> oldfiles = {f1,f2};
 
     // Write to files
-    SeqIO::Writer w1(f1);
-    SeqIO::Writer w2(f2);
+    seq_io::Writer w1(f1);
+    seq_io::Writer w2(f2);
     for(string seq : seqs1) w1.write_sequence(seq.c_str(), seq.size());
     for(string seq : seqs2) w2.write_sequence(seq.c_str(), seq.size());
     w1.flush();
@@ -43,15 +43,15 @@ void create_rc_file_test(const string& file_extension){
     for(string old : oldfiles)
         newfiles.push_back(get_temp_file_manager().create_filename("",".rc" + file_extension));
     
-    SeqIO::create_reverse_complement_files<
-            SeqIO::Reader<SeqIO::Buffered_ifstream<std::ifstream>>,
-            SeqIO::Writer<SeqIO::Buffered_ofstream<std::ofstream>>>(oldfiles, newfiles);
+    seq_io::create_reverse_complement_files<
+            seq_io::Reader<seq_io::Buffered_ifstream<std::ifstream>>,
+            seq_io::Writer<seq_io::Buffered_ofstream<std::ofstream>>>(oldfiles, newfiles);
     ASSERT_EQ(newfiles.size(), oldfiles.size());
 
     // Check
     for(int64_t i = 0; i < newfiles.size(); i++){
-        SeqIO::Reader sr1(oldfiles[i]);
-        SeqIO::Reader sr2(newfiles[i]);
+        seq_io::Reader sr1(oldfiles[i]);
+        seq_io::Reader sr2(newfiles[i]);
         while(true){
             string s1 = sr1.get_next_read();
             if(s1 == "") break;
