@@ -20,7 +20,7 @@ using namespace sbwt;
 
 string generate_variable_binary_testcase(int64_t max_record_len_bytes, int64_t n_records){
     string outfile = get_temp_file_manager().create_filename();
-    Buffered_ofstream out(outfile, ios::binary);
+    SeqIO::Buffered_ofstream out(outfile, ios::binary);
     for(int64_t i = 0; i < n_records; i++){
         int64_t record_len = max((int64_t)8, rand() % (max_record_len_bytes + 1));
         //cout << "Add record of length " << record_len << endl;
@@ -35,7 +35,7 @@ string generate_variable_binary_testcase(int64_t max_record_len_bytes, int64_t n
 
 string generate_constant_binary_testcase(int64_t record_len, int64_t n_records){
     string outfile = get_temp_file_manager().create_filename();
-    Buffered_ofstream out(outfile, ios::binary);
+    SeqIO::Buffered_ofstream out(outfile, ios::binary);
     for(int64_t i = 0; i < n_records; i++){
         for(int64_t b = 0; b < record_len; b++){
             char byte = static_cast<char>(rand() % 256);
@@ -59,7 +59,7 @@ string record_to_string(const char* rec){
 string binary_sort_stdlib(string infile, const std::function<bool(const char*, const char*)> & cmp){
     
     // Using the Block class to help reading in the records
-    Buffered_ifstream in(infile);
+    SeqIO::Buffered_ifstream in(infile);
     Variable_binary_block* block = get_next_variable_binary_block(in,(int64_t)1e16);
     auto cmp_wrap = [&](int64_t x, int64_t y){
         return cmp(block->data+x,block->data+y);
@@ -73,7 +73,7 @@ string binary_sort_stdlib(string infile, const std::function<bool(const char*, c
     }
 
     string outfile = get_temp_file_manager().create_filename();
-    Buffered_ofstream out(outfile, ios::binary);
+    SeqIO::Buffered_ofstream out(outfile, ios::binary);
     for(int64_t i = 0; i < block->starts.size(); i++){
         int64_t length = parse_big_endian_LL(block->data + block->starts[i]);
         out.write(block->data + block->starts[i], length);
@@ -85,7 +85,7 @@ string binary_sort_stdlib(string infile, const std::function<bool(const char*, c
 string constant_binary_sort_stdlib(string infile, int64_t rec_len, const std::function<bool(const char*, const char*)> & cmp){
     
     // Using the Block class to help reading in the records
-    Buffered_ifstream in(infile);
+    SeqIO::Buffered_ifstream in(infile);
     Constant_binary_block* block = get_next_constant_binary_block(in,(int64_t)1e16, rec_len);
     auto cmp_wrap = [&](int64_t x, int64_t y){
         return cmp(block->data+x,block->data+y);
@@ -99,7 +99,7 @@ string constant_binary_sort_stdlib(string infile, int64_t rec_len, const std::fu
     }
 
     string outfile = get_temp_file_manager().create_filename();
-    Buffered_ofstream out(outfile, ios::binary);
+    SeqIO::Buffered_ofstream out(outfile, ios::binary);
     for(int64_t i = 0; i < block->starts.size(); i++){
         out.write(block->data + block->starts[i], rec_len);
     }

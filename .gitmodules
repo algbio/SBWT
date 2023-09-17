@@ -7,3 +7,6 @@
 [submodule "KMC"]
 	path = KMC
 	url = https://github.com/iosfwd/KMC
+[submodule "SeqIO"]
+	path = SeqIO
+	url = https://github.com/jnalanko/SeqIO

@@ -15,7 +15,7 @@
 #include "globals.hh"
 #include "Block.hh"
 #include "ParallelBoundedQueue.hh"
-#include "buffered_streams.hh"
+#include "SeqIO/buffered_streams.hh"
 
 namespace sbwt{
 
@@ -68,7 +68,7 @@ public:
 class Constant_Block_Producer : public Generic_Block_Producer{
     public:
 
-    Buffered_ifstream<> in;
+    SeqIO::Buffered_ifstream<> in;
     int64_t record_size;
 
     Constant_Block_Producer(string infile, int64_t record_size) : in(infile, ios::binary), record_size(record_size) {}
@@ -88,7 +88,7 @@ class Constant_Block_Producer : public Generic_Block_Producer{
 class Constant_Record_Reader{
 public:
 
-    vector<Buffered_ifstream<>> inputs;
+    vector<SeqIO::Buffered_ifstream<>> inputs;
     int64_t record_size;
 
     Constant_Record_Reader(int64_t record_size) : record_size(record_size){}
@@ -102,7 +102,7 @@ public:
     }
 
     void close_files(){
-        for(Buffered_ifstream<>& in : inputs) in.close();
+        for(SeqIO::Buffered_ifstream<>& in : inputs) in.close();
     }
 
     int64_t get_num_files(){
@@ -121,7 +121,7 @@ public:
 
 class Constant_Record_Writer{
 public:
-    Buffered_ofstream<> out;
+    SeqIO::Buffered_ofstream<> out;
     int64_t record_size;
 
     Constant_Record_Writer(int64_t record_size) : record_size(record_size){}
@@ -147,7 +147,7 @@ public:
 class Variable_Block_Producer : public Generic_Block_Producer{
     public:
 
-    Buffered_ifstream<> in;
+    SeqIO::Buffered_ifstream<> in;
 
     Variable_Block_Producer(string infile) : in(infile, ios::binary) {}
 
@@ -166,7 +166,7 @@ class Variable_Block_Producer : public Generic_Block_Producer{
 class Variable_Record_Reader{
 public:
 
-    vector<Buffered_ifstream<>> inputs;
+    vector<SeqIO::Buffered_ifstream<>> inputs;
 
     Variable_Record_Reader() {}
 
@@ -179,7 +179,7 @@ public:
     }
 
     void close_files(){
-        for(Buffered_ifstream<>& in : inputs) in.close();
+        for(SeqIO::Buffered_ifstream<>& in : inputs) in.close();
     }
 
     int64_t get_num_files(){
@@ -194,7 +194,7 @@ public:
 
 class Variable_Record_Writer{
 public:
-    Buffered_ofstream<> out;
+    SeqIO::Buffered_ofstream<> out;
 
     Variable_Record_Writer() {}
 

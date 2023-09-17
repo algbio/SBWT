@@ -5,9 +5,9 @@
 #include "SBWT.hh"
 #include "SubsetWT.hh"
 #include "stdlib_printing.hh"
-#include "SeqIO.hh"
+#include "SeqIO/SeqIO.hh"
 #include "SubsetMatrixRank.hh"
-#include "buffered_streams.hh"
+#include "SeqIO/buffered_streams.hh"
 #include "variants.hh"
 #include "commands.hh"
 #include <filesystem>
@@ -114,11 +114,11 @@ int64_t run_queries(const vector<string>& infiles, const vector<string>& outfile
         throw std::runtime_error("Number of input and output files does not match (" + count1 + " vs " + count2 + ")");
     }
 
-    typedef SeqIO::Reader<Buffered_ifstream<zstr::ifstream>> in_gzip;
-    typedef SeqIO::Reader<Buffered_ifstream<std::ifstream>> in_no_gzip;
+    typedef SeqIO::Reader<SeqIO::Buffered_ifstream<SeqIO::zstr::ifstream>> in_gzip;
+    typedef SeqIO::Reader<SeqIO::Buffered_ifstream<std::ifstream>> in_no_gzip;
 
-    typedef Buffered_ofstream<zstr::ofstream> out_gzip;
-    typedef Buffered_ofstream<std::ofstream> out_no_gzip;
+    typedef SeqIO::Buffered_ofstream<SeqIO::zstr::ofstream> out_gzip;
+    typedef SeqIO::Buffered_ofstream<std::ofstream> out_no_gzip;
 
     int64_t n_queries_run = 0;
     for(int64_t i = 0; i < infiles.size(); i++){

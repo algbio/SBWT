@@ -1,7 +1,7 @@
 #include "globals.hh"
 #include "throwing_streams.hh"
-#include "buffered_streams.hh"
-#include "SeqIO.hh"
+#include "SeqIO/SeqIO.hh"
+#include "SeqIO/buffered_streams.hh"
 #include <algorithm>
 #include <chrono>
 #include <string>

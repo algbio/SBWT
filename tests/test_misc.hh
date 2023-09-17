@@ -39,24 +39,29 @@ void create_rc_file_test(const string& file_extension){
     filelist_out.stream << f1 << "\n" << f1 << "\n";
     filelist_out.close();
 
-    // Reverse complement
-    vector<string> newfiles = SeqIO::create_reverse_complement_files<
-                SeqIO::Reader<Buffered_ifstream<std::ifstream>>,
-                SeqIO::Writer<Buffered_ofstream<std::ofstream>>>(oldfiles);
+    vector<string> newfiles;
+    for(string old : oldfiles)
+        newfiles.push_back(get_temp_file_manager().create_filename("",".rc" + file_extension));
+    
+    SeqIO::create_reverse_complement_files<
+            SeqIO::Reader<SeqIO::Buffered_ifstream<std::ifstream>>,
+            SeqIO::Writer<SeqIO::Buffered_ofstream<std::ofstream>>>(oldfiles, newfiles);
     ASSERT_EQ(newfiles.size(), oldfiles.size());
 
     // Check
     for(int64_t i = 0; i < newfiles.size(); i++){
-        SeqIO::Unbuffered_Reader sr1(oldfiles[i]);
-        SeqIO::Unbuffered_Reader sr2(newfiles[i]);
-        while(!sr1.done()){
-            string s1 = sr1.get_next_query_stream().get_all();
-            ASSERT_FALSE(sr2.done());
-            string s2 = sr2.get_next_query_stream().get_all();
+        SeqIO::Reader sr1(oldfiles[i]);
+        SeqIO::Reader sr2(newfiles[i]);
+        while(true){
+            string s1 = sr1.get_next_read();
+            if(s1 == "") break;
+            string s2 = sr2.get_next_read();
+            ASSERT_FALSE(s2 == "");
             logger << s1 << endl << get_rc(s2) << endl << "--" << endl;
             ASSERT_EQ(s1, get_rc(s2));
         }
-        ASSERT_TRUE(sr2.done());
+        string s = sr2.get_next_read();
+        ASSERT_TRUE(s == "");
     }
  
 }

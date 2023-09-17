@@ -3,7 +3,7 @@
 #include "cxxopts.hpp"
 #include "SBWT.hh"
 #include "SubsetMatrixRank.hh"
-#include "SeqIO.hh"
+#include "SeqIO/SeqIO.hh"
 #include "variants.hh"
 #include "commands.hh"
 

@@ -8,7 +8,7 @@
 #include "SubsetMatrixRank.hh"
 #include "SubsetConcatRank.hh"
 #include "SubsetWT.hh"
-#include "SeqIO.hh"
+#include "SeqIO/SeqIO.hh"
 #include "suffix_group_optimization.hh"
 #include "variants.hh"
 #include <gtest/gtest.h>
@@ -36,10 +36,12 @@ class TEST_LARGE : public ::testing::Test {
         k = 30;
         int64_t precalc_k = 5;
 
-        SeqIO::Unbuffered_Reader sr(filename);
+        SeqIO::Reader sr(filename);
+        string S;
         logger << "Reading sequences and hashing all k-mers" << endl;
-        while(!sr.done()){
-            string S = sr.get_next_query_stream().get_all();
+        while(true){
+            string S = sr.get_next_read();
+            if(S == "") break;
             seqs.push_back(S);
             for(int64_t i = 0; i < (int64_t)S.size()-k+1; i++){
                 string kmer = S.substr(i,k);
@@ -100,9 +102,10 @@ TEST_F(TEST_LARGE, check_bit_vectors){
 }
 
 TEST_F(TEST_LARGE, streaming_queries){
-    SeqIO::Unbuffered_Reader sr("example_data/queries.fastq");
-    while(!sr.done()){
-        string S = sr.get_next_query_stream().get_all();
+    SeqIO::Reader sr("example_data/queries.fastq");
+    while(true){
+        string S = sr.get_next_read();
+        if(S == "") break;
         vector<int64_t> result = matrixboss.streaming_search(S);
         for(int64_t i = 0; i < (int64_t)S.size()-k+1; i++){
             int64_t x = matrixboss.search(S.c_str() + i);

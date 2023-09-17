@@ -5,7 +5,7 @@
 #include "KMC/include/kmc_runner.h"
 #include "KMC_code.hh"
 #include "kmc_construct_helper_classes.hh"
-#include "SeqIO.hh"
+#include "SeqIO/SeqIO.hh"
 
 namespace sbwt{
 

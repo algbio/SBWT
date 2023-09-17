@@ -113,13 +113,15 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/sdsl-lite
 add_subdirectory(${PROJECT_SOURCE_DIR}/KMC
   ${PROJECT_BINARY_DIR}/external/KMC/build)
 
+# SeqIO is header-only so it does not need to be added
+
 # Our sources, excluding the file with the main function
 set(SBWT_SOURCES
   src/globals.cpp
   src/suffix_group_optimization.cpp
   src/EM_sort/Block.cpp
   src/EM_sort/EM_sort.cpp
-  src/SeqIO.cpp src/run_kmc.cpp
+  src/run_kmc.cpp
   src/kmc_construct_helper_classes.cpp)
 
 add_executable(sbwt
@@ -132,6 +134,7 @@ target_include_directories(sbwt PRIVATE
   ${PROJECT_SOURCE_DIR}/include/sbwt/
   ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler
   ${PROJECT_SOURCE_DIR}/sdsl-lite/include
+  ${PROJECT_SOURCE_DIR}/SeqIO/include
   ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include
   ${PROJECT_BINARY_DIR}/include
   ${PROJECT_SOURCE_DIR}
@@ -161,6 +164,7 @@ if (BUILD_TESTS)
   target_include_directories(sbwt_tests PRIVATE
     ${PROJECT_SOURCE_DIR}/include/sbwt
     ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler
+    ${PROJECT_SOURCE_DIR}/SeqIO/include
     ${PROJECT_SOURCE_DIR}/sdsl-lite/include
     ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include
     ${PROJECT_BINARY_DIR}/include
@@ -186,6 +190,7 @@ target_include_directories(sbwt_static PRIVATE
   ${PROJECT_SOURCE_DIR}/include/sbwt/
   ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler
   ${PROJECT_SOURCE_DIR}/sdsl-lite/include
+  ${PROJECT_SOURCE_DIR}/SeqIO/include
   ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include
   ${PROJECT_BINARY_DIR}/include
   ${PROJECT_SOURCE_DIR}
