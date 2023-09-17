@@ -109,7 +109,7 @@ int build_main(int argc, char** argv){
         sbwt::write_log("Creating a reverse-complemented version of each input file to " + temp_dir, sbwt::LogLevel::MAJOR);
         vector<string> new_files;
         for(int64_t i = 0; i < input_files.size(); i++){
-            new_files.push_back(sbwt::get_temp_file_manager().create_filename() + fileformat.extension);
+            new_files.push_back(sbwt::get_temp_file_manager().create_filename("", fileformat.extension));
         }
         if(fileformat.gzipped){
             seq_io::create_reverse_complement_files<
