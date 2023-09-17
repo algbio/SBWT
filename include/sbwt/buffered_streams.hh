@@ -51,7 +51,7 @@ public:
     }
 
     // Reads one byte to the given location.
-    // Returns true if read was succesful
+    // Returns true if read was succesful (no eof)
     bool get(char* c){
         if(is_eof) return false;
 
@@ -87,12 +87,13 @@ public:
         return ptr - dest;
     }
 
+    // Should work exactly like std::ifstream::getline
     bool getline(string& line){
         line.clear();
         while(true){
             char c; get(&c);
-            if(eof()) return false;
-            if(c == '\n') return true;
+            if(eof()) return line.size() > 0; // Last line can end without a newline
+            if(c == '\n') return true; // Do not push the newline but just return
             line.push_back(c);
         }
     }
