@@ -10,6 +10,7 @@
 namespace sbwt{
 
 using namespace std;
+using namespace kmc_tools;
 
 // See header for description
 pair<string, int64_t> run_kmc(const vector<string>& input_files, int64_t k, int64_t n_threads, int64_t ram_gigas, int64_t min_abundance, int64_t max_abundance){

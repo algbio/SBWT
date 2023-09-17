@@ -32,6 +32,7 @@
 #include "KMC/kmc_tools/develop.h"
 #endif
 using namespace std;
+using namespace kmc_tools;
 
 namespace sbwt{
 
@@ -42,7 +43,6 @@ struct KMCAlreadySortedException : public std::exception
     	return "KMC database already sorted.";
     }
 };
-
 
 
 template<unsigned SIZE> class CTools
