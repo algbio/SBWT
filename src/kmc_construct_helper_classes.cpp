@@ -1,8 +1,7 @@
 #include "Kmer.hh"
 #include <sdsl/bit_vectors.hpp>
-#include "KMC/kmc_api/kmc_file.h"
-#include "KMC/include/kmc_runner.h"
-#include "KMC_code.hh"
+#include "kmc_api/kmc_file.h"
+#include "include/kmc_runner.h" // In KMC/include
 #include "SeqIO/buffered_streams.hh"
 #include "EM_sort/EM_sort.hh"
 #include "kmc_construct_helper_classes.hh"

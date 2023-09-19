@@ -115,7 +115,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/KMC
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/SeqIO
   ${PROJECT_BINARY_DIR}/external/SeqIO/build)
-  
+
 file(COPY ${PROJECT_SOURCE_DIR}/SeqIO/include/ DESTINATION ${PROJECT_BINARY_DIR}/external/SeqIO/include/)
 
 # SeqIO is header-only so it does not need to be added
@@ -136,14 +136,12 @@ add_executable(sbwt
   src/CLI/sbwt_build_from_plain_matrix.cpp
   ${SBWT_SOURCES})
 target_include_directories(sbwt PRIVATE
-  ${PROJECT_SOURCE_DIR}/include/sbwt/
-  ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler
-  ${PROJECT_SOURCE_DIR}/sdsl-lite/include
-  ${PROJECT_SOURCE_DIR}/SeqIO/include
-  ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include
-  ${PROJECT_BINARY_DIR}/include
-  ${PROJECT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}/KMC/include)
+${PROJECT_SOURCE_DIR}/include/sbwt
+${PROJECT_BINARY_DIR}/include # version.h is here
+${PROJECT_BINARY_DIR}/external/SeqIO/include
+${PROJECT_BINARY_DIR}/extenral/sdsl-lite/include
+${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include # Dependency of dependency
+${PROJECT_SOURCE_DIR}/KMC)
 target_link_libraries(sbwt PRIVATE
   sdsl
   ${ZLIB}
@@ -168,14 +166,12 @@ if (BUILD_TESTS)
     ${SBWT_SOURCES})
   target_include_directories(sbwt_tests PRIVATE
     ${PROJECT_SOURCE_DIR}/include/sbwt
-    ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler
-    ${PROJECT_SOURCE_DIR}/SeqIO/include
-    ${PROJECT_SOURCE_DIR}/sdsl-lite/include
-    ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include
-    ${PROJECT_BINARY_DIR}/include
-    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_BINARY_DIR}/include # version.h is here
+    ${PROJECT_BINARY_DIR}/external/SeqIO/include
+    ${PROJECT_BINARY_DIR}/extenral/sdsl-lite/include
+    ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include # Dependency of dependency
     ${PROJECT_SOURCE_DIR}/googletest/googletest/include
-    ${PROJECT_SOURCE_DIR}/KMC/include)
+    ${PROJECT_SOURCE_DIR}/KMC)
   target_link_libraries(sbwt_tests PRIVATE
     gtest
     ${ZLIB}
@@ -192,14 +188,12 @@ endif()
 
 add_library(sbwt_static STATIC ${SBWT_SOURCES})
 target_include_directories(sbwt_static PRIVATE
-  ${PROJECT_SOURCE_DIR}/include/sbwt/
-  ${PROJECT_SOURCE_DIR}/include/sbwt/libwheeler
-  ${PROJECT_SOURCE_DIR}/sdsl-lite/include
-  ${PROJECT_SOURCE_DIR}/SeqIO/include
-  ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include
-  ${PROJECT_BINARY_DIR}/include
-  ${PROJECT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}/KMC/include)
+${PROJECT_SOURCE_DIR}/include/sbwt
+${PROJECT_BINARY_DIR}/include # version.h is here
+${PROJECT_BINARY_DIR}/external/SeqIO/include
+${PROJECT_BINARY_DIR}/extenral/sdsl-lite/include
+${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include # Dependency of dependency
+${PROJECT_SOURCE_DIR}/KMC)
 target_link_libraries(sbwt_static PRIVATE
   sdsl
   ${ZLIB}
