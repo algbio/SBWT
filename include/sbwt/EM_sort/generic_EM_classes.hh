@@ -12,7 +12,7 @@
 #include <cstdio>
 #include <cassert>
 #include <functional>
-#include "globals.hh"
+#include "../globals.hh"
 #include "Block.hh"
 #include "ParallelBoundedQueue.hh"
 #include "SeqIO/buffered_streams.hh"

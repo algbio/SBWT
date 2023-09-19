@@ -11,7 +11,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cassert>
-#include "globals.hh"
+#include "../globals.hh"
 #include "Block.hh"
 #include "ParallelBoundedQueue.hh"
 #include "generic_EM_classes.hh"

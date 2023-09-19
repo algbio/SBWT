@@ -1,6 +1,6 @@
 #pragma once
 
-#include "globals.hh"
+#include "../globals.hh"
 #include "SeqIO/buffered_streams.hh"
 #include <cstdint>
 
