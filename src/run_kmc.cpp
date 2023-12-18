@@ -698,7 +698,7 @@ pair<string, int64_t> run_kmc(const vector<string>& input_files, int64_t k, int6
     write_log("Sorting KMC database", LogLevel::MAJOR);
 
     try{
-        sort_kmc_db(KMC_db_file_prefix, KMC_db_file_prefix + "-sorted");
+        sort_kmc_db(KMC_db_file_prefix, KMC_db_file_prefix + "-sorted", n_threads);
     } catch(kmc_interface::KMCAlreadySortedException& e){
         // Just copy the database
         std::filesystem::copy(KMC_db_file_prefix + ".kmc_pre", KMC_db_file_prefix + "-sorted.kmc_pre");
@@ -720,8 +720,8 @@ pair<string, int64_t> run_kmc(const vector<string>& input_files, int64_t k, int6
     return {KMC_db_file_prefix + "-sorted", n_kmers};
 }
 
-void sort_kmc_db(const string& input_db_file, const string& output_db_file){
-    vector<string> args = {"kmc_tools", "transform", input_db_file, "sort", output_db_file};
+void sort_kmc_db(const string& input_db_file, const string& output_db_file, int64_t n_threads){
+    vector<string> args = {"kmc_tools", "-t" + to_string(n_threads), "transform", input_db_file, "sort", output_db_file};
     Argv argv(args);
 
     CParametersParser params_parser(argv.size, argv.array);
