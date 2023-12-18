@@ -14,6 +14,6 @@ using namespace std;
 pair<string, int64_t> run_kmc(const vector<string>& input_files, int64_t k, int64_t n_threads, int64_t ram_gigas, int64_t min_abundance, int64_t max_abundance);
 
 // Sort a KMC database
-void sort_kmc_db(const string& input_db_file, const string& output_db_file);
+void sort_kmc_db(const string& input_db_file, const string& output_db_file, int64_t n_threads);
 
 }
