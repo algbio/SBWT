@@ -181,6 +181,27 @@ public:
     int64_t search(const char* kmer) const;
 
     /**
+    * @brief Searches for up to the first len characters of the input. For k-mer lookups, it's
+    *        better to use `search` because it uses a precalculated lookup table to speed up the search.
+    * @param input The input string.
+    * @param len The length of the input string.
+    * @return {{l,r}, d}, where [l,r] is the colexicographic interval of the longest
+    *         prefix of the input that is found in the index, and len is the length of that prefix. 
+    * @see search()
+    */
+    std::pair<std::pair<int64_t, int64_t>, int64_t> partial_search(const char* input, int64_t len) const;
+
+    /**
+    * @brief Searches for up to the first len characters of the input. For k-mer lookups, it's
+    *        better to use `search` because it uses a precalculated lookup table to speed up the search.
+    * @param input The input string.
+    * @return {{l,r}, d}, where [l,r] is the colexicographic interval of the longest
+    *         prefix of the input that is found in the index, and len is the length of that prefix. 
+    * @see search()
+    */
+    std::pair<std::pair<int64_t, int64_t>, int64_t> partial_search(const std::string& input) const;
+
+    /**
      * @brief Run SBWT search iterations for characters in S starting from interval I.
      * 
      * @param S The string to search for. Can be of any length.
@@ -452,6 +473,26 @@ template <typename subset_rank_t>
 void SBWT<subset_rank_t>::load(const string& filename){
     throwing_ifstream in(filename, ios::binary);
     load(in.stream);
+}
+
+
+template <typename subset_rank_t>
+std::pair<std::pair<int64_t, int64_t>, int64_t> SBWT<subset_rank_t>::partial_search(const char* input, int64_t len) const{
+    int64_t l = 0;
+    int64_t r = n_nodes-1;
+    for(int64_t i = 0; i < len; i++){
+        char c = toupper(input[i]);
+        int64_t l_new, r_new;
+        std::tie(l_new, r_new) = update_sbwt_interval(&c, 1, {l,r});
+        if(l_new == -1) return {{l,r},i}
+        l = l_new; r = r_new;
+    }
+    return {{l,r},len}; // All found
+}
+
+template <typename subset_rank_t>
+std::pair<std::pair<int64_t, int64_t>, int64_t> SBWT<subset_rank_t>::partial_search(const string& input) const{
+    return partial_search(input.c_str(), input.size());
 }
 
 template <typename subset_rank_t>
