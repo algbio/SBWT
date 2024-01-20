@@ -18,7 +18,7 @@ namespace sbwt{
 // matrices
 typedef SBWT<SubsetMatrixRank<sdsl::bit_vector, sdsl::rank_support_v5<>>> plain_matrix_sbwt_t;
 typedef SBWT<SubsetMatrixRank<sdsl::rrr_vector<>, sdsl::rrr_vector<>::rank_1_type>> rrr_matrix_sbwt_t;
-typedef SBWT<SubsetMatrixRank<mod_ef_vector<>, mod_ef_vector<>::rank_1_type>> mef_matrix_sbwt_t;
+typedef SBWT<SubsetMatrixRank<mod_ef_vector<>, mod_ef_vector<>::rank_1_type>> mef_matrix_sbwt_t; // Currently does not support extracting all k-mers because mod_ef_vector does not support access.
 
 // splits
 typedef SBWT<SubsetSplitRank<sdsl::bit_vector, sdsl::rank_support_v5<>,
@@ -29,7 +29,7 @@ typedef SBWT<SubsetSplitRank<sdsl::rrr_vector<>, sdsl::rrr_vector<>::rank_1_type
 
 
 typedef SBWT<SubsetSplitRank<mod_ef_vector<>, mod_ef_vector<>::rank_1_type,
-                            sdsl::bit_vector, sdsl::rank_support_v5<>>> mef_split_sbwt_t;
+                            sdsl::bit_vector, sdsl::rank_support_v5<>>> mef_split_sbwt_t; // Currently does not support extracting all k-mers because mod_ef_vector does not support access.
 
 // concats
 typedef SBWT<SubsetConcatRank<sdsl::bit_vector,
@@ -46,7 +46,7 @@ typedef SBWT<SubsetConcatRank<sd_vector<>,
                                         rrr_vector<>::rank_1_type,
                                         rrr_vector<>::select_1_type,
                                         rrr_vector<>::select_0_type>>
-            > mef_concat_sbwt_t;
+            > mef_concat_sbwt_t; // Currently does not support extracting all k-mers because mod_ef_vector does not support access.
 
 // wavelet trees
 typedef SBWT<SubsetWT<sdsl::wt_blcd<sdsl::bit_vector,

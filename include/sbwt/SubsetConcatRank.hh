@@ -24,6 +24,13 @@ class SubsetConcatRank{
         return concat.rank(L_ss0.select(pos+1), c);
     }
 
+    bool contains(int64_t pos, char c) const{
+        // TODO: faster
+        int64_t r1 = this->rank(pos, c);
+        int64_t r2 = this->rank(pos+1, c);
+        return r1 != r2;
+    }
+
     SubsetConcatRank(){}
 
     SubsetConcatRank(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits){

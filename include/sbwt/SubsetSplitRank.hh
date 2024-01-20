@@ -183,6 +183,13 @@ public:
         }
     }
 
+    bool contains(int64_t pos, char c) const{
+        // TODO: faster
+        int64_t r1 = this->rank(pos, c);
+        int64_t r2 = this->rank(pos+1, c);
+        return r1 != r2;
+    }
+
 };
 
 }

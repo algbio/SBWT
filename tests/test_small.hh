@@ -97,6 +97,49 @@ void run_small_testcase(const vector<string>& strings, int64_t k){
     check_all_queries(index_kmc, true_kmers);
 }
 
+template<typename nodeboss_t>
+void test_partial_search(){
+    nodeboss_t sbwt;
+    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
+    int64_t k = 6;
+    build_nodeboss_in_memory(strings, sbwt, k, false); 
+    string kmers_concat = sbwt.reconstruct_all_kmers();
+
+    string x = "GCAAAA"; // GCA is the longest matching prefix
+    pair<int64_t, int64_t> I; int64_t len;
+    std::tie(I, len) = sbwt.partial_search(x);
+    ASSERT_EQ(len, 2);
+
+    cerr << I << " " << len << endl;
+
+    // Check that the k-mers in the interval are exactly those that have GC as a suffix.
+    for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
+        string kmer = kmers_concat.substr(i*k, k);
+        // cerr << kmer << endl;
+        if(i >= I.first && i <= I.second) 
+            ASSERT_EQ(kmer.substr(k-len), "GC");
+        else
+            ASSERT_NE(kmer.substr(k-len), "GC");
+    }
+
+}
+
+TEST(TEST_PARTIAL_SEARCH, all){
+    // mef variants are commented out because they don't compile because the mef bit vector
+    // does not support access currently.
+
+    test_partial_search<plain_matrix_sbwt_t>();
+    test_partial_search<rrr_matrix_sbwt_t>();
+    //test_partial_search<mef_matrix_sbwt_t>();
+    test_partial_search<plain_split_sbwt_t>();
+    test_partial_search<rrr_split_sbwt_t>();
+    //test_partial_search<mef_split_sbwt_t>();
+    test_partial_search<plain_concat_sbwt_t>();
+    //test_partial_search<mef_concat_sbwt_t>();
+    test_partial_search<plain_sswt_sbwt_t>();
+    test_partial_search<rrr_sswt_sbwt_t>();
+}
+
 TEST(TEST_KMC_CONSTRUCT, not_all_dummies_needed){
     vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
     int64_t k = 4;

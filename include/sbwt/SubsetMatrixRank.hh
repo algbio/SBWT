@@ -36,6 +36,17 @@ class SubsetMatrixRank{
         return 0;
     }
 
+    bool contains(int64_t pos, char c) const{
+        // Returns true if the set with index pos contains character c
+        switch(c){
+            case 'A': return A_bits[pos];
+            case 'C': return C_bits[pos];
+            case 'G': return G_bits[pos];
+            case 'T': return T_bits[pos];
+            default: return false;
+        }
+    }
+
     SubsetMatrixRank(){}
 
     SubsetMatrixRank(const sdsl::bit_vector& A_bits, const sdsl::bit_vector& C_bits, const sdsl::bit_vector& G_bits, const sdsl::bit_vector& T_bits)

@@ -112,6 +112,13 @@ public:
         return 0;
     }
 
+    bool contains(int64_t pos, char c) const{
+        // TODO: faster
+        int64_t r1 = this->rank(pos, c);
+        int64_t r2 = this->rank(pos+1, c);
+        return r1 != r2;
+    }
+
     int64_t serialize(ostream& os) const{
         int64_t written = 0;
         written += ACGT_wt.serialize(os);
