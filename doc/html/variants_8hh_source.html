@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SBWT: include/variants.hh Source File</title>
+<title>SBWT: include/sbwt/variants.hh Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,7 +61,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_c6838ce66eaff65fda73665af2b02f01.html">sbwt</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -89,7 +89,7 @@ $(function() {
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">// matrices</span></div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="keyword">typedef</span> SBWT&lt;SubsetMatrixRank&lt;sdsl::bit_vector, sdsl::rank_support_v5&lt;&gt;&gt;&gt; plain_matrix_sbwt_t;</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">typedef</span> SBWT&lt;SubsetMatrixRank&lt;sdsl::rrr_vector&lt;&gt;, sdsl::rrr_vector&lt;&gt;::rank_1_type&gt;&gt; rrr_matrix_sbwt_t;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">typedef</span> SBWT&lt;SubsetMatrixRank&lt;mod_ef_vector&lt;&gt;, mod_ef_vector&lt;&gt;::rank_1_type&gt;&gt; mef_matrix_sbwt_t;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="keyword">typedef</span> SBWT&lt;SubsetMatrixRank&lt;mod_ef_vector&lt;&gt;, mod_ef_vector&lt;&gt;::rank_1_type&gt;&gt; mef_matrix_sbwt_t; <span class="comment">// Currently does not support extracting all k-mers because mod_ef_vector does not support access.</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">// splits</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">typedef</span> SBWT&lt;SubsetSplitRank&lt;sdsl::bit_vector, sdsl::rank_support_v5&lt;&gt;,</div>
@@ -100,7 +100,7 @@ $(function() {
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">typedef</span> SBWT&lt;SubsetSplitRank&lt;mod_ef_vector&lt;&gt;, mod_ef_vector&lt;&gt;::rank_1_type,</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;                            sdsl::bit_vector, sdsl::rank_support_v5&lt;&gt;&gt;&gt; mef_split_sbwt_t;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;                            sdsl::bit_vector, sdsl::rank_support_v5&lt;&gt;&gt;&gt; mef_split_sbwt_t; <span class="comment">// Currently does not support extracting all k-mers because mod_ef_vector does not support access.</span></div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">// concats</span></div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">typedef</span> SBWT&lt;SubsetConcatRank&lt;sdsl::bit_vector,</div>
@@ -117,7 +117,7 @@ $(function() {
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                                        rrr_vector&lt;&gt;::rank_1_type,</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                                        rrr_vector&lt;&gt;::select_1_type,</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                                        rrr_vector&lt;&gt;::select_0_type&gt;&gt;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            &gt; mef_concat_sbwt_t;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            &gt; mef_concat_sbwt_t; <span class="comment">// Currently does not support extracting all k-mers because mod_ef_vector does not support access.</span></div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">// wavelet trees</span></div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">typedef</span> SBWT&lt;SubsetWT&lt;sdsl::wt_blcd&lt;sdsl::bit_vector,</div>

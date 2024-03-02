@@ -79,8 +79,6 @@ Public Attributes</h2></td></tr>
 <tr class="separator:ac1b1dd80dd3278e44b3f96d35f36843e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b477315ee2de63d2e6d5df1ef201ca9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#a8b477315ee2de63d2e6d5df1ef201ca9">k</a> = 30</td></tr>
 <tr class="separator:a8b477315ee2de63d2e6d5df1ef201ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4d527f3236d0575b848eb95c8583ee3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#af4d527f3236d0575b848eb95c8583ee3">add_reverse_complements</a> = false</td></tr>
-<tr class="separator:af4d527f3236d0575b848eb95c8583ee3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace9f587991145d930ad6edbcc61dc12f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#ace9f587991145d930ad6edbcc61dc12f">build_streaming_support</a> = true</td></tr>
 <tr class="separator:ace9f587991145d930ad6edbcc61dc12f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63daa4746df379f7218aaf67de1cc5f3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#a63daa4746df379f7218aaf67de1cc5f3">n_threads</a> = 1</td></tr>
@@ -91,27 +89,12 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a8fd4491457c7b7c3ec1f5a1c8a731dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2b8e713ce9c6a803d4eec17b0a1afe2d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#a2b8e713ce9c6a803d4eec17b0a1afe2d">ram_gigas</a> = 2</td></tr>
 <tr class="separator:a2b8e713ce9c6a803d4eec17b0a1afe2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e7d7246da6edf0b35c36011c5624c2c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#a9e7d7246da6edf0b35c36011c5624c2c">precalc_k</a> = 0</td></tr>
+<tr class="separator:a9e7d7246da6edf0b35c36011c5624c2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d69466de817d4041f67259929ec1f93"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsbwt_1_1SBWT_1_1BuildConfig.html#a0d69466de817d4041f67259929ec1f93">temp_dir</a> = &quot;.&quot;</td></tr>
 <tr class="separator:a0d69466de817d4041f67259929ec1f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="af4d527f3236d0575b848eb95c8583ee3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4d527f3236d0575b848eb95c8583ee3">&#9670;&nbsp;</a></span>add_reverse_complements</h2>
-
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename subset_rank_t &gt; </div>
-      <table class="memname">
-        <tr>
-          <td class="memname">bool <a class="el" href="classsbwt_1_1SBWT.html">sbwt::SBWT</a>&lt; subset_rank_t &gt;::BuildConfig::add_reverse_complements = false</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Whether we should also add the reverse complemented k-mers to the index. </p>
-
-</div>
-</div>
 <a id="ace9f587991145d930ad6edbcc61dc12f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ace9f587991145d930ad6edbcc61dc12f">&#9670;&nbsp;</a></span>build_streaming_support</h2>
 
@@ -214,6 +197,23 @@ template&lt;typename subset_rank_t &gt; </div>
 
 </div>
 </div>
+<a id="a9e7d7246da6edf0b35c36011c5624c2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e7d7246da6edf0b35c36011c5624c2c">&#9670;&nbsp;</a></span>precalc_k</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename subset_rank_t &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="classsbwt_1_1SBWT.html">sbwt::SBWT</a>&lt; subset_rank_t &gt;::BuildConfig::precalc_k = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>We will precalculate and store the <a class="el" href="classsbwt_1_1SBWT.html">SBWT</a> intervals of all DNA-strings of this length </p>
+
+</div>
+</div>
 <a id="a2b8e713ce9c6a803d4eec17b0a1afe2d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2b8e713ce9c6a803d4eec17b0a1afe2d">&#9670;&nbsp;</a></span>ram_gigas</h2>
 
@@ -249,7 +249,7 @@ template&lt;typename subset_rank_t &gt; </div>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>include/<a class="el" href="SBWT_8hh_source.html">SBWT.hh</a></li>
+<li>include/sbwt/<a class="el" href="SBWT_8hh_source.html">SBWT.hh</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
