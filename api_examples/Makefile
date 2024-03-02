@@ -11,6 +11,6 @@ SBWT_LIBS=-L $(shell pwd)/../build/external/sdsl-lite/build/lib/
 KMC_OBJECTS=../build/external/KMC/build/libkmc_core.a ../build/external/KMC/build/libkmc_tools.a
 
 api_example:
-	${CXX} -g -std=c++17 api_example.cpp ../build/libsbwt_static.a ${KMC_OBJECTS} ${ALL_INCLUDES} ${SBWT_LIBS} -lsdsl -lz -o api_example -Wno-deprecated-declarations -pthread
+	${CXX} -g -std=c++17 api_example.cpp ../build/libsbwt_static.a ${KMC_OBJECTS} ${ALL_INCLUDES} ${SBWT_LIBS} -lsdsl -lz -o api_example -Wno-deprecated-declarations -pthread -O3
 
 
