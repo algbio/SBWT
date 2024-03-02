@@ -303,7 +303,7 @@ public:
     void get_kmer(int64_t colex_rank, char* buf) const;
 
     /**
-     * @brief Retrieve the k-mer with the given colexicographic rank (including dummy k-mers), using a subset select support function on the SBWT. Has time complexity O(kt), where t is the time for a select query.
+     * @brief Retrieve the k-mer with the given colexicographic rank (including dummy k-mers), using a subset select support on the SBWT. Has time complexity O(kt), where t is the time for a select query.
      * 
      * @param colex_rank The colexicographic rank, between 0 and number_of_subsets() - 1.
      * @param buf The output array where the k-mer will be stored. Must have at least k bytes of space.
