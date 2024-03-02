@@ -296,7 +296,7 @@ public:
     /**
      * @brief Retrieve the k-mer with the given colexicographic rank (including dummy k-mers). Has time complexity O(k log n).
      * 
-     * @param colex_rank The colexicographic rank, between 0 and number_of_subsets().
+     * @param colex_rank The colexicographic rank, between 0 and number_of_subsets() - 1.
      * @param buf The output array where the k-mer will be stored. Must have at least k bytes of space.
      */
     void get_kmer(int64_t colex_rank, char* buf) const;
