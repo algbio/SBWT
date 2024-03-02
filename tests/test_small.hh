@@ -124,6 +124,25 @@ void test_partial_search(){
 
 }
 
+template<typename nodeboss_t>
+void test_get_kmer(){
+    nodeboss_t sbwt;
+    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
+    int64_t k = 6;
+    build_nodeboss_in_memory(strings, sbwt, k, false); 
+    string kmers_concat = sbwt.reconstruct_all_kmers();
+
+    vector<char> buf(k);
+    for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
+        string true_kmer = kmers_concat.substr(i*k, k);
+        sbwt.get_kmer(i, buf.data());
+        string test_kmer = string(buf.data(), buf.data()+k);
+        cerr << true_kmer << " " << test_kmer << endl;
+        ASSERT_EQ(true_kmer, test_kmer);
+    }
+
+}
+
 TEST(TEST_PARTIAL_SEARCH, all){
     // mef variants are commented out because they don't compile because the mef bit vector
     // does not support access currently.
@@ -138,6 +157,23 @@ TEST(TEST_PARTIAL_SEARCH, all){
     //test_partial_search<mef_concat_sbwt_t>();
     test_partial_search<plain_sswt_sbwt_t>();
     test_partial_search<rrr_sswt_sbwt_t>();
+}
+
+
+TEST(TEST_GET_KMER, all){
+    // mef variants are commented out because they don't compile because the mef bit vector
+    // does not support access currently.
+
+    test_get_kmer<plain_matrix_sbwt_t>();
+    test_get_kmer<rrr_matrix_sbwt_t>();
+    //test_get_kmer<mef_matrix_sbwt_t>();
+    test_get_kmer<plain_split_sbwt_t>();
+    test_get_kmer<rrr_split_sbwt_t>();
+    //test_get_kmer<mef_split_sbwt_t>();
+    test_get_kmer<plain_concat_sbwt_t>();
+    //test_get_kmer<mef_concat_sbwt_t>();
+    test_get_kmer<plain_sswt_sbwt_t>();
+    test_get_kmer<rrr_sswt_sbwt_t>();
 }
 
 TEST(TEST_KMC_CONSTRUCT, not_all_dummies_needed){

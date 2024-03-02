@@ -43,6 +43,8 @@ private:
     int64_t n_kmers; // Number of k-mers indexed in the data structure
     int64_t k; // The k-mer k
 
+    static constexpr char alphabet[4] = {'A', 'C', 'G', 'T'};
+
     int64_t get_char_idx(char c) const{
         switch(c){
             case 'A': return 0;
@@ -291,6 +293,13 @@ public:
      */
     string reconstruct_all_kmers() const;
 
+    /**
+     * @brief Retrieve the k-mer with the given colexicographic rank (including dummy k-mers)
+     * 
+     * @param colex_rank The colexicographic rank, between 0 and number_of_subsets().
+     * @param buf The output array where the k-mer will be stored. Must have at least k bytes of space.
+     */
+    void get_kmer(int64_t colex_rank, char* buf) const;
 };
 
 
@@ -657,6 +666,33 @@ string SBWT<subset_rank_t>::reconstruct_all_kmers() const {
     }
 
     return kmers_concat;
+}
+
+template <typename subset_rank_t>
+void SBWT<subset_rank_t>::get_kmer(int64_t colex_rank, char* buf) const {
+    for(int64_t i = 0; i < this->k; i++){
+        if(colex_rank == 0){
+            buf[k-1-i] = '$';
+        } else{ 
+            int64_t char_idx = 0;
+            while(char_idx+1 < 4 && colex_rank >= C[char_idx+1]) char_idx++;
+            char c = SBWT<subset_rank_t>::alphabet[char_idx];
+            buf[k-1-i] = c;
+
+            // Step backward
+
+            int64_t char_rel_rank = colex_rank - C[char_idx];
+            // Find the index p of the SBWT subset that contains the occurrence of c with rank char_rel_rank
+            int64_t p = 0;
+            int64_t step = this->number_of_subsets();
+            while(step > 0){
+                while(p + step <= this->number_of_subsets() && this->subset_rank.rank(p + step, c) <= char_rel_rank)
+                    p += step;
+                step /= 2;
+            }
+            colex_rank = p;
+        }
+    }
 }
 
 } // namespace sbwt
