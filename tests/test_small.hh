@@ -206,13 +206,11 @@ TEST(TEST_GET_KMER, fast){
         ASSERT_EQ(true_kmer, nontrivial_kmer);
     }
 
-/*
     vector<char> buf(k+1); // The k-mer will be written here
     for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
         sbwt.get_kmer_fast(i, buf.data(), nontrivial_ss);
         if(buf[0] != '$') cout << buf.data() << endl;
     }
-    */
 
 }
 

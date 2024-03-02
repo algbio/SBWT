@@ -35,7 +35,7 @@ private:
 
     std::uniform_int_distribution<int64_t> dist;
     std::random_device urandom;
-    string temp_dir;
+    string temp_dir = ".";
     vector<char> alphabet;
     set<string> used_names;
     std::mutex mutex;
