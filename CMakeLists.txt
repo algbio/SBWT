@@ -168,7 +168,6 @@ if (BUILD_TESTS)
     ${PROJECT_SOURCE_DIR}/include/sbwt
     ${PROJECT_BINARY_DIR}/include # version.h is here
     ${PROJECT_BINARY_DIR}/external/SeqIO/include
-    ${PROJECT_BINARY_DIR}/extenral/sdsl-lite/include
     ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include # Dependency of dependency
     ${PROJECT_SOURCE_DIR}/googletest/googletest/include
     ${PROJECT_SOURCE_DIR}/KMC)
@@ -185,6 +184,34 @@ else()
 #  set_target_properties(gtest PROPERTIES EXCLUDE_FROM_ALL 1)
 #  set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL 1)
 endif()
+
+if (BUILD_SBWT_BENCHMARK)
+  find_package(Threads REQUIRED)
+  set(THREADS_PREFER_PTHREAD_FLAG ON)
+  find_package(OpenMP REQUIRED)
+
+  add_executable(sbwt_query_benchmark
+    tests/query_benchmark.cpp
+    ${SBWT_SOURCES})
+  target_include_directories(sbwt_query_benchmark PRIVATE
+    ${PROJECT_SOURCE_DIR}/include/sbwt
+    ${PROJECT_BINARY_DIR}/include # version.h is here
+    ${PROJECT_BINARY_DIR}/external/SeqIO/include
+    ${PROJECT_BINARY_DIR}/external/sdsl-lite/build/external/libdivsufsort/include # Dependency of dependency
+    ${PROJECT_SOURCE_DIR}/googletest/googletest/include
+    ${PROJECT_SOURCE_DIR}/KMC)
+  target_link_libraries(sbwt_query_benchmark PRIVATE
+    ${ZLIB}
+    sdsl
+    Threads::Threads
+    OpenMP::OpenMP_CXX
+    ${CXX_FILESYSTEM_LIBRARIES}
+    kmc_tools
+    kmc_core)
+
+endif()
+
+
 
 add_library(sbwt_static STATIC ${SBWT_SOURCES})
 target_include_directories(sbwt_static PRIVATE
