@@ -4,7 +4,6 @@
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/rank_support_v.hpp>
 #include "globals.hh"
-#include "SubsetMatrixSelectSupport.hh"
 #include <map>
 
 namespace sbwt{
@@ -123,12 +122,6 @@ class SubsetMatrixRank{
             G_bits_rs.set_vector(&G_bits);
             T_bits_rs.set_vector(&T_bits);
         }
-    }
-
-    // WARNING: The returned structure is a support structure that points to the bit vectors inside
-    // the matrix rank structure. It can not be used anymore if the matrix rank structure is freed.
-    SubsetMatrixSelectSupport<bitvector_t> build_select_support() const{
-        return SubsetMatrixSelectSupport<bitvector_t>(&A_bits, &C_bits, &G_bits, &T_bits);
     }
 
 };

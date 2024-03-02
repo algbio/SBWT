@@ -178,7 +178,17 @@ TEST(TEST_GET_KMER, fast){
     string kmers_concat = sbwt.reconstruct_all_kmers();
 
     TrivialSubsetSelect trivial_ss(sbwt);
-    SubsetMatrixSelectSupport<sdsl::bit_vector> nontrivial_ss = sbwt.get_subset_rank_structure().build_select_support();
+    string ss_filename = get_temp_file_manager().create_filename();
+    {
+        SubsetMatrixSelectSupport<sdsl::bit_vector> nontrivial_ss(sbwt);
+        throwing_ofstream out(ss_filename, ios::binary);
+        nontrivial_ss.serialize(out.stream);
+    } // Flushes stream and frees the select support
+
+    // Load the select support back from disk
+    SubsetMatrixSelectSupport<sdsl::bit_vector> nontrivial_ss;
+    throwing_ifstream ss_in(ss_filename);
+    nontrivial_ss.load(ss_in.stream, ios::binary);
 
     vector<char> buf_trivial(k);
     vector<char> buf_nontrivial(k);

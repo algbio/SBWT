@@ -3,6 +3,7 @@
 #include <vector>
 #include <sdsl/bit_vectors.hpp>
 #include "globals.hh"
+#include "SubsetMatrixRank.hh"
 #include <map>
 
 namespace sbwt{
@@ -32,11 +33,13 @@ class SubsetMatrixSelectSupport{
 
     SubsetMatrixSelectSupport(){}
 
-    SubsetMatrixSelectSupport(const sdsl::bit_vector* A_bits, const sdsl::bit_vector* C_bits, const sdsl::bit_vector* G_bits, const sdsl::bit_vector* T_bits){
-        sdsl::util::init_support(this->A_bits_ss, A_bits);
-        sdsl::util::init_support(this->C_bits_ss, C_bits);
-        sdsl::util::init_support(this->G_bits_ss, G_bits);
-        sdsl::util::init_support(this->T_bits_ss, T_bits);
+    // Warning: this select structure points to internal vectors of `mr`, so the select support
+    // can be used only as long as those pointers are valid.
+    SubsetMatrixSelectSupport(const SubsetMatrixRank& mr){
+        sdsl::util::init_support(this->A_bits_ss, mr.A_bits);
+        sdsl::util::init_support(this->C_bits_ss, mr.C_bits);
+        sdsl::util::init_support(this->G_bits_ss, mr.G_bits);
+        sdsl::util::init_support(this->T_bits_ss, mr.T_bits);
     }
 
     SubsetMatrixSelectSupport(const SubsetMatrixSelectSupport& other){
@@ -56,29 +59,31 @@ class SubsetMatrixSelectSupport{
         } else return *this; // Assignment to self -> do nothing.
     }
 
-int64_t serialize(ostream& os) const{
-    int64_t written = 0;
+    int64_t serialize(ostream& os) const{
+        int64_t written = 0;
 
-    written += A_bits_ss.serialize(os);
-    written += C_bits_ss.serialize(os);
-    written += G_bits_ss.serialize(os);
-    written += T_bits_ss.serialize(os);
+        written += A_bits_ss.serialize(os);
+        written += C_bits_ss.serialize(os);
+        written += G_bits_ss.serialize(os);
+        written += T_bits_ss.serialize(os);
 
-    return written;
-}
+        return written;
+    }
 
-void load(istream& is, const sdsl::bit_vector* A_bits, const sdsl::bit_vector* C_bits, const sdsl::bit_vector* G_bits, const sdsl::bit_vector* T_bits){
+    // Warning: this select structure points to internal vectors of `mr`, so the select support
+    // can be used only as long as those pointers are valid.
+    void load(istream& is, const SubsetMatrixRank& mr){
 
-    A_bits_ss.load(is);
-    C_bits_ss.load(is);
-    G_bits_ss.load(is);
-    T_bits_ss.load(is);
+        A_bits_ss.load(is);
+        C_bits_ss.load(is);
+        G_bits_ss.load(is);
+        T_bits_ss.load(is);
 
-    A_bits_ss.set_vector(A_bits);
-    C_bits_ss.set_vector(C_bits);
-    G_bits_ss.set_vector(G_bits);
-    T_bits_ss.set_vector(T_bits);
-}
+        A_bits_ss.set_vector(mr.A_bits);
+        C_bits_ss.set_vector(mr.C_bits);
+        G_bits_ss.set_vector(mr.G_bits);
+        T_bits_ss.set_vector(mr.T_bits);
+    }
 
 };
 
