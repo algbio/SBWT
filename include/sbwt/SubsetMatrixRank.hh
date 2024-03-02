@@ -4,6 +4,7 @@
 #include <sdsl/bit_vectors.hpp>
 #include <sdsl/rank_support_v.hpp>
 #include "globals.hh"
+#include "SubsetMatrixSelectSupport.hh"
 #include <map>
 
 namespace sbwt{
@@ -83,46 +84,52 @@ class SubsetMatrixRank{
         } else return *this; // Assignment to self -> do nothing.
     }
 
-int64_t serialize(ostream& os) const{
-    int64_t written = 0;
-    written += A_bits.serialize(os);
-    written += C_bits.serialize(os);
-    written += G_bits.serialize(os);
-    written += T_bits.serialize(os);
+    int64_t serialize(ostream& os) const{
+        int64_t written = 0;
+        written += A_bits.serialize(os);
+        written += C_bits.serialize(os);
+        written += G_bits.serialize(os);
+        written += T_bits.serialize(os);
 
-    written += A_bits_rs.serialize(os);
-    written += C_bits_rs.serialize(os);
-    written += G_bits_rs.serialize(os);
-    written += T_bits_rs.serialize(os);
+        written += A_bits_rs.serialize(os);
+        written += C_bits_rs.serialize(os);
+        written += G_bits_rs.serialize(os);
+        written += T_bits_rs.serialize(os);
 
-    write_log("MatrixRank bit vectors total " + to_string((double)written/A_bits.size()*8) + " bits total per node", LogLevel::MINOR);
-    return written;
-}
-
-void load(istream& is){
-    A_bits.load(is);
-    C_bits.load(is);
-    G_bits.load(is);
-    T_bits.load(is);
-
-    if(std::is_same<sdsl::rank_support_v5<>, rank_support_t>::value){
-        // Special handling needed for rank_support_v5 because of a design flaw in sdsl
-        A_bits_rs.load(is, &A_bits);
-        C_bits_rs.load(is, &C_bits);
-        G_bits_rs.load(is, &G_bits);
-        T_bits_rs.load(is, &T_bits);
-    } else{
-        A_bits_rs.load(is);
-        C_bits_rs.load(is);
-        G_bits_rs.load(is);
-        T_bits_rs.load(is);
-
-        A_bits_rs.set_vector(&A_bits);
-        C_bits_rs.set_vector(&C_bits);
-        G_bits_rs.set_vector(&G_bits);
-        T_bits_rs.set_vector(&T_bits);
+        write_log("MatrixRank bit vectors total " + to_string((double)written/A_bits.size()*8) + " bits total per node", LogLevel::MINOR);
+        return written;
     }
-}
+
+    void load(istream& is){
+        A_bits.load(is);
+        C_bits.load(is);
+        G_bits.load(is);
+        T_bits.load(is);
+
+        if(std::is_same<sdsl::rank_support_v5<>, rank_support_t>::value){
+            // Special handling needed for rank_support_v5 because of a design flaw in sdsl
+            A_bits_rs.load(is, &A_bits);
+            C_bits_rs.load(is, &C_bits);
+            G_bits_rs.load(is, &G_bits);
+            T_bits_rs.load(is, &T_bits);
+        } else{
+            A_bits_rs.load(is);
+            C_bits_rs.load(is);
+            G_bits_rs.load(is);
+            T_bits_rs.load(is);
+
+            A_bits_rs.set_vector(&A_bits);
+            C_bits_rs.set_vector(&C_bits);
+            G_bits_rs.set_vector(&G_bits);
+            T_bits_rs.set_vector(&T_bits);
+        }
+    }
+
+    // WARNING: The returned structure is a support structure that points to the bit vectors inside
+    // the matrix rank structure. It can not be used anymore if the matrix rank structure is freed.
+    SubsetMatrixSelectSupport<bitvector_t> build_select_support() const{
+        return MatrixSubsetSelectSupport(A_bits, C_bits, G_bits, T_bits);
+    }
 
 };
 

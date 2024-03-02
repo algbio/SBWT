@@ -9,7 +9,7 @@
 #include "SubsetSplitRank.hh"
 #include "SubsetMatrixRank.hh"
 #include "SubsetConcatRank.hh"
-#include "SimpleSubsetSelectSupport.hh"
+#include "SubsetMatrixSelectSupport.hh"
 #include "SubsetWT.hh"
 #include "suffix_group_optimization.hh"
 #include <gtest/gtest.h>

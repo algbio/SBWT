@@ -11,15 +11,16 @@ using namespace std;
 
 // A subset select support based on bitvector select support on indicator bitvectors for each character.
 // This class does not own the bit vectors its pointing to. But it does own the select support data.
-class SimpleSubsetSelectSupport{
+template<typename bitvector_t>
+class SubsetMatrixSelectSupport{
 
     public:
 
     // Select supports
-    sdsl::select_support_mcl<> A_bits_ss;
-    sdsl::select_support_mcl<> C_bits_ss;
-    sdsl::select_support_mcl<> G_bits_ss;
-    sdsl::select_support_mcl<> T_bits_ss;
+    typename bitvector_t::select_1_t A_bits_ss;
+    typename bitvector_t::select_1_t C_bits_ss;
+    typename bitvector_t::select_1_t G_bits_ss;
+    typename bitvector_t::select_1_t T_bits_ss;
 
     int64_t select(int64_t pos, char c) const{
         if(c == 'A') return A_bits_ss.select(pos);
@@ -29,21 +30,21 @@ class SimpleSubsetSelectSupport{
         return 0;
     }
 
-    SimpleSubsetSelectSupport(){}
+    SubsetMatrixSelectSupport(){}
 
-    SimpleSubsetSelectSupport(const sdsl::bit_vector* A_bits, const sdsl::bit_vector* C_bits, const sdsl::bit_vector* G_bits, const sdsl::bit_vector* T_bits){
+    SubsetMatrixSelectSupport(const sdsl::bit_vector* A_bits, const sdsl::bit_vector* C_bits, const sdsl::bit_vector* G_bits, const sdsl::bit_vector* T_bits){
         sdsl::util::init_support(this->A_bits_ss, A_bits);
         sdsl::util::init_support(this->C_bits_ss, C_bits);
         sdsl::util::init_support(this->G_bits_ss, G_bits);
         sdsl::util::init_support(this->T_bits_ss, T_bits);
     }
 
-    SimpleSubsetSelectSupport(const SimpleSubsetSelectSupport& other){
+    SubsetMatrixSelectSupport(const SubsetMatrixSelectSupport& other){
         assert(&other != this); // What on earth are you trying to do?
         operator=(other);
     }
 
-    SimpleSubsetSelectSupport& operator=(const SimpleSubsetSelectSupport& other){
+    SubsetMatrixSelectSupport& operator=(const SubsetMatrixSelectSupport& other){
         if(&other != this){
 
             this->A_bits_ss = other.A_bits_ss;
