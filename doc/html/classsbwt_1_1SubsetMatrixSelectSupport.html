@@ -81,8 +81,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae9f83b2ebd76f7590e847fee4dded997"><td class="memItemLeft" align="right" valign="top"><a id="ae9f83b2ebd76f7590e847fee4dded997"></a>
 int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>select</b> (int64_t pos, char c) const</td></tr>
 <tr class="separator:ae9f83b2ebd76f7590e847fee4dded997"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a84b48f8b8b5df3ac5d23e7bd8af9debc"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsbwt_1_1SubsetMatrixSelectSupport.html#a84b48f8b8b5df3ac5d23e7bd8af9debc">SubsetMatrixSelectSupport</a> (const <a class="el" href="classsbwt_1_1SubsetMatrixRank.html">SubsetMatrixRank</a> &amp;mr)</td></tr>
-<tr class="separator:a84b48f8b8b5df3ac5d23e7bd8af9debc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3ddf0cf5aba698a8fc117f30cd9d11f"><td class="memTemplParams" colspan="2">template&lt;typename rank_support_t &gt; </td></tr>
+<tr class="memitem:aa3ddf0cf5aba698a8fc117f30cd9d11f"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsbwt_1_1SubsetMatrixSelectSupport.html#aa3ddf0cf5aba698a8fc117f30cd9d11f">SubsetMatrixSelectSupport</a> (const <a class="el" href="classsbwt_1_1SubsetMatrixRank.html">SubsetMatrixRank</a>&lt; bitvector_t, rank_support_t &gt; &amp;mr)</td></tr>
+<tr class="separator:aa3ddf0cf5aba698a8fc117f30cd9d11f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c96c9117f7b4328c16f6a9b5f42a79c"><td class="memItemLeft" align="right" valign="top"><a id="a5c96c9117f7b4328c16f6a9b5f42a79c"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>SubsetMatrixSelectSupport</b> (const <a class="el" href="classsbwt_1_1SubsetMatrixSelectSupport.html">SubsetMatrixSelectSupport</a> &amp;other)</td></tr>
 <tr class="separator:a5c96c9117f7b4328c16f6a9b5f42a79c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -92,8 +93,9 @@ int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>select</b> (int64_
 <tr class="memitem:a7ddabb22197087d71bba03cddeb0bc3e"><td class="memItemLeft" align="right" valign="top"><a id="a7ddabb22197087d71bba03cddeb0bc3e"></a>
 int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>serialize</b> (ostream &amp;os) const</td></tr>
 <tr class="separator:a7ddabb22197087d71bba03cddeb0bc3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3abee61676685baed62f722ac5ea0aea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsbwt_1_1SubsetMatrixSelectSupport.html#a3abee61676685baed62f722ac5ea0aea">load</a> (istream &amp;is, const <a class="el" href="classsbwt_1_1SubsetMatrixRank.html">SubsetMatrixRank</a> &amp;mr)</td></tr>
-<tr class="separator:a3abee61676685baed62f722ac5ea0aea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75f1c247dd5f58a6dc7f34c51a7ce5b2"><td class="memTemplParams" colspan="2">template&lt;typename rank_support_t &gt; </td></tr>
+<tr class="memitem:a75f1c247dd5f58a6dc7f34c51a7ce5b2"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classsbwt_1_1SubsetMatrixSelectSupport.html#a75f1c247dd5f58a6dc7f34c51a7ce5b2">load</a> (istream &amp;is, const <a class="el" href="classsbwt_1_1SubsetMatrixRank.html">SubsetMatrixRank</a>&lt; bitvector_t, rank_support_t &gt; &amp;mr)</td></tr>
+<tr class="separator:a75f1c247dd5f58a6dc7f34c51a7ce5b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -116,13 +118,15 @@ class sbwt::SubsetMatrixSelectSupport&lt; bitvector_t &gt;</h3>
 
 <p>A subset select support based on bitvector select support on indicator bitvectors for each character. This class does not own the bit vectors its pointing to. But it does own the select support data. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a84b48f8b8b5df3ac5d23e7bd8af9debc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a84b48f8b8b5df3ac5d23e7bd8af9debc">&#9670;&nbsp;</a></span>SubsetMatrixSelectSupport()</h2>
+<a id="aa3ddf0cf5aba698a8fc117f30cd9d11f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3ddf0cf5aba698a8fc117f30cd9d11f">&#9670;&nbsp;</a></span>SubsetMatrixSelectSupport()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename bitvector_t &gt; </div>
+<div class="memtemplate">
+template&lt;typename rank_support_t &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -130,7 +134,7 @@ template&lt;typename bitvector_t &gt; </div>
         <tr>
           <td class="memname"><a class="el" href="classsbwt_1_1SubsetMatrixSelectSupport.html">sbwt::SubsetMatrixSelectSupport</a>&lt; bitvector_t &gt;::<a class="el" href="classsbwt_1_1SubsetMatrixSelectSupport.html">SubsetMatrixSelectSupport</a> </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classsbwt_1_1SubsetMatrixRank.html">SubsetMatrixRank</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classsbwt_1_1SubsetMatrixRank.html">SubsetMatrixRank</a>&lt; bitvector_t, rank_support_t &gt; &amp;&#160;</td>
           <td class="paramname"><em>mr</em></td><td>)</td>
           <td></td>
         </tr>
@@ -146,13 +150,15 @@ template&lt;typename bitvector_t &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a3abee61676685baed62f722ac5ea0aea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3abee61676685baed62f722ac5ea0aea">&#9670;&nbsp;</a></span>load()</h2>
+<a id="a75f1c247dd5f58a6dc7f34c51a7ce5b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75f1c247dd5f58a6dc7f34c51a7ce5b2">&#9670;&nbsp;</a></span>load()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename bitvector_t &gt; </div>
+<div class="memtemplate">
+template&lt;typename rank_support_t &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -166,7 +172,7 @@ template&lt;typename bitvector_t &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classsbwt_1_1SubsetMatrixRank.html">SubsetMatrixRank</a> &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classsbwt_1_1SubsetMatrixRank.html">SubsetMatrixRank</a>&lt; bitvector_t, rank_support_t &gt; &amp;&#160;</td>
           <td class="paramname"><em>mr</em>&#160;</td>
         </tr>
         <tr>
