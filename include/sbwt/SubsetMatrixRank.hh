@@ -128,7 +128,7 @@ class SubsetMatrixRank{
     // WARNING: The returned structure is a support structure that points to the bit vectors inside
     // the matrix rank structure. It can not be used anymore if the matrix rank structure is freed.
     SubsetMatrixSelectSupport<bitvector_t> build_select_support() const{
-        return MatrixSubsetSelectSupport(A_bits, C_bits, G_bits, T_bits);
+        return SubsetMatrixSelectSupport<bitvector_t>(&A_bits, &C_bits, &G_bits, &T_bits);
     }
 
 };

@@ -166,6 +166,36 @@ void test_get_kmer(){
 
 }
 
+TEST(TEST_GET_KMER, fast){
+    plain_matrix_sbwt_t sbwt;
+    vector<string> strings = {"CCCGTGATGGCTA", "TAATGCTGTAGC", "TGGCTCGTGTAGTCGA"};
+    int64_t k = 6;
+    build_nodeboss_in_memory(strings, sbwt, k, false); 
+    string kmers_concat = sbwt.reconstruct_all_kmers();
+
+    SubsetMatrixSelectSupport ss = sbwt.get_subset_rank_structure().build_select_support();
+    auto lookup_select_support = [&ss](int64_t i, char c){
+        return ss.select(i,c);
+    };
+
+    vector<char> buf(k);
+    vector<char> buf_fast(k);
+    for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
+        string true_kmer = kmers_concat.substr(i*k, k);
+
+        sbwt.get_kmer(i, buf.data());
+        string test_kmer = string(buf.data(), buf.data()+k);
+
+        sbwt.get_kmer_fast(i, buf_fast.data(), lookup_select_support);
+        string fast_kmer = string(buf_fast.data(), buf_fast.data()+k);
+
+        cerr << true_kmer << " " << test_kmer << " " << fast_kmer << endl;
+        ASSERT_EQ(true_kmer, test_kmer);
+        ASSERT_EQ(true_kmer, fast_kmer);
+    }
+
+}
+
 TEST(TEST_PARTIAL_SEARCH, all){
     // mef variants are commented out because they don't compile because the mef bit vector
     // does not support access currently.

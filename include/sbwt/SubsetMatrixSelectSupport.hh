@@ -17,10 +17,10 @@ class SubsetMatrixSelectSupport{
     public:
 
     // Select supports
-    typename bitvector_t::select_1_t A_bits_ss;
-    typename bitvector_t::select_1_t C_bits_ss;
-    typename bitvector_t::select_1_t G_bits_ss;
-    typename bitvector_t::select_1_t T_bits_ss;
+    typename bitvector_t::select_1_type A_bits_ss;
+    typename bitvector_t::select_1_type C_bits_ss;
+    typename bitvector_t::select_1_type G_bits_ss;
+    typename bitvector_t::select_1_type T_bits_ss;
 
     int64_t select(int64_t pos, char c) const{
         if(c == 'A') return A_bits_ss.select(pos);
