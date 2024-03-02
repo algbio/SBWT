@@ -10,8 +10,9 @@ namespace sbwt{
 
 using namespace std;
 
-// A subset select support based on bitvector select support on indicator bitvectors for each character.
-// This class does not own the bit vectors its pointing to. But it does own the select support data.
+/** A subset select support based on bitvector select support on indicator bitvectors for each character.
+* This class does not own the bit vectors its pointing to. But it does own the select support data.
+*/
 template<typename bitvector_t>
 class SubsetMatrixSelectSupport{
 
@@ -33,8 +34,9 @@ class SubsetMatrixSelectSupport{
 
     SubsetMatrixSelectSupport(){}
 
-    // Warning: this select structure points to internal vectors of `mr`, so the select support
-    // can be used only as long as those pointers are valid.
+    /** Warning: this select structure points to internal vectors of `mr`, so the select support
+    * can be used only as long as those pointers are valid.
+    */
     SubsetMatrixSelectSupport(const SubsetMatrixRank& mr){
         sdsl::util::init_support(this->A_bits_ss, mr.A_bits);
         sdsl::util::init_support(this->C_bits_ss, mr.C_bits);
@@ -70,8 +72,9 @@ class SubsetMatrixSelectSupport{
         return written;
     }
 
-    // Warning: this select structure points to internal vectors of `mr`, so the select support
-    // can be used only as long as those pointers are valid.
+    /** Warning: this select structure points to internal vectors of `mr`, so the select support
+    * can be used only as long as those pointers are valid.
+    */
     void load(istream& is, const SubsetMatrixRank& mr){
 
         A_bits_ss.load(is);
