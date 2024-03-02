@@ -179,7 +179,7 @@ public:
             case 'C': return Y_count + Z_C_rs.rank(rank1);
             case 'G': return Y_count + Z_G_rs.rank(rank1);
             case 'T': return Y_count + Z_T_rs.rank(rank1);
-            default: cerr << "Error: Rank called with non-ACGT character" << endl; exit(1);
+            default: cerr << "Error: Rank called with non-ACGT character: " << c << endl; exit(1);
         }
     }
 

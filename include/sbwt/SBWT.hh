@@ -300,6 +300,16 @@ public:
      * @param buf The output array where the k-mer will be stored. Must have at least k bytes of space.
      */
     void get_kmer(int64_t colex_rank, char* buf) const;
+
+    /**
+     * @brief Retrieve the k-mer with the given colexicographic rank (including dummy k-mers), using a subset select support structure on the SBWT. Has time complexity O(kt), where t is the time for a select query.
+     * 
+     * @param colex_rank The colexicographic rank, between 0 and number_of_subsets() - 1.
+     * @param buf The output array where the k-mer will be stored. Must have at least k bytes of space.
+     * @param subset_select_support A function taking an int64_t r and a character c, returning the smallest position p such that subsetrank(p+1,c) > r, where subsetrank is on the subset sequence of this SBWT.
+     */
+
+    void get_kmer_fast(int64_t colex_rank, char* buf, std::function<int64_t(int64_t, char)> subset_select_support) const;
 };
 
 
@@ -693,6 +703,26 @@ void SBWT<subset_rank_t>::get_kmer(int64_t colex_rank, char* buf) const {
             colex_rank = p;
         }
     }
+}
+
+template <typename subset_rank_t>
+void SBWT<subset_rank_t>::get_kmer_fast(int64_t colex_rank, char* buf, std::function<int64_t(int64_t, char)> subset_select_support) const{
+    for(int64_t i = 0; i < this->k; i++){
+        if(colex_rank == 0){
+            buf[k-1-i] = '$';
+        } else{ 
+            int64_t char_idx = 0;
+            while(char_idx+1 < 4 && colex_rank >= C[char_idx+1]) char_idx++;
+            char c = SBWT<subset_rank_t>::alphabet[char_idx];
+            buf[k-1-i] = c;
+
+            // Step backward
+            // Find the index p of the SBWT subset that contains the occurrence of c with rank char_rel_rank
+            int64_t char_rel_rank = colex_rank - C[char_idx];
+            colex_rank = subset_select_support(char_rel_rank, c);
+        }
+    }
+
 }
 
 } // namespace sbwt
