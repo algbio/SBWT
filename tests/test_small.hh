@@ -180,15 +180,15 @@ TEST(TEST_GET_KMER, fast){
     TrivialSubsetSelect trivial_ss(sbwt);
     string ss_filename = get_temp_file_manager().create_filename();
     {
-        SubsetMatrixSelectSupport<sdsl::bit_vector> nontrivial_ss(sbwt);
+        SubsetMatrixSelectSupport<sdsl::bit_vector> nontrivial_ss(sbwt.get_subset_rank_structure());
         throwing_ofstream out(ss_filename, ios::binary);
         nontrivial_ss.serialize(out.stream);
     } // Flushes stream and frees the select support
 
     // Load the select support back from disk
     SubsetMatrixSelectSupport<sdsl::bit_vector> nontrivial_ss;
-    throwing_ifstream ss_in(ss_filename);
-    nontrivial_ss.load(ss_in.stream, ios::binary);
+    throwing_ifstream ss_in(ss_filename, ios::binary);
+    nontrivial_ss.load(ss_in.stream, sbwt.get_subset_rank_structure());
 
     vector<char> buf_trivial(k);
     vector<char> buf_nontrivial(k);
@@ -205,6 +205,14 @@ TEST(TEST_GET_KMER, fast){
         ASSERT_EQ(true_kmer, trivial_kmer);
         ASSERT_EQ(true_kmer, nontrivial_kmer);
     }
+
+/*
+    vector<char> buf(k+1); // The k-mer will be written here
+    for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
+        sbwt.get_kmer_fast(i, buf.data(), nontrivial_ss);
+        if(buf[0] != '$') cout << buf.data() << endl;
+    }
+    */
 
 }
 

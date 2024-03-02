@@ -37,11 +37,12 @@ class SubsetMatrixSelectSupport{
     /** Warning: this select structure points to internal vectors of `mr`, so the select support
     * can be used only as long as those pointers are valid.
     */
-    SubsetMatrixSelectSupport(const SubsetMatrixRank& mr){
-        sdsl::util::init_support(this->A_bits_ss, mr.A_bits);
-        sdsl::util::init_support(this->C_bits_ss, mr.C_bits);
-        sdsl::util::init_support(this->G_bits_ss, mr.G_bits);
-        sdsl::util::init_support(this->T_bits_ss, mr.T_bits);
+    template<typename rank_support_t>
+    SubsetMatrixSelectSupport(const SubsetMatrixRank<bitvector_t, rank_support_t>& mr){
+        sdsl::util::init_support(this->A_bits_ss, &mr.A_bits);
+        sdsl::util::init_support(this->C_bits_ss, &mr.C_bits);
+        sdsl::util::init_support(this->G_bits_ss, &mr.G_bits);
+        sdsl::util::init_support(this->T_bits_ss, &mr.T_bits);
     }
 
     SubsetMatrixSelectSupport(const SubsetMatrixSelectSupport& other){
@@ -75,17 +76,18 @@ class SubsetMatrixSelectSupport{
     /** Warning: this select structure points to internal vectors of `mr`, so the select support
     * can be used only as long as those pointers are valid.
     */
-    void load(istream& is, const SubsetMatrixRank& mr){
+    template<typename rank_support_t>
+    void load(istream& is, const SubsetMatrixRank<bitvector_t, rank_support_t>& mr){
 
         A_bits_ss.load(is);
         C_bits_ss.load(is);
         G_bits_ss.load(is);
         T_bits_ss.load(is);
 
-        A_bits_ss.set_vector(mr.A_bits);
-        C_bits_ss.set_vector(mr.C_bits);
-        G_bits_ss.set_vector(mr.G_bits);
-        T_bits_ss.set_vector(mr.T_bits);
+        A_bits_ss.set_vector(&mr.A_bits);
+        C_bits_ss.set_vector(&mr.C_bits);
+        G_bits_ss.set_vector(&mr.G_bits);
+        T_bits_ss.set_vector(&mr.T_bits);
     }
 
 };
