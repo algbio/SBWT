@@ -307,7 +307,7 @@ public:
      * 
      * @param colex_rank The colexicographic rank, between 0 and number_of_subsets() - 1.
      * @param buf The output array where the k-mer will be stored. Must have at least k bytes of space.
-     * @param subset_select_support A class with a const member function taking a 1-based rank int64_t r and a char c, returning the smallest position p such that subsetrank(p+1,c) >= r, where subsetrank is on the subset sequence of this SBWT.
+     * @param ss class with a const member function taking a 1-based rank int64_t r and a char c, returning the smallest position p such that subsetrank(p+1,c) >= r, where subsetrank is on the subset sequence of this SBWT.
      */
 
     template<typename subset_select_support_t>
