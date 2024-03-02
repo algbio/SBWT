@@ -111,7 +111,7 @@ Usage:
 
 The API for the SBWT is still in the works. Do not expect a stable API at this point.
 
-The SBWT can be constructed and queried using the [SBWT class](https://htmlpreview.github.io/?https://github.com/algbio/SBWT/blob/master/doc/html/classsbwt_1_1SBWT.html). The class is templatized by the underlying subset rank support structure. See [here](https://htmlpreview.github.io/?https://github.com/algbio/SBWT/blob/master/doc/html/variants_8hh_source.html) for types of subset rank query data structures are suitable for the template parameter.
+The SBWT can be constructed and queried using the [SBWT class](https://htmlpreview.github.io/?https://github.com/algbio/SBWT/blob/master/doc/html/classsbwt_1_1SBWT.html). The class is templatized by the underlying subset rank support structure. See [here](https://htmlpreview.github.io/?https://github.com/algbio/SBWT/blob/master/doc/html/variants_8hh_source.html) for types of subset rank query data structures are suitable for the template parameter. See [https://github.com/algbio/SBWT/tree/master/api_examples](https://github.com/algbio/SBWT/tree/master/api_examples) for a self-contained piece of code demonstrating the API using the bit matrix SBWT representation.
 
 # For developers: building and running the tests
 
