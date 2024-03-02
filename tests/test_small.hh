@@ -125,6 +125,29 @@ void test_partial_search(){
 
 }
 
+struct TrivialSubsetSelect{
+
+    // Precalculates and stores all answers
+
+    map<char, vector<int64_t>> select_answers;
+
+    template<typename sbwt_t>
+    TrivialSubsetSelect(sbwt_t& sbwt) {
+        for(char c : string("ACGT")){
+            select_answers[c].push_back(-1); // select(0) is undefined
+            for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
+                if(sbwt.get_subset_rank_structure().contains(i,c)){
+                    select_answers[c].push_back(i);
+                }
+            }
+        }
+    }
+
+    int64_t select(int64_t i, char c) const{
+        return select_answers.at(c)[i];
+    }
+};
+
 template<typename nodeboss_t>
 void test_get_kmer(){
     nodeboss_t sbwt;
@@ -133,35 +156,16 @@ void test_get_kmer(){
     build_nodeboss_in_memory(strings, sbwt, k, false); 
     string kmers_concat = sbwt.reconstruct_all_kmers();
 
-    map<char, vector<int64_t>> select_answers;
-    for(char c : string("ACGT")){
-        select_answers[c].push_back(-1); // select(0) is undefined
-        for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
-            if(sbwt.get_subset_rank_structure().contains(i,c)){
-                select_answers[c].push_back(i);
-            }
-        }
-    }
-
-    cout << select_answers << endl;
-    auto lookup_select_support = [&select_answers](int64_t i, char c){
-        return select_answers[c][i];
-    };
-
+    TrivialSubsetSelect ss(sbwt);
     vector<char> buf(k);
-    vector<char> buf_fast(k);
     for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
         string true_kmer = kmers_concat.substr(i*k, k);
 
         sbwt.get_kmer(i, buf.data());
         string test_kmer = string(buf.data(), buf.data()+k);
 
-        sbwt.get_kmer_fast(i, buf_fast.data(), lookup_select_support);
-        string fast_kmer = string(buf_fast.data(), buf_fast.data()+k);
-
-        cerr << true_kmer << " " << test_kmer << " " << fast_kmer << endl;
+        cerr << true_kmer << " " << test_kmer << endl;
         ASSERT_EQ(true_kmer, test_kmer);
-        ASSERT_EQ(true_kmer, fast_kmer);
     }
 
 }
@@ -173,25 +177,23 @@ TEST(TEST_GET_KMER, fast){
     build_nodeboss_in_memory(strings, sbwt, k, false); 
     string kmers_concat = sbwt.reconstruct_all_kmers();
 
-    SubsetMatrixSelectSupport ss = sbwt.get_subset_rank_structure().build_select_support();
-    auto lookup_select_support = [&ss](int64_t i, char c){
-        return ss.select(i,c);
-    };
+    TrivialSubsetSelect trivial_ss(sbwt);
+    SubsetMatrixSelectSupport<sdsl::bit_vector> nontrivial_ss = sbwt.get_subset_rank_structure().build_select_support();
 
-    vector<char> buf(k);
-    vector<char> buf_fast(k);
+    vector<char> buf_trivial(k);
+    vector<char> buf_nontrivial(k);
     for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
         string true_kmer = kmers_concat.substr(i*k, k);
 
-        sbwt.get_kmer(i, buf.data());
-        string test_kmer = string(buf.data(), buf.data()+k);
+        sbwt.get_kmer_fast<TrivialSubsetSelect>(i, buf_trivial.data(), trivial_ss);
+        string trivial_kmer = string(buf_trivial.data(), buf_trivial.data()+k);
 
-        sbwt.get_kmer_fast(i, buf_fast.data(), lookup_select_support);
-        string fast_kmer = string(buf_fast.data(), buf_fast.data()+k);
+        sbwt.get_kmer_fast<SubsetMatrixSelectSupport<sdsl::bit_vector>>(i, buf_nontrivial.data(), nontrivial_ss);
+        string nontrivial_kmer = string(buf_nontrivial.data(), buf_nontrivial.data()+k);
 
-        cerr << true_kmer << " " << test_kmer << " " << fast_kmer << endl;
-        ASSERT_EQ(true_kmer, test_kmer);
-        ASSERT_EQ(true_kmer, fast_kmer);
+        cerr << true_kmer << " " << trivial_kmer << " " << nontrivial_kmer << endl;
+        ASSERT_EQ(true_kmer, trivial_kmer);
+        ASSERT_EQ(true_kmer, nontrivial_kmer);
     }
 
 }
