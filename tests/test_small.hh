@@ -9,6 +9,7 @@
 #include "SubsetSplitRank.hh"
 #include "SubsetMatrixRank.hh"
 #include "SubsetConcatRank.hh"
+#include "SimpleSubsetSelectSupport.hh"
 #include "SubsetWT.hh"
 #include "suffix_group_optimization.hh"
 #include <gtest/gtest.h>
@@ -134,17 +135,16 @@ void test_get_kmer(){
 
     map<char, vector<int64_t>> select_answers;
     for(char c : string("ACGT")){
-        int64_t c_count = 0;
+        select_answers[c].push_back(-1); // select(0) is undefined
         for(int64_t i = 0; i < sbwt.number_of_subsets(); i++){
             if(sbwt.get_subset_rank_structure().contains(i,c)){
                 select_answers[c].push_back(i);
-                c_count++;
             }
         }
     }
 
     cout << select_answers << endl;
-    auto select_support = [&select_answers](int64_t i, char c){
+    auto lookup_select_support = [&select_answers](int64_t i, char c){
         return select_answers[c][i];
     };
 
@@ -156,7 +156,7 @@ void test_get_kmer(){
         sbwt.get_kmer(i, buf.data());
         string test_kmer = string(buf.data(), buf.data()+k);
 
-        sbwt.get_kmer_fast(i, buf_fast.data(), select_support);
+        sbwt.get_kmer_fast(i, buf_fast.data(), lookup_select_support);
         string fast_kmer = string(buf_fast.data(), buf_fast.data()+k);
 
         cerr << true_kmer << " " << test_kmer << " " << fast_kmer << endl;
