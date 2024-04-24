@@ -45,29 +45,29 @@ inline void print_vector(const vector<int64_t>& v, writer_t& out){
 template<typename sbwt_t, typename reader_t, typename writer_t>
 int64_t run_queries_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt){
 
-    int64_t total_micros = 0;
+    int64_t total_nanos = 0;
     int64_t number_of_queries = 0;
     while(true){
         int64_t len = reader.get_next_read_to_buffer();
         if(len == 0) break;
 
-        int64_t t0 = cur_time_micros();
+        int64_t t0 = cur_time_nanos();
         vector<int64_t> out_buffer = sbwt.streaming_search(reader.read_buf, len);
-        total_micros += cur_time_micros() - t0;
+        total_nanos += cur_time_nanos() - t0;
 
         number_of_queries += out_buffer.size();
 
         // Write out
         print_vector(out_buffer, writer);
     }
-    write_log("us/query: " + to_string((double)total_micros / number_of_queries) + " (excluding I/O etc)", LogLevel::MAJOR);
+    write_log("us/query: " + to_string((double) total_nanos/ number_of_queries / 1000.0) + " (excluding I/O etc)", LogLevel::MAJOR);
     return number_of_queries;
 }
 
 template<typename sbwt_t, typename reader_t, typename writer_t>
 int64_t run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt_t& sbwt){
 
-    int64_t total_micros = 0;
+    int64_t total_nanos = 0;
     int64_t number_of_queries = 0;
     int64_t k = sbwt.get_k();
     vector<int64_t> out_buffer;
@@ -76,9 +76,9 @@ int64_t run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt
         if(len == 0) break;
 
         for(int64_t i = 0; i < len - k + 1; i++){
-            int64_t t0 = cur_time_micros();
+            int64_t t0 = cur_time_nanos();
             int64_t ans = sbwt.search(reader.read_buf + i);
-            total_micros += cur_time_micros() - t0;
+            total_nanos += cur_time_nanos() - t0;
             number_of_queries++;
             out_buffer.push_back(ans);
         }
@@ -86,7 +86,7 @@ int64_t run_queries_not_streaming(reader_t& reader, writer_t& writer, const sbwt
         print_vector(out_buffer, writer);
         out_buffer.clear();
     }
-    write_log("us/query: " + to_string((double)total_micros / number_of_queries) + " (excluding I/O etc)", LogLevel::MAJOR);
+    write_log("us/query: " + to_string((double)total_nanos / number_of_queries / 1000.0) + " (excluding I/O etc)", LogLevel::MAJOR);
     return number_of_queries;
 }
 

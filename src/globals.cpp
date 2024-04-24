@@ -69,6 +69,10 @@ long long sbwt::cur_time_micros(){
     return (std::chrono::duration_cast< microseconds >(high_resolution_clock::now().time_since_epoch())).count();
 }
 
+long long sbwt::cur_time_nanos(){
+    return (std::chrono::duration_cast< nanoseconds>(high_resolution_clock::now().time_since_epoch())).count();
+}
+
 static long long int program_start_millis = cur_time_millis();
 static long long int program_start_micros = cur_time_micros();
 
