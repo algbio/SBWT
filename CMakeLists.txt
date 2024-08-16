@@ -134,6 +134,7 @@ add_executable(sbwt
   src/CLI/sbwt_build.cpp
   src/CLI/sbwt_search.cpp
   src/CLI/sbwt_build_from_plain_matrix.cpp
+  src/CLI/sbwt_ascii_export.cpp
   ${SBWT_SOURCES})
 target_include_directories(sbwt PRIVATE
 ${PROJECT_SOURCE_DIR}/include/sbwt
