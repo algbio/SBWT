@@ -13,7 +13,7 @@ using namespace sbwt;
 
 int ascii_export_main(int argc, char** argv){
 
-    cxxopts::Options options(argv[0], "Export SBWT subset sequence in an ASCII format");
+    cxxopts::Options options(argv[0], "Export SBWT subset sequence in an ASCII format. Each set is written as a string of characters. A non-empty set is a string of DNA characters (ACGT), such that the last character of the set is written in lower case. Empty sets are represented as a single '$'. The representations of the sets are concatenated together. For example, the sequence {A,C}, {A,T}, {}, {C}, {A,G,T} is represented as AcAt$cAGt.");
 
     options.add_options()
         ("o,out-file", "Output filename.", cxxopts::value<string>())
