@@ -315,6 +315,14 @@ public:
     void get_kmer_fast(int64_t colex_rank, char* buf, const subset_select_support_t& ss) const;
 
     /**
+     * @brief Writes index metadata in ascii.
+     * 
+     * @param out The output stream.
+     */
+    template<typename out_stream_t>
+    void ascii_export_metadata(out_stream_t& out) const;
+
+    /**
      * @brief Write the concatenation of SBWT sets, with sets separated by '|'.
      * 
      * @param out The output stream.
@@ -761,6 +769,17 @@ void SBWT<subset_rank_t>::ascii_export_sets(out_stream_t& out) const {
         out.write(current_set, current_set_size);
         current_set_size = 0;
     }
+    out.write("\n", 1);
+}
+
+template<typename subset_rank_t>
+template<typename out_stream_t>
+void SBWT<subset_rank_t>::ascii_export_metadata(out_stream_t& out) const {
+    stringstream ss;
+    ss << "k: " << k << "\n";
+    ss << "number_of_sets: " << n_nodes << "\n";
+    ss << "number_of_kmers: " << n_kmers << "\n";
+    out.write(ss.str().c_str(), ss.str().size());
 }
 
 } // namespace sbwt
