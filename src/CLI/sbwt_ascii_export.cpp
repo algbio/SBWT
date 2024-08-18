@@ -21,7 +21,7 @@ void export_sbwt_variant(const sbwt_t& sbwt, seq_io::Buffered_ofstream<>& out) {
 
 int ascii_export_main(int argc, char** argv){
 
-    cxxopts::Options options(argv[0], "\nExport SBWT in an ASCII format. First comes three lines of metadata:\n\nk: <k>\nnumber_of_sets: <number of sets>\nnumber_of_kmers: <number of k-mers>\n\nThis is followed by a line of the form \"sbwt: <sbwt>\". The format of <sbwt> is as follows: Each set is written as a string of characters. A non-empty set is a string of DNA characters (ACGT), such that the last character of the set is written in lower case. Empty sets are represented as a single '$'. The representations of the sets are concatenated together. For example, the sequence {A,C}, {A,T}, {}, {C}, {A,G,T} is represented as AcAt$cAGt.");
+    cxxopts::Options options(argv[0], "\nExport SBWT in an ASCII format. First comes three lines of metadata:\n\nversion: <version>\nk: <k>\nnumber_of_sets: <number of sets>\nnumber_of_kmers: <number of k-mers>\n\nThis is followed by a line of the form \"sbwt: <sbwt>\". The format of <sbwt> is as follows: Each set is written as a string of characters. A non-empty set is a string of DNA characters (ACGT), such that the last character of the set is written in lower case. Empty sets are represented as a single '$'. The representations of the sets are concatenated together. For example, the sequence {A,C}, {A,T}, {}, {C}, {A,G,T} is represented as AcAt$cAGt.");
 
     options.add_options()
         ("o,out-file", "Output filename.", cxxopts::value<string>())

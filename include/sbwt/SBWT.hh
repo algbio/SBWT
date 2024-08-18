@@ -776,6 +776,7 @@ template<typename subset_rank_t>
 template<typename out_stream_t>
 void SBWT<subset_rank_t>::ascii_export_metadata(out_stream_t& out) const {
     stringstream ss;
+    ss << "version: " << SBWT_VERSION << "\n";
     ss << "k: " << k << "\n";
     ss << "number_of_sets: " << n_nodes << "\n";
     ss << "number_of_kmers: " << n_kmers << "\n";
