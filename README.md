@@ -1,3 +1,7 @@
+# NEWS 20.12. 2024
+
+A Rust version of the library is now available at https://crates.io/crates/sbwt/. The Rust version currently only supports the plain matrix SBWT variant. In some parts, the Rust library goes beyond what the C++ library can do: for example, it provides a streaming matching statistics algorithm using the longest common suffix array of the SBWT. The Rust API is able to read a plain matrix SBWT variant built with the C++ code. 
+
 # SBWT
 
 This is the code for the paper [Succinct k-mer Set Representations Using Subset Rank Queries on the Spectral Burrows-Wheeler Transform (SBWT)](https://www.biorxiv.org/content/10.1101/2022.05.19.492613v1). The repository includes implementations of the various SBWT variants described in the paper. The data structures answer k-mer membership queries on the input data. Note that contrary to many other k-mer membership data structures, our code is not aware of DNA reverse complements. That is, it considers a k-mer and its reverse complement as separate k-mers.
